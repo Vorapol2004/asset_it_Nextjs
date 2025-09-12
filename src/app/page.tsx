@@ -1,80 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, Package, PlusCircle, Menu, X, Home, History } from 'lucide-react';
-
-// Navbar Component
-const Navbar = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    return (
-        <nav className="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    {/* Logo */}
-                    <div className="flex items-center">
-                        <Package className="h-8 w-8 text-white mr-2" />
-                        <span className="text-xl font-bold text-white">EquipTrack</span>
-                    </div>
-
-                    {/* Desktop Menu */}
-                    <div className="hidden md:block">
-                        <div className="ml-10 flex items-baseline space-x-4">
-                            <button className="flex items-center cursor-pointer text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                                <Home className="h-4 w-4 mr-1" />
-                                หน้าแรก
-                            </button>
-                            <button className="flex items-center cursor-pointer text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                                <History className="h-4 w-4 mr-1" />
-                                ประวัติการยืม
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Mobile menu button */}
-                    <div className="md:hidden">
-                        <button
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="text-white hover:bg-blue-700 p-2 rounded-md"
-                        >
-                            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Mobile Menu */}
-                {isMenuOpen && (
-                    <div className="md:hidden">
-                        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-blue-700">
-                            <button className="flex items-center text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left">
-                                <Home className="h-4 w-4 mr-2" />
-                                หน้าแรก
-                            </button>
-                            <button className="flex items-center text-blue-200 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left">
-                                <History className="h-4 w-4 mr-2" />
-                                ประวัติการยืม
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </nav>
-    );
-};
-
-// Footer Component
-const Footer = () => {
-    return (
-        <footer className="bg-gray-800 text-white py-8 mt-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <p>&copy; 2024 EquipTrack System. All rights reserved.</p>
-                <p className="text-gray-400 text-sm mt-2">
-                    ระบบบันทึกการยืมอุปกรณ์ | พัฒนาเพื่อความสะดวกในการจัดการ
-                </p>
-            </div>
-        </footer>
-    );
-};
+import { Search, Package, PlusCircle } from 'lucide-react';
+import Navbar from '../component/Navbar/Navbar';
+import Footer from '../component/Footer/Footer';
 
 // Main Home Component
 export default function HomePage() {

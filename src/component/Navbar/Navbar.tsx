@@ -28,7 +28,7 @@ const Navbar = () => {
                                 หน้าแรก
                             </Link>
                             <Link
-                                href="/history"
+                                href="/pages/borrow_history"
                                 className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
                             >
                                 <History className="h-4 w-4 mr-1" />
@@ -61,7 +61,7 @@ const Navbar = () => {
                                 หน้าแรก
                             </Link>
                             <Link
-                                href="/pages/history_borrow"
+                                href="/pages/borrow_history"
                                 className="flex items-center text-blue-200 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
                                 onClick={() => setIsMenuOpen(false)}
                             >
