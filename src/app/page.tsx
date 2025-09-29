@@ -1,30 +1,30 @@
 'use client';
 
-import { Search, Package, PlusCircle } from 'lucide-react';
-import Navbar from '../component/Navbar/Navbar';
-import Footer from '../component/Footer/Footer';
+import { History, Package, PlusCircle, Menu, X, Home } from 'lucide-react';
+import { useRouter } from 'next/navigation'; // ใช้ Next.js router แทน react-router-dom
+import Navbar from "@/component/Navbar/Navbar";
+import Footer from "@/component/Footer/Footer";
 
 // Main Home Component
 export default function HomePage() {
-    const handleSearchClick = () => {
-        // Navigate to search page
-        console.log('Navigate to Search Page');
-        // ใน Next.js จะใช้ router.push('/search')
-        window.location.href = '/search';
+    const router = useRouter(); // ใช้ Next.js router
+
+    const handleHistoryClick = () => {
+        // Navigate to history page
+        console.log('Navigate to History Page');
+        router.push('/pages/borrow_history'); // ใช้ router.push แทน window.location.href
     };
 
     const handleBorrowReturnClick = () => {
         // Navigate to borrow_equipment page
         console.log('Navigate to Borrow Equipment Page');
-        // ใน Next.js จะใช้ router.push('/borrow_equipment')
-        window.location.href = '/borrow_equipment';
+        router.push('/pages/borrow_equipment'); // ใช้ router.push แทน window.location.href
     };
 
     const handleAddEquipmentClick = () => {
         // Navigate to add_equipment page
         console.log('Navigate to Add Equipment Page');
-        // ใน Next.js จะใช้ router.push('/add_equipment')
-        window.location.href = '/add_equipment';
+        router.push('/pages/add_equipment'); // ใช้ router.push แทน window.location.href
     };
 
     return (
@@ -49,19 +49,19 @@ export default function HomePage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-                    {/* ปุ่มค้นหาผู้ยืม */}
+                    {/* ปุ่มประวัติการยืม */}
                     <div
-                        onClick={handleSearchClick}
+                        onClick={handleHistoryClick}
                         className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 p-6 border-l-4 border-green-500"
                     >
                         <div className="flex items-center justify-center mb-4">
                             <div className="bg-green-100 p-4 rounded-full">
-                                <Search className="h-12 w-12 text-green-600" />
+                                <History className="h-12 w-12 text-green-600" />
                             </div>
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-800 text-center mb-2">ค้นหาผู้ยืม</h3>
+                        <h3 className="text-xl font-semibold text-gray-800 text-center mb-2">ประวัติการยืม</h3>
                         <p className="text-gray-600 text-center text-sm">
-                            ค้นหาข้อมูลผู้ที่มายืมอุปกรณ์และดูรายละเอียดการยืม
+                            ดูประวัติการยืม-คืนอุปกรณ์ทั้งหมดในระบบ
                         </p>
                     </div>
 
@@ -115,7 +115,8 @@ export default function HomePage() {
                 </div>
             </div>
 
-            <Footer />
+
+
         </div>
     );
 }

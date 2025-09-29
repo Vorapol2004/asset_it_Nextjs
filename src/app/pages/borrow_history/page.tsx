@@ -159,7 +159,7 @@ export default function BorrowHistoryPage() {
                             <input
                                 type="text"
                                 placeholder="ค้นหาชื่อ, รหัสนักศึกษา, หรืออุปกรณ์..."
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 text-gray-700 "
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-700 "
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -169,7 +169,7 @@ export default function BorrowHistoryPage() {
                         <div className="relative">
                             <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             <select
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2  focus:border-blue-500 appearance-none text-gray-700"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-700"
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
                             >
