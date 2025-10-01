@@ -1,481 +1,400 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import {
-    Search,
-    Package,
-    ArrowLeft,
-    Calendar,
-    User,
-    Plus,
-    Trash2,
-    Key,
-    Monitor,
-    Save,
-    X
-} from 'lucide-react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from "@/component/Navbar/Navbar";
-import Footer from "@/component/Footer/Footer";
+import Navbar from '@/component/Navbar/Navbar';
+import {
+    Package, Plus, Trash2, Save, User, Calendar, FileText, CheckCircle,
+    Laptop, Key, Mail, Pin  // เพิ่ม icons ใหม่
+} from 'lucide-react';
+
+interface BorrowItem {
+    id: string;
+    type: 'hardware' | 'license';
+    equipmentId: string;
+    equipmentName: string;
+    serialNumber: string;
+    notes: string;
+}
+
+interface Equipment {
+    id: string;
+    name: string;
+    type: 'hardware' | 'license';
+    availableQuantity: number;
+}
+
+const mockEquipmentList: Equipment[] = [
+    { id: '1', name: 'Notebook Dell Latitude 5420', type: 'hardware', availableQuantity: 5 },
+    { id: '2', name: 'Notebook HP ZBook Studio G8', type: 'hardware', availableQuantity: 3 },
+    { id: '3', name: 'iPad Pro 12.9"', type: 'hardware', availableQuantity: 8 },
+    { id: '4', name: 'Projector Epson EB-2250U', type: 'hardware', availableQuantity: 2 },
+    { id: '5', name: 'Camera Canon EOS R6', type: 'hardware', availableQuantity: 1 },
+    { id: '6', name: 'Microphone Rode VideoMic Pro', type: 'hardware', availableQuantity: 4 },
+    { id: '7', name: 'External SSD 1TB', type: 'hardware', availableQuantity: 10 },
+    { id: '8', name: 'HDMI Cable 5m', type: 'hardware', availableQuantity: 15 },
+    { id: '9', name: 'Microsoft Office 365', type: 'license', availableQuantity: 50 },
+    { id: '10', name: 'Adobe Creative Cloud', type: 'license', availableQuantity: 20 },
+    { id: '11', name: 'Windows 11 Pro', type: 'license', availableQuantity: 30 },
+    { id: '12', name: 'AutoCAD 2024', type: 'license', availableQuantity: 10 },
+];
 
 export default function BorrowEquipmentPage() {
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [equipmentList] = useState<Equipment[]>(mockEquipmentList);
 
-    // State สำหรับ Borrow Transactions
-    const [borrowTransactions, setBorrowTransactions] = useState([]);
+    const [borrowerName, setBorrowerName] = useState('');
+    const [borrowerEmail, setBorrowerEmail] = useState('');
+    const [approvedBy, setApprovedBy] = useState('');
+    const [borrowDate, setBorrowDate] = useState('');
+    const [returnDate, setReturnDate] = useState('');
+    const [purpose, setPurpose] = useState('');
 
-    // State สำหรับข้อมูล Equipment และ License
-    const [equipmentList, setEquipmentList] = useState([]);
-    const [licenseList, setLicenseList] = useState([]);
-
-    // Mock Data
-    const mockEquipment = [
-        { id: 1, name: 'Dell OptiPlex 3080', serialNumber: 'EQP-001', category: 'คอมพิวเตอร์', status: 'ว่าง' },
-        { id: 2, name: 'HP LaserJet Pro M404dn', serialNumber: 'EQP-002', category: 'อุปกรณ์สำนักงาน', status: 'ว่าง' },
-        { id: 3, name: 'Canon EOS R6 Mark II', serialNumber: 'EQP-003', category: 'อุปกรณ์ถ่ายภาพ', status: 'ว่าง' },
-        { id: 4, name: 'MacBook Pro 16"', serialNumber: 'EQP-004', category: 'คอมพิวเตอร์', status: 'ว่าง' },
-        { id: 5, name: 'iPad Air', serialNumber: 'EQP-005', category: 'แท็บเล็ต', status: 'ว่าง' }
-    ];
-
-    const mockLicenses = [
-        { id: 1, name: 'Microsoft Office 365', serialNumber: 'LIC-001', type: 'Software License', status: 'ว่าง' },
-        { id: 2, name: 'Adobe Creative Suite', serialNumber: 'LIC-002', type: 'Software License', status: 'ว่าง' },
-        { id: 3, name: 'Windows 11 Pro', serialNumber: 'LIC-003', type: 'OS License', status: 'ว่าง' },
-        { id: 4, name: 'AutoCAD 2024', serialNumber: 'LIC-004', type: 'Software License', status: 'ว่าง' }
-    ];
-
-    useEffect(() => {
-        setEquipmentList(mockEquipment);
-        setLicenseList(mockLicenses);
-
-        // เพิ่ม Borrow Transaction เริ่มต้น
-        addNewBorrowTransaction();
-    }, []);
-
-    // ฟังก์ชันสำหรับจัดการ Borrow Transaction ใหญ่
-    const addNewBorrowTransaction = () => {
-        const newTransaction = {
-            id: Date.now(),
-            borrowerName: '',
-            borrowerPhone: '',
-            borrowerEmail: '',
-            borrowDate: new Date().toISOString().split('T')[0],
-            returnDate: '',
-            purpose: '',
-            notes: '',
-            borrowItems: [] // รายการการยืมย่อย
-        };
-        setBorrowTransactions([...borrowTransactions, newTransaction]);
-    };
-
-    const removeBorrowTransaction = (transactionId) => {
-        setBorrowTransactions(borrowTransactions.filter(t => t.id !== transactionId));
-    };
-
-    const updateBorrowTransaction = (transactionId, field, value) => {
-        // @ts-ignore
-        setBorrowTransactions(borrowTransactions.map(transaction =>
-            transaction.id === transactionId
-                ? { ...transaction, [field]: value }
-                : transaction
-        ));
-    };
-
-    // ฟังก์ชันสำหรับจัดการ Borrow Items ย่อย
-    const addBorrowItem = (transactionId) => {
-        const newItem = {
-            id: Date.now(),
-            type: 'equipment', // equipment หรือ license
-            itemId: '',
-            quantity: 1,
+    const [borrowItems, setBorrowItems] = useState<BorrowItem[]>([
+        {
+            id: '1',
+            type: 'hardware',
+            equipmentId: '',
+            equipmentName: '',
+            serialNumber: '',
             notes: ''
-        };
+        }
+    ]);
 
-        // @ts-ignore
-        setBorrowTransactions(borrowTransactions.map(transaction =>
-            transaction.id === transactionId
-                ? {
-                    ...transaction,
-                    borrowItems: [...transaction.borrowItems, newItem]
-                }
-                : transaction
-        ));
-    };
-
-    const removeBorrowItem = (transactionId, itemId) => {
-        // @ts-ignore
-        setBorrowTransactions(borrowTransactions.map(transaction =>
-            transaction.id === transactionId
-                ? {
-                    ...transaction,
-                    borrowItems: transaction.borrowItems.filter(item => item.id !== itemId)
-                }
-                : transaction
-        ));
-    };
-
-    const updateBorrowItem = (transactionId, itemId, field, value) => {
-        setBorrowTransactions(borrowTransactions.map(transaction =>
-            transaction.id === transactionId
-                ? {
-                    ...transaction,
-                    borrowItems: transaction.borrowItems.map(item =>
-                        item.id === itemId
-                            ? { ...item, [field]: value }
-                            : item
-                    )
-                }
-                : transaction
-        ));
-    };
-
-    const getItemOptions = (type) => {
-        return type === 'equipment' ? equipmentList : licenseList;
-    };
-
-    const getSelectedItemDetails = (type, itemId) => {
-        const items = getItemOptions(type);
-        return items.find(item => item.id.toString() === itemId.toString());
-    };
-
-    const handleSubmitAll = async () => {
-        // Validate
-        const validTransactions = borrowTransactions.filter(t =>
-            t.borrowerName.trim() &&
-            t.borrowerPhone.trim() &&
-            t.returnDate &&
-            t.purpose.trim() &&
-            t.borrowItems.length > 0 &&
-            t.borrowItems.every(item => item.itemId)
+    const updateBorrowItem = (id: string, field: keyof BorrowItem, value: any) => {
+        setBorrowItems(prevItems =>
+            prevItems.map(item =>
+                item.id === id ? { ...item, [field]: value } : item
+            )
         );
+    };
 
-        if (validTransactions.length === 0) {
-            alert('กรุณากรอกข้อมูลให้ครบถ้วนและเพิ่มรายการยืมอย่างน้อย 1 รายการ');
+    const updateMultipleFields = (id: string, updates: Partial<BorrowItem>) => {
+        setBorrowItems(prevItems =>
+            prevItems.map(item =>
+                item.id === id ? { ...item, ...updates } : item
+            )
+        );
+    };
+
+    const addBorrowItem = () => {
+        setBorrowItems([
+            ...borrowItems,
+            {
+                id: Date.now().toString(),
+                type: 'hardware',
+                equipmentId: '',
+                equipmentName: '',
+                serialNumber: '',
+                notes: ''
+            }
+        ]);
+    };
+
+    const removeBorrowItem = (id: string) => {
+        if (borrowItems.length > 1) {
+            setBorrowItems(borrowItems.filter(item => item.id !== id));
+        }
+    };
+
+    const getFilteredEquipment = (type: 'hardware' | 'license') => {
+        return equipmentList.filter(eq => eq.type === type && eq.availableQuantity > 0);
+    };
+
+    const handleEquipmentChange = (itemId: string, equipmentId: string) => {
+        const equipment = equipmentList.find(eq => eq.id === equipmentId);
+        if (equipment) {
+            updateMultipleFields(itemId, {
+                equipmentId: equipmentId,
+                equipmentName: equipment.name
+            });
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const missingSerials = borrowItems.filter(item => !item.serialNumber);
+        if (missingSerials.length > 0) {
+            alert('กรุณากรอก Serial Number/License Serial ให้ครบทุกรายการ');
             return;
         }
 
-        console.log('Submitting borrow transactions:', validTransactions);
+        setLoading(true);
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            console.log('Borrow Request:', {
+                borrowerName,
+                borrowerEmail,
+                approvedBy,
+                borrowDate,
+                returnDate,
+                purpose,
+                items: borrowItems
+            });
 
-        alert(`บันทึกการยืมเรียบร้อยแล้ว! จำนวน ${validTransactions.length} รายการ`);
-
-        // Reset form
-        setBorrowTransactions([]);
-        addNewBorrowTransaction();
-    };
-
-    const handleGoBack = () => {
-        router.push('/');
+            alert('บันทึกการยืมสำเร็จ! (Mockup Mode)');
+            router.push('/pages/borrow_history');
+        } catch (error) {
+            console.error('Error creating borrow request:', error);
+            alert('เกิดข้อผิดพลาดในการบันทึกการยืม');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <Navbar />
 
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <button
-                                onClick={handleGoBack}
-                                className="mr-4 p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
-                            >
-                                <ArrowLeft className="h-6 w-6 text-white" />
-                            </button>
+            <div className="max-w-6xl mx-auto px-4 py-8">
+                <div className="mb-8 bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-600">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">ยืมอุปกรณ์</h1>
+                    <p className="text-gray-600">บันทึกข้อมูลการยืมอุปกรณ์ของผู้ใช้งาน</p>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center pb-3 border-b-2 border-green-100">
+                            <User className="h-6 w-6 mr-2 text-green-600" />
+                            ข้อมูลผู้ยืม
+                        </h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                             <div>
-                                <h1 className="text-3xl font-bold text-white">การยืม-คืนอุปกรณ์</h1>
-                                <p className="text-blue-100 mt-2">สร้างใบยืมอุปกรณ์และ License</p>
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    ชื่อผู้ยืม <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={borrowerName}
+                                    onChange={(e) => setBorrowerName(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 font-medium"
+                                    placeholder="ชื่อ-นามสกุล"
+                                    required
+                                />
                             </div>
-                        </div>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={addNewBorrowTransaction}
-                                className="bg-white/20 hover:bg-white/30 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center"
-                            >
-                                <Plus className="h-5 w-5 mr-2" />
-                                เพิ่มใบยืมใหม่
-                            </button>
-                            <button
-                                onClick={handleSubmitAll}
-                                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors flex items-center"
-                            >
-                                <Save className="h-5 w-5 mr-2" />
-                                บันทึกทั้งหมด
-                            </button>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-800 mb-2 flex items-center">
+                                    <Mail className="h-4 w-4 mr-1 text-green-600" />
+                                    อีเมล <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    value={borrowerEmail}
+                                    onChange={(e) => setBorrowerEmail(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 font-medium"
+                                    placeholder="email@example.com"
+                                    required
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    <CheckCircle className="inline h-4 w-4 mr-1 text-green-600" />
+                                    ผู้อนุมัติ <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={approvedBy}
+                                    onChange={(e) => setApprovedBy(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 font-medium"
+                                    placeholder="ชื่อผู้อนุมัติการยืม"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    <Calendar className="inline h-4 w-4 mr-1 text-green-600" />
+                                    วันที่ยืม <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    value={borrowDate}
+                                    onChange={(e) => setBorrowDate(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 font-medium"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    <Calendar className="inline h-4 w-4 mr-1 text-green-600" />
+                                    วันที่คืน (กำหนด) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    value={returnDate}
+                                    onChange={(e) => setReturnDate(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 font-medium"
+                                    required
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    วัตถุประสงค์การยืม <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    value={purpose}
+                                    onChange={(e) => setPurpose(e.target.value)}
+                                    rows={3}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                                    placeholder="ระบุวัตถุประสงค์ในการยืมอุปกรณ์"
+                                    required
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="space-y-8">
-                    {borrowTransactions.map((transaction, transactionIndex) => (
-                        <div key={transaction.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
-                            {/* Transaction Header */}
-                            <div className="bg-blue-50 border-b border-blue-100 p-6">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-xl font-semibold text-blue-800 flex items-center">
-                                        <Package className="h-6 w-6 mr-2" />
-                                        ใบยืมที่ {transactionIndex + 1}
-                                    </h2>
-                                    {borrowTransactions.length > 1 && (
-                                        <button
-                                            onClick={() => removeBorrowTransaction(transaction.id)}
-                                            className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
-                                        >
-                                            <X className="h-5 w-5" />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="p-6">
-                                {/* ข้อมูลผู้ยืม */}
-                                <div className="mb-8">
-                                    <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                                        <User className="h-5 w-5 mr-2 text-blue-600" />
-                                        ข้อมูลผู้ยืม
-                                    </h3>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                ชื่อผู้ยืม <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={transaction.borrowerName}
-                                                onChange={(e) => updateBorrowTransaction(transaction.id, 'borrowerName', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="นาย/นางสาว ..."
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                เบอร์โทรศัพท์ <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="tel"
-                                                value={transaction.borrowerPhone}
-                                                onChange={(e) => updateBorrowTransaction(transaction.id, 'borrowerPhone', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="08X-XXX-XXXX"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                อีเมล
-                                            </label>
-                                            <input
-                                                type="email"
-                                                value={transaction.borrowerEmail}
-                                                onChange={(e) => updateBorrowTransaction(transaction.id, 'borrowerEmail', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="example@email.com"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                วันที่ยืม <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="date"
-                                                value={transaction.borrowDate}
-                                                onChange={(e) => updateBorrowTransaction(transaction.id, 'borrowDate', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                วันที่กำหนดคืน <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="date"
-                                                value={transaction.returnDate}
-                                                onChange={(e) => updateBorrowTransaction(transaction.id, 'returnDate', e.target.value)}
-                                                min={transaction.borrowDate}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                วัตถุประสงค์ <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={transaction.purpose}
-                                                onChange={(e) => updateBorrowTransaction(transaction.id, 'purpose', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="เช่น ใช้สำหรับการประชุม"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            หมายเหตุ
-                                        </label>
-                                        <textarea
-                                            value={transaction.notes}
-                                            onChange={(e) => updateBorrowTransaction(transaction.id, 'notes', e.target.value)}
-                                            rows={2}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            placeholder="หมายเหตุเพิ่มเติม..."
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* รายการยืม */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-medium text-gray-800 flex items-center">
-                                            <Package className="h-5 w-5 mr-2 text-blue-600" />
-                                            รายการที่ต้องการยืม ({transaction.borrowItems.length} รายการ)
-                                        </h3>
-                                        <button
-                                            onClick={() => addBorrowItem(transaction.id)}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center text-sm"
-                                        >
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            เพิ่มรายการ
-                                        </button>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        {transaction.borrowItems.map((item, itemIndex) => (
-                                            <div key={item.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                                                <div className="flex items-start justify-between mb-4">
-                                                    <h4 className="font-medium text-gray-800">รายการที่ {itemIndex + 1}</h4>
-                                                    <button
-                                                        onClick={() => removeBorrowItem(transaction.id, item.id)}
-                                                        className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </div>
-
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            ประเภท <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <select
-                                                            value={item.type}
-                                                            onChange={(e) => {
-                                                                updateBorrowItem(transaction.id, item.id, 'type', e.target.value);
-                                                                updateBorrowItem(transaction.id, item.id, 'itemId', ''); // Reset item selection
-                                                            }}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                        >
-                                                            <option value="equipment">อุปกรณ์</option>
-                                                            <option value="license">License</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div className="lg:col-span-2">
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            เลือกรายการ <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <select
-                                                            value={item.itemId}
-                                                            onChange={(e) => updateBorrowItem(transaction.id, item.id, 'itemId', e.target.value)}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                        >
-                                                            <option value="">เลือก{item.type === 'equipment' ? 'อุปกรณ์' : 'License'}</option>
-                                                            {getItemOptions(item.type)
-                                                                .filter(option => option.status === 'ว่าง')
-                                                                .map(option => (
-                                                                    <option key={option.id} value={option.id}>
-                                                                        {option.name} ({option.serialNumber})
-                                                                    </option>
-                                                                ))}
-                                                        </select>
-                                                        {item.itemId && (
-                                                            <div className="mt-2 flex items-center text-sm text-gray-600">
-                                                                {item.type === 'equipment' ? (
-                                                                    <Monitor className="h-4 w-4 mr-1" />
-                                                                ) : (
-                                                                    <Key className="h-4 w-4 mr-1" />
-                                                                )}
-                                                                {getSelectedItemDetails(item.type, item.itemId)?.serialNumber}
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            จำนวน
-                                                        </label>
-                                                        <input
-                                                            type="number"
-                                                            min="1"
-                                                            value={item.quantity}
-                                                            onChange={(e) => updateBorrowItem(transaction.id, item.id, 'quantity', parseInt(e.target.value) || 1)}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                        />
-                                                    </div>
-
-                                                    <div className="lg:col-span-4">
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            หมายเหตุเพิ่มเติม
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={item.notes}
-                                                            onChange={(e) => updateBorrowItem(transaction.id, item.id, 'notes', e.target.value)}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                            placeholder="หมายเหตุสำหรับรายการนี้..."
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-
-                                        {transaction.borrowItems.length === 0 && (
-                                            <div className="text-center py-8 text-gray-500">
-                                                <Package className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                                                <p>ยังไม่มีรายการที่ต้องการยืม</p>
-                                                <button
-                                                    onClick={() => addBorrowItem(transaction.id)}
-                                                    className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                                >
-                                                    เพิ่มรายการแรก
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-
-                    {borrowTransactions.length === 0 && (
-                        <div className="text-center py-16">
-                            <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">ยังไม่มีใบยืม</h3>
-                            <p className="text-gray-500 mb-6">เริ่มต้นสร้างใบยืมอุปกรณ์ของคุณ</p>
+                    <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
+                        <div className="flex justify-between items-center mb-4 pb-3 border-b-2 border-green-100">
+                            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                                <Package className="h-6 w-6 mr-2 text-green-600" />
+                                รายการยืม
+                            </h2>
                             <button
-                                onClick={addNewBorrowTransaction}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center mx-auto"
+                                type="button"
+                                onClick={addBorrowItem}
+                                className="flex items-center px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md hover:shadow-lg font-medium"
                             >
                                 <Plus className="h-5 w-5 mr-2" />
-                                สร้างใบยืมใหม่
+                                เพิ่มรายการ
                             </button>
                         </div>
-                    )}
-                </div>
+
+                        <div className="space-y-4 mt-6">
+                            {borrowItems.map((item, index) => (
+                                <div key={item.id} className="border-2 border-gray-300 rounded-xl p-5 bg-gradient-to-r from-gray-50 to-green-50 shadow-sm">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <h3 className="font-bold text-gray-900 text-lg">รายการที่ {index + 1}</h3>
+                                        {borrowItems.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeBorrowItem(item.id)}
+                                                className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                ประเภท <span className="text-red-500">*</span>
+                                            </label>
+                                            <select
+                                                value={item.type}
+                                                onChange={(e) => {
+                                                    const newType = e.target.value as 'hardware' | 'license';
+                                                    updateMultipleFields(item.id, {
+                                                        type: newType,
+                                                        equipmentId: '',
+                                                        equipmentName: ''
+                                                    });
+                                                }}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white text-gray-900 font-medium cursor-pointer"
+                                            >
+                                                <option value="hardware">
+                                                    Hardware (อุปกรณ์)
+                                                </option>
+                                                <option value="license">
+                                                    License (ใบอนุญาต)
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                เลือกรายการ <span className="text-red-500">*</span>
+                                            </label>
+                                            <select
+                                                value={item.equipmentId}
+                                                onChange={(e) => handleEquipmentChange(item.id, e.target.value)}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white text-gray-900 font-medium cursor-pointer"
+                                                required
+                                            >
+                                                <option value="">-- เลือก{item.type === 'hardware' ? 'อุปกรณ์' : 'License'} --</option>
+                                                {getFilteredEquipment(item.type).map(eq => (
+                                                    <option key={eq.id} value={eq.id}>
+                                                        {eq.name} (คงเหลือ: {eq.availableQuantity})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                {item.type === 'hardware' ? 'Serial Number (SN)' : 'License Serial'}
+                                                <span className="text-red-500 ml-1">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={item.serialNumber}
+                                                onChange={(e) => updateBorrowItem(item.id, 'serialNumber', e.target.value)}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white text-gray-900 font-medium"
+                                                placeholder={item.type === 'hardware' ? 'กรอก Serial Number ของอุปกรณ์' : 'กรอก License Serial/Key'}
+                                                required
+                                            />
+                                            <p className="text-xs text-gray-600 mt-1 font-medium flex items-center">
+                                                <Pin className="h-3 w-3 mr-1" />
+                                                {item.type === 'hardware'
+                                                    ? 'ระบุ Serial Number ที่ติดอยู่บนตัวอุปกรณ์'
+                                                    : 'ระบุ License Key หรือ Serial ของใบอนุญาต'}
+                                            </p>
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                หมายเหตุ
+                                            </label>
+                                            <textarea
+                                                value={item.notes}
+                                                onChange={(e) => updateBorrowItem(item.id, 'notes', e.target.value)}
+                                                rows={2}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white text-gray-900"
+                                                placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl shadow-lg p-6 mb-6 border-2 border-green-700">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                <FileText className="h-6 w-6 text-white mr-3" />
+                                <span className="text-white font-bold text-xl">จำนวนรายการที่ยืม:</span>
+                            </div>
+                            <span className="text-4xl font-bold text-white">{borrowItems.length} รายการ</span>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-4">
+                        <button
+                            type="button"
+                            onClick={() => router.back()}
+                            className="px-8 py-3 border-2 border-gray-400 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+                        >
+                            ยกเลิก
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 flex items-center shadow-lg font-semibold"
+                        >
+                            <Save className="h-5 w-5 mr-2" />
+                            {loading ? 'กำลังบันทึก...' : 'บันทึกการยืม'}
+                        </button>
+                    </div>
+                </form>
             </div>
-
-
         </div>
     );
 }
