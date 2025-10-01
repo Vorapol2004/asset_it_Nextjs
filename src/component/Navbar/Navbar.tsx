@@ -13,7 +13,7 @@ const Navbar = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center">
+                    <Link href="/pages/home" className="flex items-center">
                         <img
                             src={Utcclogo.src}   // URL รูปของคุณ
                             alt="Logo"
@@ -27,7 +27,7 @@ const Navbar = () => {
                         <div className="ml-10 flex items-baseline space-x-4">
                             {/* หน้าแรก */}
                             <Link
-                                href="/"
+                                href="/pages/home"
                                 className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
                             >
                                 <Home className="h-4 w-4 mr-1" />
