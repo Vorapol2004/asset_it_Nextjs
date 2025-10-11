@@ -149,15 +149,15 @@ export default function BorrowEquipmentPage() {
             <Navbar />
 
             <div className="max-w-6xl mx-auto px-4 py-8">
-                <div className="mb-8 bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-600">
+                <div className="mb-8 bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-600">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">ยืมอุปกรณ์</h1>
                     <p className="text-gray-600">บันทึกข้อมูลการยืมอุปกรณ์ของผู้ใช้งาน</p>
                 </div>
 
                 <form onSubmit={handleSubmit}>
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center pb-3 border-b-2 border-green-100">
-                            <User className="h-6 w-6 mr-2 text-green-600" />
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center pb-3 border-b-2 border-blue-100">
+                            <User className="h-6 w-6 mr-2 text-blue-600" />
                             ข้อมูลผู้ยืม
                         </h2>
 
@@ -170,7 +170,7 @@ export default function BorrowEquipmentPage() {
                                     type="text"
                                     value={borrowerName}
                                     onChange={(e) => setBorrowerName(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 font-medium"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium"
                                     placeholder="ชื่อ-นามสกุล"
                                     required
                                 />
@@ -178,14 +178,14 @@ export default function BorrowEquipmentPage() {
 
                             <div>
                                 <label className="block text-sm font-semibold text-gray-800 mb-2 flex items-center">
-                                    <Mail className="h-4 w-4 mr-1 text-green-600" />
+                                    <Mail className="h-4 w-4 mr-1 text-blue-600" />
                                     อีเมล <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="email"
                                     value={borrowerEmail}
                                     onChange={(e) => setBorrowerEmail(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 font-medium"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium"
                                     placeholder="email@example.com"
                                     required
                                 />
@@ -193,14 +193,14 @@ export default function BorrowEquipmentPage() {
 
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                    <CheckCircle className="inline h-4 w-4 mr-1 text-green-600" />
+                                    <CheckCircle className="inline h-4 w-4 mr-1 text-blue-600" />
                                     ผู้อนุมัติ <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={approvedBy}
                                     onChange={(e) => setApprovedBy(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 font-medium"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium"
                                     placeholder="ชื่อผู้อนุมัติการยืม"
                                     required
                                 />
@@ -208,28 +208,28 @@ export default function BorrowEquipmentPage() {
 
                             <div>
                                 <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                    <Calendar className="inline h-4 w-4 mr-1 text-green-600" />
+                                    <Calendar className="inline h-4 w-4 mr-1 text-blue-600" />
                                     วันที่ยืม <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="date"
                                     value={borrowDate}
                                     onChange={(e) => setBorrowDate(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 font-medium"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium"
                                     required
                                 />
                             </div>
 
                             <div>
                                 <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                    <Calendar className="inline h-4 w-4 mr-1 text-green-600" />
+                                    <Calendar className="inline h-4 w-4 mr-1 text-blue-600" />
                                     วันที่คืน (กำหนด) <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="date"
                                     value={returnDate}
                                     onChange={(e) => setReturnDate(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 font-medium"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium"
                                     required
                                 />
                             </div>
@@ -242,7 +242,7 @@ export default function BorrowEquipmentPage() {
                                     value={purpose}
                                     onChange={(e) => setPurpose(e.target.value)}
                                     rows={3}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900"
                                     placeholder="ระบุวัตถุประสงค์ในการยืมอุปกรณ์"
                                     required
                                 />
@@ -251,15 +251,15 @@ export default function BorrowEquipmentPage() {
                     </div>
 
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
-                        <div className="flex justify-between items-center mb-4 pb-3 border-b-2 border-green-100">
+                        <div className="flex justify-between items-center mb-4 pb-3 border-b-2 border-blue-100">
                             <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-                                <Package className="h-6 w-6 mr-2 text-green-600" />
+                                <Package className="h-6 w-6 mr-2 text-blue-600" />
                                 รายการยืม
                             </h2>
                             <button
                                 type="button"
                                 onClick={addBorrowItem}
-                                className="flex items-center px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md hover:shadow-lg font-medium"
+                                className="flex items-center px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium"
                             >
                                 <Plus className="h-5 w-5 mr-2" />
                                 เพิ่มรายการ
@@ -268,7 +268,7 @@ export default function BorrowEquipmentPage() {
 
                         <div className="space-y-4 mt-6">
                             {borrowItems.map((item, index) => (
-                                <div key={item.id} className="border-2 border-gray-300 rounded-xl p-5 bg-gradient-to-r from-gray-50 to-green-50 shadow-sm">
+                                <div key={item.id} className="border-2 border-gray-300 rounded-xl p-5 bg-gradient-to-r from-gray-50 to-blue-50 shadow-sm">
                                     <div className="flex justify-between items-start mb-4">
                                         <h3 className="font-bold text-gray-900 text-lg">รายการที่ {index + 1}</h3>
                                         {borrowItems.length > 1 && (
@@ -297,7 +297,7 @@ export default function BorrowEquipmentPage() {
                                                         equipmentName: ''
                                                     });
                                                 }}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white text-gray-900 font-medium cursor-pointer"
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium cursor-pointer"
                                             >
                                                 <option value="hardware">
                                                     Hardware (อุปกรณ์)
@@ -315,7 +315,7 @@ export default function BorrowEquipmentPage() {
                                             <select
                                                 value={item.equipmentId}
                                                 onChange={(e) => handleEquipmentChange(item.id, e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white text-gray-900 font-medium cursor-pointer"
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium cursor-pointer"
                                                 required
                                             >
                                                 <option value="">-- เลือก{item.type === 'hardware' ? 'อุปกรณ์' : 'License'} --</option>
@@ -336,7 +336,7 @@ export default function BorrowEquipmentPage() {
                                                 type="text"
                                                 value={item.serialNumber}
                                                 onChange={(e) => updateBorrowItem(item.id, 'serialNumber', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white text-gray-900 font-medium"
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium"
                                                 placeholder={item.type === 'hardware' ? 'กรอก Serial Number ของอุปกรณ์' : 'กรอก License Serial/Key'}
                                                 required
                                             />
@@ -356,7 +356,7 @@ export default function BorrowEquipmentPage() {
                                                 value={item.notes}
                                                 onChange={(e) => updateBorrowItem(item.id, 'notes', e.target.value)}
                                                 rows={2}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white text-gray-900"
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900"
                                                 placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"
                                             />
                                         </div>
@@ -366,7 +366,7 @@ export default function BorrowEquipmentPage() {
                         </div>
                     </div>
 
-                    <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl shadow-lg p-6 mb-6 border-2 border-green-700">
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg p-6 mb-6 border-2 border-blue-700">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
                                 <FileText className="h-6 w-6 text-white mr-3" />
@@ -387,7 +387,7 @@ export default function BorrowEquipmentPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 flex items-center shadow-lg font-semibold"
+                            className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center shadow-lg font-semibold"
                         >
                             <Save className="h-5 w-5 mr-2" />
                             {loading ? 'กำลังบันทึก...' : 'บันทึกการยืม'}

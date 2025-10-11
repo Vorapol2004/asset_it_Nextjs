@@ -1,1 +1,2 @@
 commitที่ 6 ทำหน้าการเพิ่ม service, type, lib, hooks, constants, component และปรับเปลี่ยนหน้า pages ทั้งหมด เหลือนำ database มาเชื่อมต่อและเชื่อมหน้าบ้านเข้ากับหลังบ้าน
+ใน Navbar มีการใช้ mimo มาช่วยการ Re-render ในส่วนของ navbar ที่ใช้ในหลายหน้า

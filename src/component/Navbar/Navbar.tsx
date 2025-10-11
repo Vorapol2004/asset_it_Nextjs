@@ -172,3 +172,5 @@ const Navbar = memo(function Navbar() {
 });
 
 export default Navbar;
+
+//มีการใช้ mimo มาช่วยการ Re-render ในส่วนของ navbar ที่ใช้ในหลายหน้า

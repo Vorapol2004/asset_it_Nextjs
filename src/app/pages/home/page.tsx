@@ -16,13 +16,13 @@ export default function HomePage() {
 
     const handleBorrowReturnClick = () => {
         // Navigate to borrow_equipment page
-        console.log('Navigate to Borrow Equipment Page');
+        console.log('Navigate to Borrow Type Page');
         router.push('/pages/borrow_equipment'); // ใช้ router.push แทน window.location.href
     };
 
     const handleAddEquipmentClick = () => {
         // Navigate to add_equipment page
-        console.log('Navigate to Add Equipment Page');
+        console.log('Navigate to Add Type Page');
         router.push('/pages/add_equipment'); // ใช้ router.push แทน window.location.href
     };
 
@@ -47,22 +47,6 @@ export default function HomePage() {
             {/* Main Content - ปุ่มหลักทั้ง 3 ตัว */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-                    {/* ปุ่มประวัติการยืม */}
-                    <div
-                        onClick={handleHistoryClick}
-                        className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 p-6 border-l-4 border-green-500"
-                    >
-                        <div className="flex items-center justify-center mb-4">
-                            <div className="bg-green-100 p-4 rounded-full">
-                                <History className="h-12 w-12 text-green-600" />
-                            </div>
-                        </div>
-                        <h3 className="text-xl font-semibold text-gray-800 text-center mb-2">ประวัติการยืม</h3>
-                        <p className="text-gray-600 text-center text-sm">
-                            ดูประวัติการยืม-คืนอุปกรณ์ทั้งหมดในระบบ
-                        </p>
-                    </div>
 
                     {/* ปุ่มการยืม-คืนอุปกรณ์ */}
                     <div
@@ -93,6 +77,22 @@ export default function HomePage() {
                         <h3 className="text-xl font-semibold text-gray-800 text-center mb-2">เพิ่มอุปกรณ์</h3>
                         <p className="text-gray-600 text-center text-sm">
                             เพิ่มอุปกรณ์ใหม่เข้าสู่ระบบ
+                        </p>
+                    </div>
+
+                    {/* ปุ่มประวัติการยืม */}
+                    <div
+                        onClick={handleHistoryClick}
+                        className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 p-6 border-l-4 border-green-500"
+                    >
+                        <div className="flex items-center justify-center mb-4">
+                            <div className="bg-green-100 p-4 rounded-full">
+                                <History className="h-12 w-12 text-green-600" />
+                            </div>
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-800 text-center mb-2">ประวัติการยืม</h3>
+                        <p className="text-gray-600 text-center text-sm">
+                            ดูประวัติการยืม-คืนอุปกรณ์ทั้งหมดในระบบ
                         </p>
                     </div>
                 </div>

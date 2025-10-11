@@ -2,8 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { LogIn, UserPlus, Package } from 'lucide-react';
+import footer from "@/component/Footer/Footer";
 import Utcclogo from "@/component/img/Utcclogo.png";
 import React from "react";
+import Footer from "@/component/Footer/Footer";
 
 /**
  * Landing Page - หน้าต้อนรับ
@@ -76,14 +78,14 @@ export default function LandingPage() {
                             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-lg transition-all transform hover:scale-105 flex items-center justify-center text-lg shadow-lg cursor-pointer"
                         >
                             <LogIn className="h-6 w-6 mr-2" />
-                            เข้าสู่ระบบ
+                            Login
                         </button>
                         <button
                             onClick={() => router.push('/register')}
                             className="bg-white hover:bg-gray-50 text-gray-900 font-semibold px-8 py-4 rounded-lg border-2 border-gray-300 transition-all transform hover:scale-105 flex items-center justify-center text-lg cursor-pointer"
                         >
                             <UserPlus className="h-6 w-6 mr-2" />
-                            สมัครสมาชิก
+                            Register
                         </button>
                     </div>
                 </div>
@@ -127,6 +129,7 @@ export default function LandingPage() {
                     </div>
                 </div>
             </div>
+            <Footer />
         </div>
     );
 }

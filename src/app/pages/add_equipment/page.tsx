@@ -4,31 +4,41 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import { Package, Calendar, Hash, FileText, Plus, Trash2, Save, Laptop, Key } from 'lucide-react';
-import { api } from '@/lib/api';
+import { ROUTES } from '@/constants/routes';
 
 interface EquipmentItem {
     id: string;
-    name: string;
+    equipmentName: string;
+    brand: string;
+    model: string;
+    serialNumber: string;
+    licenseKey: string;
     type: 'hardware' | 'license';
-    quantity: number;
-    unitPrice: number;
-    supplier: string;
     description: string;
 }
 
 export default function AddEquipmentPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+
+    // Lot Information
+    const [lotName, setLotName] = useState('');
+    const [academicYear, setAcademicYear] = useState('');
     const [purchaseDate, setPurchaseDate] = useState('');
-    const [lotNumber, setLotNumber] = useState('');
+    const [expireDate, setExpireDate] = useState('');
+    const [referenceDoc, setReferenceDoc] = useState('');
+    const [lotDescription, setLotDescription] = useState('');
+    const [lotType, setLotType] = useState<'Purchase' | 'Rent' | 'Borrow' | 'Trial'>('Purchase');
+
     const [items, setItems] = useState<EquipmentItem[]>([
         {
             id: '1',
-            name: '',
+            equipmentName: '',
+            brand: '',
+            model: '',
+            serialNumber: '',
+            licenseKey: '',
             type: 'hardware',
-            quantity: 1,
-            unitPrice: 0,
-            supplier: '',
             description: ''
         }
     ]);
@@ -38,11 +48,12 @@ export default function AddEquipmentPage() {
             ...items,
             {
                 id: Date.now().toString(),
-                name: '',
+                equipmentName: '',
+                brand: '',
+                model: '',
+                serialNumber: '',
+                licenseKey: '',
                 type: 'hardware',
-                quantity: 1,
-                unitPrice: 0,
-                supplier: '',
                 description: ''
             }
         ]);
@@ -60,23 +71,48 @@ export default function AddEquipmentPage() {
         ));
     };
 
-    const calculateTotal = () => {
-        return items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation
+        const hasEmptyFields = items.some(item =>
+            !item.equipmentName ||
+            (item.type === 'hardware' && !item.serialNumber) ||
+            (item.type === 'license' && !item.licenseKey)
+        );
+
+        if (hasEmptyFields) {
+            alert('กรุณากรอกข้อมูลให้ครบถ้วน\n- Hardware ต้องมี Serial Number\n- License ต้องมี License Key');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            await api.addEquipmentLot({
-                lotNumber,
+            // TODO: เชื่อม API
+            const lotData = {
+                lotName,
+                academicYear,
                 purchaseDate,
-                items
-            });
+                expireDate: expireDate || null,
+                referenceDoc: referenceDoc || null,
+                description: lotDescription || null,
+                lotType,
+                items: items.map(item => ({
+                    equipmentName: item.equipmentName,
+                    brand: item.brand || null,
+                    model: item.model || null,
+                    serialNumber: item.type === 'hardware' ? item.serialNumber : null,
+                    licenseKey: item.type === 'license' ? item.licenseKey : null,
+                    equipmentType: item.type === 'hardware' ? 2 : 1, // hardware=2, software/license=1
+                    description: item.description || null
+                }))
+            };
 
-            alert('เพิ่มอุปกรณ์สำเร็จ!');
-            router.push('/pages/home');
+            console.log('Lot Data:', lotData);
+
+            alert('เพิ่มอุปกรณ์สำเร็จ! (Mockup Mode)');
+            router.push(ROUTES.HOME);
         } catch (error) {
             console.error('Error adding equipment:', error);
             alert('เกิดข้อผิดพลาดในการเพิ่มอุปกรณ์');
@@ -93,7 +129,7 @@ export default function AddEquipmentPage() {
                 {/* Header */}
                 <div className="mb-8 bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-600">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">เพิ่มอุปกรณ์</h1>
-                    <p className="text-gray-600">เพิ่มข้อมูล Lot อุปกรณ์ที่มหาวิทยาลัยจัดซื้อ</p>
+                    <p className="text-gray-600">เพิ่มข้อมูล Lot อุปกรณ์ที่มหาวิทยาลัยจัดซื้อ/เช่า/ยืม</p>
                 </div>
 
                 <form onSubmit={handleSubmit}>
@@ -105,43 +141,118 @@ export default function AddEquipmentPage() {
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                            {/* Lot Number */}
+                            {/* Lot Name */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-800 mb-2">
                                     <Hash className="inline h-4 w-4 mr-1 text-blue-600" />
-                                    ชื่อ Lot / เลขที่ Lot
+                                    ชื่อ Lot
                                     <span className="text-red-500 ml-1">*</span>
                                 </label>
                                 <input
                                     type="text"
-                                    value={lotNumber}
-                                    onChange={(e) => setLotNumber(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-medium"
+                                    value={lotName}
+                                    onChange={(e) => setLotName(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
                                     placeholder="เช่น LOT2025-001 หรือ จัดซื้อเดือนมกราคม"
                                     required
                                 />
-                                <p className="text-xs text-gray-500 mt-1">สามารถใส่เป็นข้อความหรือเลขล็อตก็ได้</p>
+                            </div>
+
+                            {/* Lot Type */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    ประเภท Lot
+                                    <span className="text-red-500 ml-1">*</span>
+                                </label>
+                                <select
+                                    value={lotType}
+                                    onChange={(e) => setLotType(e.target.value as any)}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
+                                    required
+                                >
+                                    <option value="Purchase">Purchase (จัดซื้อ)</option>
+                                    <option value="Rent">Rent (เช่า)</option>
+                                    <option value="Borrow">Borrow (ยืม)</option>
+                                    <option value="Trial">Trial (ทดลองใช้)</option>
+                                </select>
+                            </div>
+
+                            {/* Academic Year */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    ปีการศึกษา
+                                </label>
+                                <input
+                                    type="text"
+                                    value={academicYear}
+                                    onChange={(e) => setAcademicYear(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
+                                    placeholder="เช่น 2568"
+                                />
                             </div>
 
                             {/* Purchase Date */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-800 mb-2">
                                     <Calendar className="inline h-4 w-4 mr-1 text-blue-600" />
-                                    วันที่จัดซื้อ
+                                    วันที่จัดซื้อ/เช่า
                                     <span className="text-red-500 ml-1">*</span>
                                 </label>
                                 <input
                                     type="date"
                                     value={purchaseDate}
                                     onChange={(e) => setPurchaseDate(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-medium"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
                                     required
+                                />
+                            </div>
+
+                            {/* Expire Date (สำหรับ License หรือ Rent) */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    <Calendar className="inline h-4 w-4 mr-1 text-blue-600" />
+                                    วันหมดอายุ (ถ้ามี)
+                                </label>
+                                <input
+                                    type="date"
+                                    value={expireDate}
+                                    onChange={(e) => setExpireDate(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">สำหรับ License หรือสัญญาเช่า</p>
+                            </div>
+
+                            {/* Reference Doc */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    เลขที่เอกสารอ้างอิง
+                                </label>
+                                <input
+                                    type="text"
+                                    value={referenceDoc}
+                                    onChange={(e) => setReferenceDoc(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
+                                    placeholder="เช่น PO-2568-001"
+                                />
+                            </div>
+
+                            {/* Description */}
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    หมายเหตุ Lot
+                                </label>
+                                <textarea
+                                    value={lotDescription}
+                                    onChange={(e) => setLotDescription(e.target.value)}
+                                    rows={3}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 outline-none"
+                                    placeholder="ระบุรายละเอียดเพิ่มเติมของ Lot..."
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* Equipment Items */}
+                    {/* Type Items */}
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
                         <div className="flex justify-between items-center mb-4 pb-3 border-b-2 border-blue-100">
                             <h2 className="text-xl font-semibold text-gray-900 flex items-center">
@@ -174,22 +285,7 @@ export default function AddEquipmentPage() {
                                         )}
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {/* Equipment Name */}
-                                        <div className="md:col-span-2">
-                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                ชื่อรายการ <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={item.name}
-                                                onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 font-medium"
-                                                placeholder="เช่น Notebook Dell Latitude"
-                                                required
-                                            />
-                                        </div>
-
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {/* Type */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -198,60 +294,98 @@ export default function AddEquipmentPage() {
                                             <select
                                                 value={item.type}
                                                 onChange={(e) => updateItem(item.id, 'type', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 font-medium"
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
                                             >
-                                                <option value="hardware">Hardware</option>
-                                                <option value="license">License</option>
+                                                <option value="hardware">Hardware (อุปกรณ์)</option>
+                                                <option value="license">License (ใบอนุญาต)</option>
                                             </select>
                                         </div>
 
-                                        {/* Quantity */}
+                                        {/* Type Name */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                จำนวน <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value={item.quantity}
-                                                onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value))}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 font-bold"
-                                                required
-                                            />
-                                        </div>
-
-                                        {/* Unit Price */}
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                ราคาต่อหน่วย (บาท) <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                value={item.unitPrice}
-                                                onChange={(e) => updateItem(item.id, 'unitPrice', parseFloat(e.target.value))}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 font-bold"
-                                                required
-                                            />
-                                        </div>
-
-                                        {/* Supplier */}
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                ผู้จัดจำหน่าย
+                                                ชื่ออุปกรณ์ <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
-                                                value={item.supplier}
-                                                onChange={(e) => updateItem(item.id, 'supplier', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 font-medium"
-                                                placeholder="บริษัท ABC จำกัด"
+                                                value={item.equipmentName}
+                                                onChange={(e) => updateItem(item.id, 'equipmentName', e.target.value)}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
+                                                placeholder="เช่น Notebook Dell Latitude 5420"
+                                                required
                                             />
                                         </div>
 
+                                        {/* Brand */}
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                ยี่ห้อ (Brand)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={item.brand}
+                                                onChange={(e) => updateItem(item.id, 'brand', e.target.value)}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
+                                                placeholder="เช่น Dell, HP, Lenovo"
+                                            />
+                                        </div>
+
+                                        {/* Model */}
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                รุ่น (Model)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={item.model}
+                                                onChange={(e) => updateItem(item.id, 'model', e.target.value)}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
+                                                placeholder="เช่น Latitude 5420, ThinkPad X1"
+                                            />
+                                        </div>
+
+                                        {/* Serial Number (สำหรับ Hardware) */}
+                                        {item.type === 'hardware' && (
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                    <Laptop className="inline h-4 w-4 mr-1" />
+                                                    Serial Number (SN)
+                                                    <span className="text-red-500 ml-1">*</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={item.serialNumber}
+                                                    onChange={(e) => updateItem(item.id, 'serialNumber', e.target.value)}
+                                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
+                                                    placeholder="กรอก Serial Number ของอุปกรณ์"
+                                                    required={item.type === 'hardware'}
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">ระบุ Serial Number ที่ติดอยู่บนตัวอุปกรณ์</p>
+                                            </div>
+                                        )}
+
+                                        {/* License Key (สำหรับ License) */}
+                                        {item.type === 'license' && (
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                    <Key className="inline h-4 w-4 mr-1" />
+                                                    License Key
+                                                    <span className="text-red-500 ml-1">*</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={item.licenseKey}
+                                                    onChange={(e) => updateItem(item.id, 'licenseKey', e.target.value)}
+                                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none"
+                                                    placeholder="กรอก License Key หรือ Product Key"
+                                                    required={item.type === 'license'}
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">ระบุ License Key หรือ Serial ของใบอนุญาต</p>
+                                            </div>
+                                        )}
+
                                         {/* Description */}
-                                        <div className="md:col-span-2 lg:col-span-3">
+                                        <div className="md:col-span-2">
                                             <label className="block text-sm font-semibold text-gray-800 mb-2">
                                                 รายละเอียด
                                             </label>
@@ -259,22 +393,9 @@ export default function AddEquipmentPage() {
                                                 value={item.description}
                                                 onChange={(e) => updateItem(item.id, 'description', e.target.value)}
                                                 rows={2}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                                                placeholder="ระบุรายละเอียดเพิ่มเติม เช่น สเปค, model, รุ่น..."
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 outline-none"
+                                                placeholder="ระบุรายละเอียดเพิ่มเติม เช่น สเปค, RAM, CPU, ระยะเวลาใช้งาน..."
                                             />
-                                        </div>
-
-                                        {/* Subtotal */}
-                                        <div className="md:col-span-2 lg:col-span-3 bg-blue-600 p-4 rounded-lg shadow-md">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm font-semibold text-white">รวมรายการนี้:</span>
-                                                <span className="text-2xl font-bold text-white">
-                          {(item.quantity * item.unitPrice).toLocaleString('th-TH', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2
-                          })} บาท
-                        </span>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -284,14 +405,12 @@ export default function AddEquipmentPage() {
 
                     {/* Summary */}
                     <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg p-6 mb-6 border-2 border-blue-700">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-bold text-white">มูลค่ารวมทั้งหมด</h2>
-                            <div className="text-4xl font-bold text-white">
-                                {calculateTotal().toLocaleString('th-TH', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                })} บาท
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                <Package className="h-6 w-6 text-white mr-3" />
+                                <span className="text-white font-bold text-xl">จำนวนอุปกรณ์ทั้งหมด:</span>
                             </div>
+                            <span className="text-4xl font-bold text-white">{items.length} รายการ</span>
                         </div>
                     </div>
 
