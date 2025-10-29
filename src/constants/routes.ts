@@ -9,6 +9,10 @@ export const ROUTES = {
     ADD_EQUIPMENT: '/pages/add_equipment',
     BORROW_EQUIPMENT: '/pages/borrow_equipment',
     BORROW_HISTORY: '/pages/borrow_history',
+    EQUIPMENT: '/pages/equipment',
+    OLD_EQUIPMENT: '/pages/borrow_equipment/old_borrow',
+    NEW_EQUIPMENT: '/pages/borrow_equipment/new_borrow',
+    MASTER_EQUIPMENT: '/setting/master-data',
 
 } as const;
 
@@ -24,9 +28,9 @@ export const NAV_ITEMS = [
         icon: 'Home',
     },
     {
-        label: 'การยืมอุปกรณ์',
-        path: ROUTES.BORROW_EQUIPMENT,
-        icon: 'Package',
+        label: 'อุปกรณ์',
+        path: ROUTES.EQUIPMENT,
+        icon: 'Laptop',
     },
     {
         label: 'เพิ่มอุปกรณ์',
@@ -34,10 +38,21 @@ export const NAV_ITEMS = [
         icon: 'PlusCircle',
     },
     {
+        label: 'การยืมอุปกรณ์',
+        path: ROUTES.BORROW_EQUIPMENT,
+        icon: 'Package', // 📦 ใช้ Package สำหรับการยืม
+    },
+    {
         label: 'ประวัติการยืม',
         path: ROUTES.BORROW_HISTORY,
         icon: 'History',
     },
-] as const;
+    {
+        label: 'ตั้งค่า',
+        path: ROUTES.MASTER_EQUIPMENT,
+        icon: 'Settings',
+    }
 
+
+] as const;
 //ใช้ประกาศตัวแปรสำหรับแต่ละ Path และเอาไปเรียกใช้ในหน้านั้นๆ เช่นตอนนี้เอาไปใช้ในหน้า Navbar

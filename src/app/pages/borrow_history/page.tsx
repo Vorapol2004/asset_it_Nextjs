@@ -1,673 +1,451 @@
 'use client';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/component/Navbar/Navbar';
 import {
-    Package, CheckCircle, Clock, AlertCircle, Eye, Search, Filter, X,
-    Laptop, Key, Mail, Check, AlertTriangle, Calendar
+    RefreshCw,
+    Search,
+    Clock,
+    CheckCircle,
+    AlertCircle,
+    Package,
+    Eye,
+    X,
+    Cpu,
+    Key,
+    Undo2,
+    Calendar,
+    ChevronDown,
 } from 'lucide-react';
+import { useBorrow } from '@/hooks/useBorrow';
+import { BorrowView } from '@/types/type';
+import { api } from '@/lib/api';
 
-interface BorrowItem {
-    id: string;
-    equipmentName: string;
-    serialNumber: string;
-    type: 'hardware' | 'license';
-    status: 'borrowed' | 'returned';
-    returnDate?: string;
-    returnNotes?: string;
-    condition?: 'good' | 'damaged' | 'lost';
-}
+const STATUS_MAP: Record<number, { label: string; color: string; icon: React.ElementType }> = {
+    1: { label: 'กำลังยืม', color: 'bg-yellow-100 text-yellow-800 border-yellow-300', icon: Clock },
+    2: { label: 'คืนแล้ว', color: 'bg-green-100 text-green-800 border-green-300', icon: CheckCircle },
+    3: { label: 'คืนบางส่วน', color: 'bg-blue-100 text-blue-800 border-blue-300', icon: Package },
+    4: { label: 'เกินกำหนด', color: 'bg-red-100 text-red-800 border-red-300', icon: AlertCircle },
+};
 
-interface BorrowRecord {
-    id: string;
-    borrowerName: string;
-    borrowerEmail: string;
-    approvedBy: string;
-    borrowDate: string;
-    returnDate: string;
-    actualReturnDate?: string;
-    status: 'borrowed' | 'returned' | 'overdue' | 'partial_return';
-    purpose: string;
-    items: BorrowItem[];
-}
-
-const mockBorrowRecords: BorrowRecord[] = [
-    {
-        id: '1',
-        borrowerName: 'สมชาย ใจดี',
-        borrowerEmail: 'somchai@example.com',
-        approvedBy: 'อาจารย์สมศักดิ์',
-        borrowDate: '2025-09-15',
-        returnDate: '2025-09-22',
-        status: 'borrowed',
-        purpose: 'ใช้ในการพัฒนาโปรเจค Senior Project',
-        items: [
-            {
-                id: '1-1',
-                equipmentName: 'Notebook Dell Latitude 5420',
-                serialNumber: 'DL-2024-001',
-                type: 'hardware',
-                status: 'borrowed'
-            },
-            {
-                id: '1-2',
-                equipmentName: 'Microsoft Office 365',
-                serialNumber: 'MS-LIC-2024-050',
-                type: 'license',
-                status: 'borrowed'
-            }
-        ]
-    },
-    {
-        id: '2',
-        borrowerName: 'สมหญิง รักเรียน',
-        borrowerEmail: 'somying@example.com',
-        approvedBy: 'อาจารย์สมบัติ',
-        borrowDate: '2025-08-20',
-        returnDate: '2025-09-05',
-        actualReturnDate: '2025-09-04',
-        status: 'returned',
-        purpose: 'ทำงานวิจัย',
-        items: [
-            {
-                id: '2-1',
-                equipmentName: 'iPad Pro 12.9"',
-                serialNumber: 'IP-2024-015',
-                type: 'hardware',
-                status: 'returned',
-                returnDate: '2025-09-04',
-                condition: 'good',
-                returnNotes: 'คืนในสภาพดี ไม่มีปัญหา'
-            }
-        ]
-    },
-    {
-        id: '3',
-        borrowerName: 'วิชัย มั่นใจ',
-        borrowerEmail: 'wichai@example.com',
-        approvedBy: 'อาจารย์สมพงษ์',
-        borrowDate: '2025-08-01',
-        returnDate: '2025-08-15',
-        status: 'overdue',
-        purpose: 'ใช้ในการสอน Workshop',
-        items: [
-            {
-                id: '3-1',
-                equipmentName: 'Projector Epson EB-2250U',
-                serialNumber: 'EP-2023-008',
-                type: 'hardware',
-                status: 'borrowed'
-            },
-            {
-                id: '3-2',
-                equipmentName: 'HDMI Cable 5m',
-                serialNumber: 'HD-2023-025',
-                type: 'hardware',
-                status: 'borrowed'
-            }
-        ]
-    },
-    {
-        id: '4',
-        borrowerName: 'มานี ขยัน',
-        borrowerEmail: 'manee@example.com',
-        approvedBy: 'อาจารย์สมชาย',
-        borrowDate: '2025-09-10',
-        returnDate: '2025-09-24',
-        status: 'partial_return',
-        purpose: 'งานวิจัยด้าน AI และ Machine Learning',
-        items: [
-            {
-                id: '4-1',
-                equipmentName: 'Notebook HP ZBook Studio G8',
-                serialNumber: 'HP-2024-012',
-                type: 'hardware',
-                status: 'returned',
-                returnDate: '2025-09-20',
-                condition: 'good',
-                returnNotes: 'คืนเครื่องแรก สภาพดี'
-            },
-            {
-                id: '4-2',
-                equipmentName: 'Adobe Creative Cloud',
-                serialNumber: 'AD-LIC-2024-033',
-                type: 'license',
-                status: 'borrowed'
-            },
-            {
-                id: '4-3',
-                equipmentName: 'External SSD 1TB',
-                serialNumber: 'SSD-2024-045',
-                type: 'hardware',
-                status: 'borrowed'
-            }
-        ]
-    },
-    {
-        id: '5',
-        borrowerName: 'ทศพร เก่งกาจ',
-        borrowerEmail: 'tossaporn@example.com',
-        approvedBy: 'อาจารย์สมศักดิ์',
-        borrowDate: '2025-07-15',
-        returnDate: '2025-07-30',
-        actualReturnDate: '2025-07-30',
-        status: 'returned',
-        purpose: 'ใช้สำหรับการถ่ายทำ VDO Content',
-        items: [
-            {
-                id: '5-1',
-                equipmentName: 'Camera Canon EOS R6',
-                serialNumber: 'CN-2023-005',
-                type: 'hardware',
-                status: 'returned',
-                returnDate: '2025-07-30',
-                condition: 'good',
-                returnNotes: 'ใช้งานเรียบร้อย ทำความสะอาดเรียบร้อยแล้ว'
-            },
-            {
-                id: '5-2',
-                equipmentName: 'Microphone Rode VideoMic Pro',
-                serialNumber: 'RD-2023-012',
-                type: 'hardware',
-                status: 'returned',
-                returnDate: '2025-07-30',
-                condition: 'good',
-                returnNotes: 'ใช้งานเรียบร้อย'
-            }
-        ]
-    }
-];
+type GroupedBorrow = Omit<BorrowView, 'items'> & {
+    items: BorrowView[];
+};
 
 export default function BorrowHistoryPage() {
-    const [records, setRecords] = useState<BorrowRecord[]>(mockBorrowRecords);
-    const [filteredRecords, setFilteredRecords] = useState<BorrowRecord[]>(mockBorrowRecords);
-    const [selectedRecord, setSelectedRecord] = useState<BorrowRecord | null>(null);
-    const [selectedItem, setSelectedItem] = useState<BorrowItem | null>(null);
-    const [showDetailModal, setShowDetailModal] = useState(false);
-    const [showReturnModal, setShowReturnModal] = useState(false);
-    const [returnNotes, setReturnNotes] = useState('');
-    const [condition, setCondition] = useState<'good' | 'damaged' | 'lost'>('good');
+    const { returnEquipmentItem } = useBorrow();
+
+    const [records, setRecords] = useState<BorrowView[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [selected, setSelected] = useState<GroupedBorrow | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'borrowed' | 'returned' | 'overdue' | 'partial_return'>('all');
-    const [dateFilter, setDateFilter] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState<string>('all');
+    const [selectedRole, setSelectedRole] = useState<string>('all');
+    const [selectedType, setSelectedType] = useState<string>('all');
 
-    const handleSearch = (term: string) => {
-        setSearchTerm(term);
-        filterRecords(term, statusFilter, dateFilter);
-    };
+    // จัดกลุ่มข้อมูลตาม borrowId
+    const groupedRecords = records.reduce<GroupedBorrow[]>((acc, record) => {
+        const existingGroup = acc.find(g => g.id === record.id);
 
-    const handleStatusFilter = (status: typeof statusFilter) => {
-        setStatusFilter(status);
-        filterRecords(searchTerm, status, dateFilter);
-    };
-
-    const handleDateFilter = (date: string) => {
-        setDateFilter(date);
-        filterRecords(searchTerm, statusFilter, date);
-    };
-
-    const filterRecords = (search: string, status: typeof statusFilter, date: string) => {
-        let filtered = records;
-
-        if (search) {
-            filtered = filtered.filter(record =>
-                record.borrowerName.toLowerCase().includes(search.toLowerCase()) ||
-                record.borrowerEmail.toLowerCase().includes(search.toLowerCase()) ||
-                record.items.some(item => item.equipmentName.toLowerCase().includes(search.toLowerCase()))
-            );
+        if (existingGroup) {
+            existingGroup.items.push(record);
+        } else {
+            const newGroup: GroupedBorrow = {
+                ...record,
+                items: [record]
+            };
+            acc.push(newGroup);
         }
 
-        if (status !== 'all') {
-            filtered = filtered.filter(record => record.status === status);
-        }
+        return acc;
+    }, []);
 
-        if (date) {
-            filtered = filtered.filter(record => record.borrowDate === date);
-        }
+    // ฟังก์ชัน Filter หลายเงื่อนไขพร้อมกัน (เรียก Backend API)
+    const applyFilters = async () => {
+        setLoading(true);
+        setError(null);
 
-        setFilteredRecords(filtered);
-    };
+        try {
+            const data = await api.borrow.filterMultiple({
+                statusId: selectedStatus !== 'all' ? Number(selectedStatus) : undefined,
+                roleName: selectedRole !== 'all' ? selectedRole : undefined,
+                equipmentType: selectedType !== 'all' ? selectedType : undefined,
+                keyword: searchTerm.trim() || undefined,
+            });
 
-    const handleReturnItem = () => {
-        if (!selectedRecord || !selectedItem) return;
+            setRecords(data);
 
-        const updatedRecords = records.map(record => {
-            if (record.id === selectedRecord.id) {
-                const updatedItems = record.items.map(item =>
-                    item.id === selectedItem.id
-                        ? {
-                            ...item,
-                            status: 'returned' as const,
-                            returnDate: new Date().toISOString().split('T')[0],
-                            returnNotes,
-                            condition
-                        }
-                        : item
-                );
-
-                // ตรวจสอบสถานะของ record
-                const allReturned = updatedItems.every(item => item.status === 'returned');
-                const someReturned = updatedItems.some(item => item.status === 'returned');
-
-                let newStatus: 'borrowed' | 'returned' | 'overdue' | 'partial_return' = record.status;
-                if (allReturned) {
-                    newStatus = 'returned';
-                } else if (someReturned) {
-                    newStatus = 'partial_return';
-                }
-
-                return {
-                    ...record,
-                    items: updatedItems,
-                    status: newStatus,
-                    actualReturnDate: allReturned ? new Date().toISOString().split('T')[0] : record.actualReturnDate
-                };
+            if (data.length === 0) {
+                setError('ไม่พบรายการที่ตรงกับเงื่อนไขที่เลือก');
             }
-            return record;
-        });
-
-        setRecords(updatedRecords);
-        filterRecords(searchTerm, statusFilter, dateFilter);
-        setShowReturnModal(false);
-        setReturnNotes('');
-        setCondition('good');
-        setSelectedItem(null);
-        alert('บันทึกการคืนสำเร็จ!');
-    };
-
-    const getStatusBadge = (status: string) => {
-        const styles = {
-            borrowed: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-            returned: 'bg-green-100 text-green-800 border-green-300',
-            overdue: 'bg-red-100 text-red-800 border-red-300',
-            partial_return: 'bg-blue-100 text-blue-800 border-blue-300'
-        };
-
-        const icons = {
-            borrowed: <Clock className="h-4 w-4 mr-1" />,
-            returned: <CheckCircle className="h-4 w-4 mr-1" />,
-            overdue: <AlertCircle className="h-4 w-4 mr-1" />,
-            partial_return: <Package className="h-4 w-4 mr-1" />
-        };
-
-        const labels = {
-            borrowed: 'กำลังยืม',
-            returned: 'คืนแล้ว',
-            overdue: 'เกินกำหนด',
-            partial_return: 'คืนบางส่วน'
-        };
-
-        return (
-            <span className={`px-3 py-1.5 rounded-lg text-sm font-semibold border-2 inline-flex items-center ${styles[status as keyof typeof styles]}`}>
-                {icons[status as keyof typeof icons]}
-                {labels[status as keyof typeof labels]}
-            </span>
-        );
-    };
-
-    const getConditionBadge = (condition?: string) => {
-        if (!condition) return null;
-
-        const styles = {
-            good: 'bg-green-100 text-green-800',
-            damaged: 'bg-orange-100 text-orange-800',
-            lost: 'bg-red-100 text-red-800'
-        };
-
-        const icons = {
-            good: <Check className="h-3 w-3 mr-1" />,
-            damaged: <AlertTriangle className="h-3 w-3 mr-1" />,
-            lost: <X className="h-3 w-3 mr-1" />
-        };
-
-        const labels = {
-            good: 'สภาพดี',
-            damaged: 'ชำรุด',
-            lost: 'สูญหาย'
-        };
-
-        return (
-            <span className={`px-2 py-1 rounded text-xs font-semibold inline-flex items-center ${styles[condition as keyof typeof styles]}`}>
-                {icons[condition as keyof typeof icons]}
-                {labels[condition as keyof typeof labels]}
-            </span>
-        );
-    };
-
-    const getItemStatusBadge = (status: string) => {
-        if (status === 'returned') {
-            return <span className="px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800">คืนแล้ว</span>;
+        } catch (err) {
+            console.error('❌ กรองข้อมูลล้มเหลว:', err);
+            setError('ไม่สามารถกรองข้อมูลได้');
+            setRecords([]);
+        } finally {
+            setLoading(false);
         }
-        return <span className="px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 text-yellow-800">ยืมอยู่</span>;
     };
+
+    // ล้างฟิลเตอร์ทั้งหมด
+    const handleClearFilters = () => {
+        setSearchTerm('');
+        setSelectedStatus('all');
+        setSelectedRole('all');
+        setSelectedType('all');
+    };
+
+    // โหลดข้อมูลครั้งแรก
+    useEffect(() => {
+        applyFilters();
+    }, []);
+
+    // เรียก API ทันทีเมื่อ filter อื่นๆ เปลี่ยน (ยกเว้น searchTerm)
+    useEffect(() => {
+        applyFilters();
+    }, [selectedStatus, selectedRole, selectedType]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <Navbar />
-
             <div className="max-w-7xl mx-auto px-4 py-8">
-                <div className="mb-8 bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-600">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">ประวัติการยืม</h1>
-                    <p className="text-gray-600">รายการการยืมอุปกรณ์ทั้งหมด</p>
+                {/* Header */}
+                <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-green-600 flex justify-between items-center">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">ประวัติการยืมอุปกรณ์</h1>
+                        <p className="text-gray-600">ทั้งหมด {groupedRecords.length} ธุรกรรม ({records.length} รายการอุปกรณ์)</p>
+                    </div>
+                    <button
+                        onClick={() => {
+                            handleClearFilters();
+                            applyFilters();
+                        }}
+                        disabled={loading}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 font-medium disabled:opacity-50 transition-colors"
+                    >
+                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                        รีเฟรช
+                    </button>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                <Search className="inline h-4 w-4 mr-1" />
+                {error && (
+                    <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                        <p className="text-red-700">{error}</p>
+                    </div>
+                )}
+
+                {/* Search + Filters */}
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-200">
+                    {/* Search */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-semibold mb-2 text-gray-700">
+                            ค้นหา
+                        </label>
+                        <div className="flex items-center gap-2">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="ค้นหาชื่อผู้ยืม, อุปกรณ์, Serial Number, License Key..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            applyFilters();
+                                        }
+                                    }}
+                                    disabled={loading}
+                                    className="w-full pl-10 pr-10 py-3 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium placeholder:text-gray-400 focus:border-green-500 disabled:opacity-50 disabled:bg-gray-50 transition-colors"
+                                />
+                                {searchTerm && (
+                                    <button
+                                        onClick={() => {
+                                            setSearchTerm('');
+                                        }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                )}
+                            </div>
+                            <button
+                                onClick={applyFilters}
+                                disabled={loading}
+                                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold disabled:opacity-50 transition-colors flex items-center gap-2 whitespace-nowrap"
+                            >
+                                <Search className="h-5 w-5" />
                                 ค้นหา
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Filters Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        {/* สถานะการยืม */}
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700">
+                                สถานะการยืม
                             </label>
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => handleSearch(e.target.value)}
-                                placeholder="ค้นหาชื่อผู้ยืม, อีเมล, หรือชื่ออุปกรณ์..."
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                            />
+                            <div className="relative">
+                                <select
+                                    value={selectedStatus}
+                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                    disabled={loading}
+                                    className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-green-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
+                                >
+                                    <option value="all">ทั้งหมด</option>
+                                    {Object.entries(STATUS_MAP).map(([id, { label }]) => (
+                                        <option key={id} value={id}>
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                            </div>
                         </div>
 
+                        {/* ตำแหน่ง */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                <Calendar className="inline h-4 w-4 mr-1" />
-                                กรองตามวันที่ยืม
+                            <label className="block text-sm font-semibold mb-2 text-gray-700">
+                                ตำแหน่ง
                             </label>
-                            <input
-                                type="date"
-                                value={dateFilter}
-                                onChange={(e) => handleDateFilter(e.target.value)}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                            />
+                            <div className="relative">
+                                <select
+                                    value={selectedRole}
+                                    onChange={(e) => setSelectedRole(e.target.value)}
+                                    disabled={loading}
+                                    className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-green-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
+                                >
+                                    <option value="all">ทุกตำแหน่ง</option>
+                                    <option value="พนักงาน">พนักงาน</option>
+                                    <option value="อาจารย์">อาจารย์</option>
+                                    <option value="ส่วนกลาง">ส่วนกลาง</option>
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                            </div>
                         </div>
 
+                        {/* ประเภทอุปกรณ์ */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                <Filter className="inline h-4 w-4 mr-1" />
-                                กรองสถานะ
+                            <label className="block text-sm font-semibold mb-2 text-gray-700">
+                                ประเภทอุปกรณ์
                             </label>
-                            <div className="flex gap-2 flex-wrap">
-                                <button
-                                    onClick={() => handleStatusFilter('all')}
-                                    className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
-                                        statusFilter === 'all'
-                                            ? 'bg-green-600 text-white'
-                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                    }`}
+                            <div className="relative">
+                                <select
+                                    value={selectedType}
+                                    onChange={(e) => setSelectedType(e.target.value)}
+                                    disabled={loading}
+                                    className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-green-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
                                 >
-                                    ทั้งหมด
-                                </button>
-                                <button
-                                    onClick={() => handleStatusFilter('borrowed')}
-                                    className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
-                                        statusFilter === 'borrowed'
-                                            ? 'bg-yellow-600 text-white'
-                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                    }`}
-                                >
-                                    กำลังยืม
-                                </button>
-                                <button
-                                    onClick={() => handleStatusFilter('partial_return')}
-                                    className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
-                                        statusFilter === 'partial_return'
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                    }`}
-                                >
-                                    คืนบางส่วน
-                                </button>
-                                <button
-                                    onClick={() => handleStatusFilter('returned')}
-                                    className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
-                                        statusFilter === 'returned'
-                                            ? 'bg-green-600 text-white'
-                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                    }`}
-                                >
-                                    คืนแล้ว
-                                </button>
-                                <button
-                                    onClick={() => handleStatusFilter('overdue')}
-                                    className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
-                                        statusFilter === 'overdue'
-                                            ? 'bg-red-600 text-white'
-                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                    }`}
-                                >
-                                    เกินกำหนด
-                                </button>
+                                    <option value="all">ทุกประเภท</option>
+                                    <option value="hardware">Hardware</option>
+                                    <option value="software">Software/License</option>
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                             </div>
                         </div>
                     </div>
 
                     {/* ปุ่มล้างฟิลเตอร์ */}
-                    {(searchTerm || statusFilter !== 'all' || dateFilter) && (
-                        <div className="mt-4 flex justify-end">
-                            <button
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    setStatusFilter('all');
-                                    setDateFilter('');
-                                    setFilteredRecords(records);
-                                }}
-                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium flex items-center"
-                            >
-                                <X className="h-4 w-4 mr-1" />
-                                ล้างฟิลเตอร์
-                            </button>
-                        </div>
-                    )}
+                    <div className="flex justify-end">
+                        <button
+                            onClick={handleClearFilters}
+                            disabled={loading}
+                            className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 font-medium disabled:opacity-50 transition-colors flex items-center gap-2"
+                        >
+                            <X className="h-4 w-4" />
+                            ล้างฟิลเตอร์
+                        </button>
+                    </div>
                 </div>
 
-                <div className="grid gap-4">
-                    {filteredRecords.length === 0 ? (
-                        <div className="bg-white rounded-xl shadow-lg p-12 text-center border border-gray-200">
-                            <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">ไม่พบข้อมูล</h3>
-                            <p className="text-gray-600">ไม่มีรายการที่ตรงกับเงื่อนไขที่ค้นหา</p>
+                {/* Table */}
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                    {loading ? (
+                        <div className="flex flex-col items-center py-20">
+                            <RefreshCw className="w-12 h-12 text-green-600 animate-spin mb-4" />
+                            <span className="text-gray-600 font-medium">กำลังโหลด...</span>
+                        </div>
+                    ) : groupedRecords.length === 0 ? (
+                        <div className="flex flex-col items-center py-20">
+                            <Package className="w-16 h-16 text-gray-400 mb-4" />
+                            <h3 className="text-xl font-semibold text-gray-700 mb-2">ไม่พบข้อมูล</h3>
+                            <p className="text-gray-500">ไม่มีรายการที่ตรงกับเงื่อนไขที่เลือก</p>
                         </div>
                     ) : (
-                        filteredRecords.map(record => (
-                            <div key={record.id} className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200 hover:border-green-300 transition-colors">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="text-xl font-bold text-gray-900">{record.borrowerName}</h3>
-                                            {getStatusBadge(record.status)}
-                                        </div>
-                                        <p className="text-gray-600 text-sm mb-1 flex items-center">
-                                            <Mail className="h-4 w-4 mr-1" />
-                                            {record.borrowerEmail}
-                                        </p>
-                                        <p className="text-gray-600 text-sm mb-1 flex items-center">
-                                            <CheckCircle className="h-4 w-4 mr-1" />
-                                            อนุมัติโดย: <span className="font-semibold ml-1">{record.approvedBy}</span>
-                                        </p>
-                                        <p className="text-gray-600 text-sm">
-                                            ยืม: <span className="font-semibold">{new Date(record.borrowDate).toLocaleDateString('th-TH')}</span> |
-                                            กำหนดคืน: <span className="font-semibold">{new Date(record.returnDate).toLocaleDateString('th-TH')}</span>
-                                            {record.actualReturnDate && (
-                                                <> | คืนจริง: <span className="font-semibold text-green-600">{new Date(record.actualReturnDate).toLocaleDateString('th-TH')}</span></>
-                                            )}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                    <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
-                                        <Package className="h-4 w-4 mr-2 text-green-600" />
-                                        รายการที่ยืม: ({record.items.length} รายการ)
-                                    </h4>
-                                    <ul className="space-y-2">
-                                        {record.items.map((item) => (
-                                            <li key={item.id} className="text-sm text-gray-700 bg-white p-3 rounded border border-gray-200">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`px-2 py-0.5 rounded text-xs font-semibold inline-flex items-center ${
-                                                            item.type === 'hardware' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                                                        }`}>
-                                                            {item.type === 'hardware' ? (
-                                                                <>
-                                                                    <Laptop className="h-3 w-3 mr-1" />
-                                                                    Hardware
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <Key className="h-3 w-3 mr-1" />
-                                                                    License
-                                                                </>
-                                                            )}
-                                                        </span>
-                                                        {getItemStatusBadge(item.status)}
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <span className="font-medium">{item.equipmentName}</span>
-                                                        <span className="text-gray-500 ml-2">(SN: {item.serialNumber})</span>
-                                                    </div>
-                                                    {item.status === 'borrowed' && (
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedRecord(record);
-                                                                setSelectedItem(item);
-                                                                setShowReturnModal(true);
-                                                            }}
-                                                            className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-medium"
-                                                        >
-                                                            คืนรายการนี้
-                                                        </button>
-                                                    )}
-                                                </div>
-                                                {item.status === 'returned' && item.condition && (
-                                                    <div className="mt-2 pt-2 border-t border-gray-200">
-                                                        <div className="flex items-center gap-2">
-                                                            {getConditionBadge(item.condition)}
-                                                            {item.returnNotes && (
-                                                                <span className="text-xs text-gray-600">หมายเหตุ: {item.returnNotes}</span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                <div className="mb-4">
-                                    <p className="text-sm text-gray-600">
-                                        <span className="font-semibold">วัตถุประสงค์:</span> {record.purpose}
-                                    </p>
-                                </div>
-
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => {
-                                            setSelectedRecord(record);
-                                            setShowDetailModal(true);
-                                        }}
-                                        className="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center font-medium transition-colors"
-                                    >
-                                        <Eye className="h-4 w-4 mr-2" />
-                                        ดูรายละเอียด
-                                    </button>
-                                </div>
-                            </div>
-                        ))
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-collapse">
+                                <thead className="bg-gradient-to-r from-green-600 to-green-700">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">ID</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">ชื่อผู้ยืม</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">ตำแหน่ง</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">วันที่ยืม</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">จำนวนอุปกรณ์</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">สถานะ</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase">จัดการ</th>
+                                </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                {groupedRecords.map((group, i) => {
+                                    const status = STATUS_MAP[group.borrowStatusId];
+                                    return (
+                                        <tr key={group.id} className={`hover:bg-green-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                                            <td className="px-4 py-3">
+                                                <span className="text-sm font-bold text-green-600">#{group.id}</span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="text-sm font-semibold text-gray-900">{group.employeeName}</div>
+                                                <div className="text-xs text-gray-500">{group.email}</div>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-700">{group.roleName || '-'}</td>
+                                            <td className="px-4 py-3 text-sm text-gray-700">
+                                                {new Date(group.borrowDate).toLocaleDateString('th-TH')}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
+                                                    {group.items.length} รายการ
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${status?.color || 'bg-gray-100 text-gray-700'}`}>
+                                                    {status?.label || group.borrowStatusName}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <button
+                                                    onClick={() => setSelected(group)}
+                                                    className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-1 mx-auto transition-colors"
+                                                >
+                                                    <Eye className="h-4 w-4" /> ดูรายละเอียด
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
             </div>
 
-            {/* Detail Modal */}
-            {showDetailModal && selectedRecord && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-                        <div className="sticky top-0 bg-white border-b-2 border-gray-200 p-6 flex justify-between items-center">
-                            <h2 className="text-2xl font-bold text-gray-900">รายละเอียดการยืม</h2>
+            {/* Modal - แสดงรายการอุปกรณ์ทั้งหมดในธุรกรรม */}
+            {selected && (
+                <div className="fixed inset-0 bg-opacity-50 flex backdrop-blur items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+                        <div className="sticky top-0 bg-gradient-to-r from-green-600 to-green-700 text-white p-6 flex justify-between items-center rounded-t-xl">
+                            <div>
+                                <h2 className="text-2xl font-bold">รายละเอียดการยืม</h2>
+                                <p className="text-sm opacity-90 mt-1">รหัส: #{selected.id}</p>
+                            </div>
                             <button
-                                onClick={() => setShowDetailModal(false)}
-                                className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                onClick={() => setSelected(null)}
+                                className="hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-colors"
                             >
                                 <X className="h-6 w-6" />
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-4">
-                            <div className="flex items-center gap-3">
-                                <h3 className="text-lg font-semibold">สถานะ:</h3>
-                                {getStatusBadge(selectedRecord.status)}
+                        <div className="p-6 space-y-6">
+                            {/* ข้อมูลผู้ยืม */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <div>
+                                    <p className="text-sm text-gray-600 font-medium">ผู้ยืม</p>
+                                    <p className="font-semibold text-gray-900">{selected.employeeName}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600 font-medium">อีเมล</p>
+                                    <p className="font-semibold text-gray-900">{selected.email}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600 font-medium">ตำแหน่ง</p>
+                                    <p className="font-semibold text-gray-900">{selected.roleName}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600 font-medium">วันที่ยืม</p>
+                                    <p className="font-semibold text-gray-900">
+                                        {new Date(selected.borrowDate).toLocaleDateString('th-TH')}
+                                    </p>
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                            {selected.referenceDoc && (
                                 <div>
-                                    <p className="text-sm text-gray-600">ผู้ยืม</p>
-                                    <p className="font-semibold text-gray-900">{selectedRecord.borrowerName}</p>
+                                    <p className="text-sm text-gray-600 mb-2 font-medium">วัตถุประสงค์</p>
+                                    <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                        {selected.referenceDoc}
+                                    </p>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">อีเมล</p>
-                                    <p className="font-semibold text-gray-900">{selectedRecord.borrowerEmail}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">ผู้อนุมัติ</p>
-                                    <p className="font-semibold text-gray-900">{selectedRecord.approvedBy}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">วันที่ยืม</p>
-                                    <p className="font-semibold text-gray-900">{new Date(selectedRecord.borrowDate).toLocaleDateString('th-TH')}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">กำหนดคืน</p>
-                                    <p className="font-semibold text-gray-900">{new Date(selectedRecord.returnDate).toLocaleDateString('th-TH')}</p>
-                                </div>
-                                {selectedRecord.actualReturnDate && (
-                                    <div>
-                                        <p className="text-sm text-gray-600">คืนจริง</p>
-                                        <p className="font-semibold text-green-600">{new Date(selectedRecord.actualReturnDate).toLocaleDateString('th-TH')}</p>
-                                    </div>
-                                )}
-                            </div>
+                            )}
 
+                            {/* รายการอุปกรณ์ทั้งหมด */}
                             <div>
-                                <p className="text-sm text-gray-600 mb-2">วัตถุประสงค์</p>
-                                <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg">{selectedRecord.purpose}</p>
-                            </div>
-
-                            <div>
-                                <p className="text-sm text-gray-600 mb-2">รายการที่ยืม ({selectedRecord.items.length} รายการ)</p>
-                                <div className="space-y-2">
-                                    {selectedRecord.items.map((item) => (
-                                        <div key={item.id} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm text-gray-600 mb-3 font-semibold">
+                                    รายการอุปกรณ์ ({selected.items.length} รายการ)
+                                </p>
+                                <div className="space-y-3">
+                                    {selected.items.map((item, index) => (
+                                        <div key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                            <div className="flex items-start justify-between mb-2">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`px-2 py-0.5 rounded text-xs font-semibold inline-flex items-center ${
-                                                        item.type === 'hardware' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                                                    {item.equipmentTypeName?.toLowerCase() === 'hardware' ? (
+                                                        <Cpu className="h-4 w-4 text-blue-600" />
+                                                    ) : (
+                                                        <Key className="h-4 w-4 text-purple-600" />
+                                                    )}
+                                                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                                        item.equipmentTypeName?.toLowerCase() === 'hardware'
+                                                            ? 'bg-blue-100 text-blue-800'
+                                                            : 'bg-purple-100 text-purple-800'
                                                     }`}>
-                                                        {item.type === 'hardware' ? (
-                                                            <>
-                                                                <Laptop className="h-3 w-3 mr-1" />
-                                                                Hardware
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Key className="h-3 w-3 mr-1" />
-                                                                License
-                                                            </>
-                                                        )}
+                                                        {item.equipmentTypeName}
                                                     </span>
-                                                    {getItemStatusBadge(item.status)}
-                                                    {item.condition && getConditionBadge(item.condition)}
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <span className="font-semibold">{item.equipmentName}</span>
-                                                    <span className="text-sm text-gray-600 ml-2">SN: {item.serialNumber}</span>
+
+                                            <p className="font-semibold text-gray-900 mb-2">
+                                                {`${item.brand || ''} ${item.model || ''}`.trim() || item.equipmentName || 'ไม่ระบุชื่อ'}
+                                            </p>
+
+                                            {item.serialNumber && (
+                                                <div className="mt-2">
+                                                    <p className="text-xs text-gray-600">Serial Number:</p>
+                                                    <p className="text-sm font-mono font-semibold text-gray-900">{item.serialNumber}</p>
                                                 </div>
-                                            </div>
-                                            {item.returnNotes && (
-                                                <div className="mt-2 pt-2 border-t border-gray-200">
-                                                    <p className="text-xs text-gray-600">หมายเหตุ: {item.returnNotes}</p>
+                                            )}
+
+                                            {item.licenseKey && (
+                                                <div className="mt-2">
+                                                    <p className="text-xs text-gray-600">License Key:</p>
+                                                    <p className="text-sm font-mono font-semibold text-purple-900 bg-purple-50 p-2 rounded">
+                                                        {item.licenseKey}
+                                                    </p>
                                                 </div>
+                                            )}
+
+                                            {item.dueDate && (
+                                                <p className="text-sm text-gray-600 mt-2 flex items-center gap-1">
+                                                    <Calendar className="h-3 w-3" />
+                                                    กำหนดคืน: {new Date(item.dueDate).toLocaleDateString('th-TH')}
+                                                </p>
+                                            )}
+
+                                            {item.returnDate ? (
+                                                <p className="text-sm text-green-600 mt-2 font-medium flex items-center gap-1">
+                                                    <CheckCircle className="h-3 w-3" />
+                                                    คืนแล้ว: {new Date(item.returnDate).toLocaleDateString('th-TH')}
+                                                </p>
+                                            ) : (
+                                                <button
+                                                    onClick={async () => {
+                                                        await returnEquipmentItem(item.equipmentId);
+                                                        setSelected(null);
+                                                    }}
+                                                    className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+                                                >
+                                                    <Undo2 className="h-4 w-4" /> คืนอุปกรณ์นี้
+                                                </button>
                                             )}
                                         </div>
                                     ))}
@@ -675,77 +453,12 @@ export default function BorrowHistoryPage() {
                             </div>
                         </div>
 
-                        <div className="sticky bottom-0 bg-white border-t-2 border-gray-200 p-6">
+                        <div className="sticky bottom-0 bg-gray-50 border-t-2 border-gray-200 p-6 rounded-b-xl">
                             <button
-                                onClick={() => setShowDetailModal(false)}
-                                className="w-full px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition-colors"
+                                onClick={() => setSelected(null)}
+                                className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors"
                             >
                                 ปิด
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Return Modal */}
-            {showReturnModal && selectedRecord && selectedItem && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
-                        <div className="bg-green-600 text-white p-6 rounded-t-xl">
-                            <h2 className="text-2xl font-bold">คืนอุปกรณ์</h2>
-                            <p className="text-green-100 text-sm mt-1">
-                                คืน: {selectedItem.equipmentName}
-                            </p>
-                            <p className="text-green-100 text-xs">SN: {selectedItem.serialNumber}</p>
-                        </div>
-
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                    สภาพอุปกรณ์ <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    value={condition}
-                                    onChange={(e) => setCondition(e.target.value as any)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 font-medium"
-                                >
-                                    <option value="good">ปกติ - ใช้งานได้ดี</option>
-                                    <option value="damaged">ชำรุด - มีความเสียหาย</option>
-                                    <option value="lost">สูญหาย</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                    หมายเหตุ
-                                </label>
-                                <textarea
-                                    value={returnNotes}
-                                    onChange={(e) => setReturnNotes(e.target.value)}
-                                    rows={4}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                                    placeholder="ระบุรายละเอียดเพิ่มเติม เช่น สภาพการใช้งาน, ปัญหาที่พบ (ถ้ามี)..."
-                                />
-                            </div>
-                        </div>
-
-                        <div className="p-6 bg-gray-50 rounded-b-xl flex gap-3">
-                            <button
-                                onClick={() => {
-                                    setShowReturnModal(false);
-                                    setReturnNotes('');
-                                    setCondition('good');
-                                    setSelectedItem(null);
-                                }}
-                                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-semibold transition-colors"
-                            >
-                                ยกเลิก
-                            </button>
-                            <button
-                                onClick={handleReturnItem}
-                                className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold shadow-md transition-colors"
-                            >
-                                บันทึกการคืน
                             </button>
                         </div>
                     </div>

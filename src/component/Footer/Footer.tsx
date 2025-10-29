@@ -1,16 +1,17 @@
+// component/Footer/Footer.tsx
 import React from 'react';
 
-// Footer Component
 const Footer = () => {
     return (
-        <footer className="bg-gray-800 text-white py-8 mt-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <p>&copy; 2025 EquipTrack System. All rights reserved.</p>
-                <p className="text-gray-400 text-sm mt-2">
+        <footer className="bg-gray-800 text-gray-300 text-sm py-4">
+            <div className="max-w-6xl mx-auto px-4 text-center">
+                <p>&copy; 2025 EquipTrack System</p>
+                <p className="text-gray-400 mt-1">
                     ระบบบันทึกการยืมอุปกรณ์ | พัฒนาเพื่อความสะดวกในการจัดการ
                 </p>
             </div>
         </footer>
     );
 };
+
 export default Footer;

@@ -60,10 +60,10 @@ export default function RegisterForm() {
     const passwordStrength = getPasswordStrength();
 
     return (
-        <div className="min-h-full flex items-center justify-center px-4 py-6 overflow-y-auto">
+        <div className="min-h-full flex items-center justify-center overflow-y-auto">
             <div className="max-w-md w-full my-4">
                 {/* Card */}
-                <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+                <div className="bg-white rounded-2xl shadow-xl p-6">
                     {/* Header */}
                     <div className="text-center mb-5">
                         <div className="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3">

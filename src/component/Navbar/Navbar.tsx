@@ -4,7 +4,7 @@ import React, { useState, useCallback, memo } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Utcclogo from '../img/Utcclogo.png';
-import { Package, Menu, X, Home, History, PlusCircle, LogOut, User } from 'lucide-react';
+import { Package, Menu, X, Home, History, PlusCircle, LogOut, User, Laptop, Settings } from 'lucide-react'; // ✅ เพิ่ม Laptop
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useUser } from '@/hooks/useUser';
@@ -45,6 +45,8 @@ const Navbar = memo(function Navbar() {
             Package: <Package className="h-4 w-4 mr-1" />,
             PlusCircle: <PlusCircle className="h-4 w-4 mr-1" />,
             History: <History className="h-4 w-4 mr-1" />,
+            Laptop: <Laptop className="h-4 w-4 mr-1" />,
+            Settings: <Settings className="h-4 w-4 mr-1" />,
         };
         return icons[iconName] || null;
     };
@@ -173,4 +175,4 @@ const Navbar = memo(function Navbar() {
 
 export default Navbar;
 
-//มีการใช้ mimo มาช่วยการ Re-render ในส่วนของ navbar ที่ใช้ในหลายหน้า
+//มีการใช้ memo มาช่วยการ Re-render ในส่วนของ navbar ที่ใช้ในหลายหน้า

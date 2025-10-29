@@ -1,30 +1,37 @@
 'use client';
 
-import { History, Package, PlusCircle, Menu, X, Home } from 'lucide-react';
-import { useRouter } from 'next/navigation'; // ใช้ Next.js router แทน react-router-dom
+import { History, Package, PlusCircle, Laptop } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import Navbar from "@/component/Navbar/Navbar";
+import { ROUTES } from '@/constants/routes';
 
-// Main Home Component
+
+
 export default function HomePage() {
-    const router = useRouter(); // ใช้ Next.js router
+
+    const router = useRouter();
+
 
     const handleHistoryClick = () => {
-        // Navigate to history page
         console.log('Navigate to History Page');
-        router.push('/pages/borrow_history'); // ใช้ router.push แทน window.location.href
+        router.push(ROUTES.BORROW_HISTORY);
     };
 
     const handleBorrowReturnClick = () => {
-        // Navigate to borrow_equipment page
-        console.log('Navigate to Borrow Type Page');
-        router.push('/pages/borrow_equipment'); // ใช้ router.push แทน window.location.href
+        console.log('Navigate to Borrow Equipment Page');
+        router.push(ROUTES.BORROW_EQUIPMENT);
     };
 
     const handleAddEquipmentClick = () => {
-        // Navigate to add_equipment page
-        console.log('Navigate to Add Type Page');
-        router.push('/pages/add_equipment'); // ใช้ router.push แทน window.location.href
+        console.log('Navigate to Add Equipment Page');
+        router.push(ROUTES.ADD_EQUIPMENT);
     };
+
+    const handleEquipmentClick = () => {
+        console.log('Navigate to Equipment Page');
+        router.push(ROUTES.EQUIPMENT);
+    };
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -44,23 +51,23 @@ export default function HomePage() {
                 </div>
             </div>
 
-            {/* Main Content - ปุ่มหลักทั้ง 3 ตัว */}
+            {/* Main Content - ปุ่มหลักทั้ง 4 ตัว */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 
-                    {/* ปุ่มการยืม-คืนอุปกรณ์ */}
+                    {/* ปุ่มอุปกรณ์ */}
                     <div
-                        onClick={handleBorrowReturnClick}
-                        className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 p-6 border-l-4 border-blue-500"
+                        onClick={handleEquipmentClick}
+                        className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 p-6 border-l-4 border-indigo-500"
                     >
                         <div className="flex items-center justify-center mb-4">
-                            <div className="bg-blue-100 p-4 rounded-full">
-                                <Package className="h-12 w-12 text-blue-600" />
+                            <div className="bg-indigo-100 p-4 rounded-full">
+                                <Laptop className="h-12 w-12 text-indigo-600" />
                             </div>
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-800 text-center mb-2">การยืม-คืนอุปกรณ์</h3>
+                        <h3 className="text-xl font-semibold text-gray-800 text-center mb-2">อุปกรณ์</h3>
                         <p className="text-gray-600 text-center text-sm">
-                            จัดการการยืมและการคืนอุปกรณ์ต่างๆ
+                            ดูรายการอุปกรณ์ทั้งหมดในระบบ
                         </p>
                     </div>
 
@@ -80,6 +87,22 @@ export default function HomePage() {
                         </p>
                     </div>
 
+                    {/* ปุ่มการยืม-คืนอุปกรณ์ */}
+                    <div
+                        onClick={handleBorrowReturnClick}
+                        className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 p-6 border-l-4 border-blue-500"
+                    >
+                        <div className="flex items-center justify-center mb-4">
+                            <div className="bg-blue-100 p-4 rounded-full">
+                                <Package className="h-12 w-12 text-blue-600" />
+                            </div>
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-800 text-center mb-2">การยืม-คืนอุปกรณ์</h3>
+                        <p className="text-gray-600 text-center text-sm">
+                            จัดการการยืมและการคืนอุปกรณ์ต่างๆ
+                        </p>
+                    </div>
+
                     {/* ปุ่มประวัติการยืม */}
                     <div
                         onClick={handleHistoryClick}
@@ -92,30 +115,34 @@ export default function HomePage() {
                         </div>
                         <h3 className="text-xl font-semibold text-gray-800 text-center mb-2">ประวัติการยืม</h3>
                         <p className="text-gray-600 text-center text-sm">
-                            ดูประวัติการยืม-คืนอุปกรณ์ทั้งหมดในระบบ
+                            ดูประวัติการยืม-คืนอุปกรณ์ทั้งหมด
                         </p>
                     </div>
                 </div>
 
                 {/* Stats Section */}
-                <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="bg-white rounded-lg shadow p-6 text-center">
-                        <div className="text-3xl font-bold text-green-600 mb-2">0</div>
-                        <div className="text-gray-600">อุปกรณ์ที่ยืมออกไป</div>
-                    </div>
-                    <div className="bg-white rounded-lg shadow p-6 text-center">
-                        <div className="text-3xl font-bold text-blue-600 mb-2">0</div>
-                        <div className="text-gray-600">อุปกรณ์ทั้งหมด</div>
-                    </div>
-                    <div className="bg-white rounded-lg shadow p-6 text-center">
-                        <div className="text-3xl font-bold text-purple-600 mb-2">0</div>
-                        <div className="text-gray-600">การยืมในวันนี้</div>
+                <div className="mt-16">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">สถิติภาพรวม</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="bg-white rounded-xl shadow-md p-6 text-center border-t-4 border-indigo-500">
+                            <div className="text-4xl font-bold text-indigo-600 mb-2">0</div>
+                            <div className="text-gray-600 font-medium">อุปกรณ์ทั้งหมด</div>
+                        </div>
+                        <div className="bg-white rounded-xl shadow-md p-6 text-center border-t-4 border-green-500">
+                            <div className="text-4xl font-bold text-green-600 mb-2">0</div>
+                            <div className="text-gray-600 font-medium">พร้อมใช้งาน</div>
+                        </div>
+                        <div className="bg-white rounded-xl shadow-md p-6 text-center border-t-4 border-blue-500">
+                            <div className="text-4xl font-bold text-blue-600 mb-2">0</div>
+                            <div className="text-gray-600 font-medium">กำลังยืมออกไป</div>
+                        </div>
+                        <div className="bg-white rounded-xl shadow-md p-6 text-center border-t-4 border-purple-500">
+                            <div className="text-4xl font-bold text-purple-600 mb-2">0</div>
+                            <div className="text-gray-600 font-medium">การยืมวันนี้</div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-
-
         </div>
     );
 }
