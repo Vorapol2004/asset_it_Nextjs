@@ -568,6 +568,7 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Department, Building, Floor, Room } from '@/types/type';
+import Navbar from "@/component/Navbar/Navbar";
 
 type TabType = 'department' | 'building' | 'floor' | 'room';
 
@@ -584,11 +585,13 @@ export default function MasterDataPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+            <Navbar />
             <div className="max-w-7xl mx-auto">
 
                 {/* Header */}
-                <div className="mb-6">
+                <div className="mb-5 mt-5">
                     <button
                         onClick={() => router.push('/pages/home')}
                         className="flex items-center text-blue-600 hover:text-blue-800 mb-4 font-medium transition-colors cursor-pointer"

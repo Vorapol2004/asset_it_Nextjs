@@ -144,7 +144,7 @@ export default function BorrowEquipmentLandingPage() {
                                 </ul>
 
                                 <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 hover:from-purple-700 hover:to-pink-700 transition-all group-hover:gap-3 cursor-pointer">
-                                    ดูประวัติการยืม
+                                    สำหรับผู้ยืมเก่า
                                     <ArrowRight className="h-4 w-4" />
                                 </button>
                             </div>

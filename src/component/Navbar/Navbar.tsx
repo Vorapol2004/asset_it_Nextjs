@@ -4,7 +4,7 @@ import React, { useState, useCallback, memo } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Utcclogo from '../img/Utcclogo.png';
-import { Package, Menu, X, Home, History, PlusCircle, LogOut, User, Laptop, Settings } from 'lucide-react'; // ✅ เพิ่ม Laptop
+import { Package, Menu, X, Home, History, PlusCircle, LogOut, User, Laptop, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useUser } from '@/hooks/useUser';

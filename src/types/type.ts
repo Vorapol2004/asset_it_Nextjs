@@ -15,6 +15,12 @@ export interface Equipment {
 }
 
 export interface EquipmentView extends Equipment {
+    lotTypeName: string;
+    purchaseDate: string;
+    referenceDoc: string;
+    expireDate: string;
+    description: string;
+    academicYear?: string;
     equipmentStatusName?: string;
     equipmentTypeName?: string;
     lotName?: string;
