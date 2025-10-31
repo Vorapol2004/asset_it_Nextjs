@@ -1,168 +1,53 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import Navbar from '@/component/Navbar/Navbar';
-import { Package, Calendar, Hash, FileText, Plus, Trash2, Save, Laptop, Key } from 'lucide-react';
-import { api } from '@/lib/api'; // ✅ เพิ่ม import
-
-interface EquipmentItem {
-    id: string;
-    equipmentName: string;
-    brand: string;
-    model: string;
-    serialNumber: string;
-    licenseKey: string;
-    type: 'hardware' | 'license';
-    description: string;
-}
-
-interface LotType {
-    id: number;
-    lotTypeName: string; // ✅ แก้ไขให้ตรงกับ Backend
-}
+import {
+    Package, Calendar, Hash, FileText, Plus, Trash2, Save,
+    Laptop, Key, CheckCircle, AlertCircle, X
+} from 'lucide-react';
+import { useAddEquipment } from '@/hooks/useAddEquipment';
 
 export default function AddEquipmentPage() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [lotTypes, setLotTypes] = useState<LotType[]>([]);
+    // ✅ ใช้ Custom Hook จัดการทุกอย่าง
+    const {
+        loading,
+        error,
+        success,
+        lotTypes,
+        lotName,
+        setLotName,
+        academicYear,
+        setAcademicYear,
+        purchaseDate,
+        setPurchaseDate,
+        expireDate,
+        setExpireDate,
+        referenceDoc,
+        setReferenceDoc,
+        lotDescription,
+        setLotDescription,
+        lotTypeId,
+        setLotTypeId,
+        items,
+        fetchLotTypes,
+        addItem,
+        removeItem,
+        updateItem,
+        submitEquipment,
+        cancel,
+        setError,
+    } = useAddEquipment();
 
-    // Lot Information
-    const [lotName, setLotName] = useState('');
-    const [academicYear, setAcademicYear] = useState('');
-    const [purchaseDate, setPurchaseDate] = useState('');
-    const [expireDate, setExpireDate] = useState('');
-    const [referenceDoc, setReferenceDoc] = useState('');
-    const [lotDescription, setLotDescription] = useState('');
-    const [lotTypeId, setLotTypeId] = useState<number>(1);
-
-    const [items, setItems] = useState<EquipmentItem[]>([
-        {
-            id: '1',
-            equipmentName: '',
-            brand: '',
-            model: '',
-            serialNumber: '',
-            licenseKey: '',
-            type: 'hardware',
-            description: ''
-        }
-    ]);
-
-    // ✅ ดึง Lot Types จาก Backend
+    // ✅ ดึง Lot Types เมื่อ Component Mount
     useEffect(() => {
         fetchLotTypes();
     }, []);
 
-    const fetchLotTypes = async () => {
-        try {
-            const data = await api.lot.getTypes();
-            setLotTypes(data);
-            if (data.length > 0) {
-                setLotTypeId(data[0].id);
-            }
-        } catch (error) {
-            console.error('Error fetching lot types:', error);
-            // ถ้า API ยังไม่พร้อม ใช้ค่า default
-            setLotTypes([
-                { id: 1, lotTypeName: 'Purchase' },
-                { id: 2, lotTypeName: 'Rent' },
-                { id: 3, lotTypeName: 'Borrow' },
-                { id: 4, lotTypeName: 'Trial' }
-            ]);
-        }
-    };
-
-    const addItem = () => {
-        setItems([
-            ...items,
-            {
-                id: Date.now().toString(),
-                equipmentName: '',
-                brand: '',
-                model: '',
-                serialNumber: '',
-                licenseKey: '',
-                type: 'hardware',
-                description: ''
-            }
-        ]);
-    };
-
-    const removeItem = (id: string) => {
-        if (items.length > 1) {
-            setItems(items.filter(item => item.id !== id));
-        }
-    };
-
-    //“อัปเดตฟิลด์ใน item เฉพาะตัวนั้น จากค่าใหม่ที่ผู้ใช้เลือก”
-    const updateItem = (id: string, field: keyof EquipmentItem, value: any) => {
-        setItems(items.map(item =>
-            item.id === id ? { ...item, [field]: value } : item
-        ));
-    };
-
+    // ✅ Handle Submit
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Validation
-        if (!lotName || !purchaseDate) {
-            alert('กรุณากรอกชื่อ LOT และวันที่จัดซื้อ');
-            return;
-        }
-
-        const hasEmptyFields = items.some(item =>
-            !item.equipmentName ||
-            (item.type === 'hardware' && !item.serialNumber) ||
-            (item.type === 'license' && !item.licenseKey)
-        );
-
-        if (hasEmptyFields) {
-            alert('กรุณากรอกข้อมูลให้ครบถ้วน\n- Hardware ต้องมี Serial Number\n- License ต้องมี License Key');
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            // ✅ เตรียมข้อมูลตาม Backend Schema
-            const lotData = {
-                lotName: lotName,
-                academicYear: academicYear || null,
-                purchaseDate: purchaseDate,
-                expireDate: expireDate || null,
-                referenceDoc: referenceDoc || null,
-                description: lotDescription || null,
-                lotTypeId: lotTypeId,
-                items: items.map(item => ({
-                    equipmentName: item.equipmentName,
-                    brand: item.brand || null,
-                    model: item.model || null,
-                    serialNumber: item.type === 'hardware' ? item.serialNumber : null,
-                    licenseKey: item.type === 'license' ? item.licenseKey : null,
-                    equipmentTypeId: item.type === 'hardware' ? 2 : 1, // 1=Software/License, 2=Hardware
-                    equipmentStatusId: 1, // Default = Available
-                }))
-            };
-
-            console.log('🚀 Sending data to API:', lotData);
-
-            // ✅ เรียก Backend API
-            const result = await api.lot.create(lotData);
-
-            console.log('✅ API Response:', result);
-
-            alert(`เพิ่มอุปกรณ์สำเร็จ!\n- สร้าง LOT: ${result.data?.lotId || 'N/A'}\n- อุปกรณ์: ${result.data?.equipmentCreated || items.length} รายการ`);
-
-            // Redirect ไปหน้า Equipment
-            router.push('/pages/equipment');
-
-        } catch (error: any) {
-            console.error('❌ Error adding equipment:', error);
-            alert(`เกิดข้อผิดพลาด: ${error.message}`);
-        } finally {
-            setLoading(false);
-        }
+        await submitEquipment();
     };
 
     return (
@@ -175,6 +60,36 @@ export default function AddEquipmentPage() {
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">เพิ่มอุปกรณ์</h1>
                     <p className="text-gray-600">เพิ่มข้อมูล Lot อุปกรณ์ที่มหาวิทยาลัยจัดซื้อ/เช่า/ยืม</p>
                 </div>
+
+                {/* ✅ Success Alert */}
+                {success && (
+                    <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg flex items-start animate-fade-in">
+                        <CheckCircle className="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                        <div>
+                            <h3 className="font-semibold text-green-800">บันทึกข้อมูลสำเร็จ!</h3>
+                            <p className="text-green-700 text-sm mt-1">
+                                เพิ่มอุปกรณ์ {items.length} รายการสำเร็จ กำลังนำคุณกลับไปหน้ารายการ...
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* ✅ Error Alert */}
+                {error && (
+                    <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex items-start animate-fade-in">
+                        <AlertCircle className="h-6 w-6 text-red-500 mr-3 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <h3 className="font-semibold text-red-800">เกิดข้อผิดพลาด</h3>
+                            <p className="text-red-700 text-sm mt-1">{error}</p>
+                        </div>
+                        <button
+                            onClick={() => setError(null)}
+                            className="text-red-400 hover:text-red-600 ml-4"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit}>
                     {/* Lot Information Card */}
@@ -196,7 +111,8 @@ export default function AddEquipmentPage() {
                                     type="text"
                                     value={lotName}
                                     onChange={(e) => setLotName(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                                    disabled={loading}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     placeholder="เช่น LOT2025-001 หรือ จัดซื้อเดือนมกราคม"
                                     required
                                 />
@@ -211,7 +127,8 @@ export default function AddEquipmentPage() {
                                 <select
                                     value={lotTypeId}
                                     onChange={(e) => setLotTypeId(Number(e.target.value))}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                                    disabled={loading}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     required
                                 >
                                     {lotTypes.map(type => (
@@ -231,7 +148,8 @@ export default function AddEquipmentPage() {
                                     type="text"
                                     value={academicYear}
                                     onChange={(e) => setAcademicYear(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                                    disabled={loading}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     placeholder="เช่น 2568"
                                     maxLength={4}
                                 />
@@ -248,7 +166,8 @@ export default function AddEquipmentPage() {
                                     type="date"
                                     value={purchaseDate}
                                     onChange={(e) => setPurchaseDate(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                                    disabled={loading}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     required
                                 />
                             </div>
@@ -263,7 +182,8 @@ export default function AddEquipmentPage() {
                                     type="date"
                                     value={expireDate}
                                     onChange={(e) => setExpireDate(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                                    disabled={loading}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">สำหรับ License หรือสัญญาเช่า</p>
                             </div>
@@ -277,7 +197,8 @@ export default function AddEquipmentPage() {
                                     type="text"
                                     value={referenceDoc}
                                     onChange={(e) => setReferenceDoc(e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                                    disabled={loading}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     placeholder="เช่น PO-2568-001"
                                 />
                             </div>
@@ -290,8 +211,9 @@ export default function AddEquipmentPage() {
                                 <textarea
                                     value={lotDescription}
                                     onChange={(e) => setLotDescription(e.target.value)}
+                                    disabled={loading}
                                     rows={3}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     placeholder="ระบุรายละเอียดเพิ่มเติมของ Lot..."
                                 />
                             </div>
@@ -308,7 +230,8 @@ export default function AddEquipmentPage() {
                             <button
                                 type="button"
                                 onClick={addItem}
-                                className="flex items-center px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-md hover:shadow-lg font-medium"
+                                disabled={loading}
+                                className="flex items-center px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-md hover:shadow-lg font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
                             >
                                 <Plus className="h-5 w-5 mr-2" />
                                 เพิ่มรายการ
@@ -324,7 +247,8 @@ export default function AddEquipmentPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => removeItem(item.id)}
-                                                className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                                                disabled={loading}
+                                                className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 <Trash2 className="h-5 w-5" />
                                             </button>
@@ -340,7 +264,8 @@ export default function AddEquipmentPage() {
                                             <select
                                                 value={item.type}
                                                 onChange={(e) => updateItem(item.id, 'type', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500"
+                                                disabled={loading}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                             >
                                                 <option value="hardware">Hardware (อุปกรณ์)</option>
                                                 <option value="license">License (ใบอนุญาต/ซอฟต์แวร์)</option>
@@ -356,7 +281,8 @@ export default function AddEquipmentPage() {
                                                 type="text"
                                                 value={item.equipmentName}
                                                 onChange={(e) => updateItem(item.id, 'equipmentName', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500"
+                                                disabled={loading}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                                 placeholder="เช่น Notebook Dell Latitude 5420"
                                                 required
                                             />
@@ -371,7 +297,8 @@ export default function AddEquipmentPage() {
                                                 type="text"
                                                 value={item.brand}
                                                 onChange={(e) => updateItem(item.id, 'brand', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500"
+                                                disabled={loading}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                                 placeholder="เช่น Dell, HP, Microsoft"
                                             />
                                         </div>
@@ -385,7 +312,8 @@ export default function AddEquipmentPage() {
                                                 type="text"
                                                 value={item.model}
                                                 onChange={(e) => updateItem(item.id, 'model', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500"
+                                                disabled={loading}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                                 placeholder="เช่น Latitude 5420, Office 365"
                                             />
                                         </div>
@@ -402,7 +330,8 @@ export default function AddEquipmentPage() {
                                                     type="text"
                                                     value={item.serialNumber}
                                                     onChange={(e) => updateItem(item.id, 'serialNumber', e.target.value)}
-                                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono font-medium outline-none focus:border-purple-500"
+                                                    disabled={loading}
+                                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono font-medium outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                                     placeholder="กรอก Serial Number ของอุปกรณ์"
                                                     required={item.type === 'hardware'}
                                                 />
@@ -422,7 +351,8 @@ export default function AddEquipmentPage() {
                                                     type="text"
                                                     value={item.licenseKey}
                                                     onChange={(e) => updateItem(item.id, 'licenseKey', e.target.value)}
-                                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono font-medium outline-none focus:border-purple-500"
+                                                    disabled={loading}
+                                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono font-medium outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                                     placeholder="กรอก License Key หรือ Product Key"
                                                     required={item.type === 'license'}
                                                 />
@@ -450,16 +380,16 @@ export default function AddEquipmentPage() {
                     <div className="flex justify-end gap-4">
                         <button
                             type="button"
-                            onClick={() => router.back()}
+                            onClick={cancel}
                             disabled={loading}
-                            className="px-8 py-3 border-2 border-gray-400 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold disabled:opacity-50"
+                            className="px-8 py-3 border-2 border-gray-400 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             ยกเลิก
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400 flex items-center shadow-lg font-semibold"
+                            className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center shadow-lg font-semibold"
                         >
                             <Save className="h-5 w-5 mr-2" />
                             {loading ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}

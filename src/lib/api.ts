@@ -325,50 +325,50 @@ export const api = {
             }
         },
 
-        /**
-         *  ดึง EquipmentStatus ทั้งหมด
-         */
-        getStatuses: async (): Promise<EquipmentStatus[]> => {
-            const res = await fetch(`${API_URL}/equipment/statuses`);
+        // /**
+        //  *  ดึง EquipmentStatus ทั้งหมด
+        //  */
+        // getStatuses: async (): Promise<EquipmentStatus[]> => {
+        //     const res = await fetch(`${API_URL}/equipment/statuses`);
+        //
+        //     if (res.status === 204) {
+        //         return [];
+        //     } else if (!res.ok) {
+        //         throw new Error('Failed to fetch statuses');
+        //     } else {
+        //         return res.json();
+        //     }
+        // },
 
-            if (res.status === 204) {
-                return [];
-            } else if (!res.ok) {
-                throw new Error('Failed to fetch statuses');
-            } else {
-                return res.json();
-            }
-        },
+        // /**
+        //  *  ดึง EquipmentType ทั้งหมด
+        //  */
+        // getTypes: async (): Promise<EquipmentType[]> => {
+        //     const res = await fetch(`${API_URL}/equipment/types`);
+        //
+        //     if (res.status === 204) {
+        //         return [];
+        //     } else if (!res.ok) {
+        //         throw new Error('Failed to fetch types');
+        //     } else {
+        //         return res.json();
+        //     }
+        // },
 
-        /**
-         *  ดึง EquipmentType ทั้งหมด
-         */
-        getTypes: async (): Promise<EquipmentType[]> => {
-            const res = await fetch(`${API_URL}/equipment/types`);
-
-            if (res.status === 204) {
-                return [];
-            } else if (!res.ok) {
-                throw new Error('Failed to fetch types');
-            } else {
-                return res.json();
-            }
-        },
-
-        /**
-         *  ดึง Lot ทั้งหมด
-         */
-        getLots: async (): Promise<Lot[]> => {
-            const res = await fetch(`${API_URL}/equipment/lots`);
-
-            if (res.status === 204) {
-                return [];
-            } else if (!res.ok) {
-                throw new Error('Failed to fetch lots');
-            } else {
-                return res.json();
-            }
-        },
+        // /**
+        //  *  ดึง Lot ทั้งหมด
+        //  */
+        // getLots: async (): Promise<Lot[]> => {
+        //     const res = await fetch(`${API_URL}/equipment/lots`);
+        //
+        //     if (res.status === 204) {
+        //         return [];
+        //     } else if (!res.ok) {
+        //         throw new Error('Failed to fetch lots');
+        //     } else {
+        //         return res.json();
+        //     }
+        // },
     },
     // =============================
     // LOT API
