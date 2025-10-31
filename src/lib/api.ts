@@ -829,49 +829,7 @@ export const api = {
         },
     },
 
-    // =============================
-    // STATS API
-    // =============================
-    stats: {
-        /**
-         *  ดึงสถิติ Dashboard
-         */
-        getDashboard: async (): Promise<DashboardStats> => {
-            const res = await fetch(`${API_URL}/stats/dashboard`);
 
-            if (!res.ok) {
-                throw new Error('Failed to fetch dashboard stats');
-            } else {
-                return res.json();
-            }
-        },
-
-        /**
-         *  ดึงสถิติการยืมทั้งหมด
-         */
-        getBorrowStats: async (): Promise<BorrowStats> => {
-            const res = await fetch(`${API_URL}/stats/borrow`);
-
-            if (!res.ok) {
-                throw new Error('Failed to fetch borrow stats');
-            } else {
-                return res.json();
-            }
-        },
-
-        /**
-         *  ดึงสถิติตามช่วงวันที่
-         */
-        getStatsByDateRange: async (startDate: string, endDate: string): Promise<BorrowStats> => {
-            const res = await fetch(`${API_URL}/stats/borrow?startDate=${startDate}&endDate=${endDate}`);
-
-            if (!res.ok) {
-                throw new Error('Failed to fetch stats by date range');
-            } else {
-                return res.json();
-            }
-        },
-    },
 
     // =============================
     // CRUD Department
