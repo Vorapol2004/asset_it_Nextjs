@@ -1,8 +1,8 @@
 import {Building} from "@/types/type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+import {API_URL} from "@/lib/config";
 
-export const CRUD_building_api = {
+export const CRUD_building = {
     building: {
         getAll: async (): Promise<Building[]> => {
             const res = await fetch(`${API_URL}/buildings/all`);

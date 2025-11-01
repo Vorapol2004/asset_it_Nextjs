@@ -1,8 +1,8 @@
 import {Employee, EmployeeView} from "@/types/type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+import {API_URL} from "@/lib/config";
 
-export const employee_api = {
+export const employee = {
 
     employee: {
         /**

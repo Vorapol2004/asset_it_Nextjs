@@ -1,20 +1,29 @@
 'use client';
 
-import { useEffect } from 'react';
 import Navbar from '@/component/Navbar/Navbar';
 import {
-    Package, Calendar, Hash, FileText, Plus, Trash2, Save,
-    Laptop, Key, CheckCircle, AlertCircle, X
+    Package,
+    Calendar,
+    Hash,
+    FileText,
+    Plus,
+    Trash2,
+    Save,
+    Laptop,
+    Key,
+    CheckCircle,
+    AlertCircle,
+    X
 } from 'lucide-react';
 import { useAddEquipment } from '@/hooks/useAddEquipment';
+import { useMasterData } from '@/hooks/useMasterData';
 
 export default function AddEquipmentPage() {
-    // ✅ ใช้ Custom Hook จัดการทุกอย่าง
+    // ✅ ฟอร์มและการบันทึก (ไม่เกี่ยวกับ master data)
     const {
         loading,
         error,
         success,
-        lotTypes,
         lotName,
         setLotName,
         academicYear,
@@ -30,7 +39,6 @@ export default function AddEquipmentPage() {
         lotTypeId,
         setLotTypeId,
         items,
-        fetchLotTypes,
         addItem,
         removeItem,
         updateItem,
@@ -39,12 +47,10 @@ export default function AddEquipmentPage() {
         setError,
     } = useAddEquipment();
 
-    // ✅ ดึง Lot Types เมื่อ Component Mount
-    useEffect(() => {
-        fetchLotTypes();
-    }, []);
+    // ✅ master data เช่น dropdown (ดึงจาก API ครั้งเดียว)
+    const { lotTypes, equipmentTypes } = useMasterData();
 
-    // ✅ Handle Submit
+    // ✅ Submit ฟอร์ม
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         await submitEquipment();
@@ -262,14 +268,26 @@ export default function AddEquipmentPage() {
                                                 ประเภท <span className="text-red-500">*</span>
                                             </label>
                                             <select
-                                                value={item.type}
-                                                onChange={(e) => updateItem(item.id, 'type', e.target.value)}
+                                                value={item.type.toLowerCase()}
+                                                onChange={(e) => {
+                                                    const raw = e.target.value.toLowerCase();
+                                                    const normalizedType = raw === 'software' ? 'license' : raw; // 🟢 map software → license
+                                                    updateItem(item.id, 'type', normalizedType);
+                                                }}
                                                 disabled={loading}
                                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                             >
-                                                <option value="hardware">Hardware (อุปกรณ์)</option>
-                                                <option value="license">License (ใบอนุญาต/ซอฟต์แวร์)</option>
+                                                {equipmentTypes.length > 0 ? (
+                                                    equipmentTypes.map((type) => (
+                                                        <option key={type.id} value={type.equipmentTypeName.toLowerCase()}>
+                                                            {type.equipmentTypeName}
+                                                        </option>
+                                                    ))
+                                                ) : (
+                                                    <option disabled>กำลังโหลด...</option>
+                                                )}
                                             </select>
+
                                         </div>
 
                                         {/* Equipment Name */}
@@ -319,46 +337,40 @@ export default function AddEquipmentPage() {
                                         </div>
 
                                         {/* Serial Number (Hardware) */}
-                                        {item.type === 'hardware' && (
-                                            <div className="md:col-span-2">
-                                                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                    <Laptop className="inline h-4 w-4 mr-1" />
-                                                    Serial Number (SN)
-                                                    <span className="text-red-500 ml-1">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={item.serialNumber}
-                                                    onChange={(e) => updateItem(item.id, 'serialNumber', e.target.value)}
-                                                    disabled={loading}
-                                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono font-medium outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                                    placeholder="กรอก Serial Number ของอุปกรณ์"
-                                                    required={item.type === 'hardware'}
-                                                />
-                                                <p className="text-xs text-gray-500 mt-1">ระบุ Serial Number ที่ติดอยู่บนตัวอุปกรณ์</p>
-                                            </div>
-                                        )}
+                                        <div className="md:col-span-2" hidden={item.type !== 'hardware'}>
+                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                <Laptop className="inline h-4 w-4 mr-1" />
+                                                Serial Number (SN)
+                                                <span className="text-red-500 ml-1">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={item.serialNumber}
+                                                onChange={(e) => updateItem(item.id, 'serialNumber', e.target.value)}
+                                                disabled={loading}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                placeholder="กรอก Serial Number ของอุปกรณ์"
+                                            />
+                                        </div>
+
 
                                         {/* License Key (License) */}
-                                        {item.type === 'license' && (
-                                            <div className="md:col-span-2">
-                                                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                    <Key className="inline h-4 w-4 mr-1" />
-                                                    License Key
-                                                    <span className="text-red-500 ml-1">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={item.licenseKey}
-                                                    onChange={(e) => updateItem(item.id, 'licenseKey', e.target.value)}
-                                                    disabled={loading}
-                                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono font-medium outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                                    placeholder="กรอก License Key หรือ Product Key"
-                                                    required={item.type === 'license'}
-                                                />
-                                                <p className="text-xs text-gray-500 mt-1">ระบุ License Key หรือ Serial ของใบอนุญาต</p>
-                                            </div>
-                                        )}
+                                        <div className="md:col-span-2" hidden={item.type !== 'license'}>
+                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                <Key className="inline h-4 w-4 mr-1" />
+                                                License Key
+                                                <span className="text-red-500 ml-1">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={item.licenseKey}
+                                                onChange={(e) => updateItem(item.id, 'licenseKey', e.target.value)}
+                                                disabled={loading}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                placeholder="กรอก License Key หรือ Product Key"
+                                            />
+                                        </div>
+
                                     </div>
                                 </div>
                             ))}

@@ -1,7 +1,8 @@
 import {Room} from "@/types/type";
 
-const API_URL = process.env.API_URL || 'http://localhost:8080';
-export const CRUD_room_api = {
+import {API_URL} from "@/lib/config";
+
+export const CRUD_room = {
 
     room: {
         getAll: async (): Promise<Room[]> => {

@@ -67,6 +67,28 @@ export interface LotType {
     lotName: string;
 }
 
+export interface EquipmentRequest {
+    equipmentName: string;
+    brand?: string | null;
+    model?: string | null;
+    serialNumber?: string | null;
+    licenseKey?: string | null;
+    equipmentTypeId: number;
+    equipmentStatusId: number;
+}
+
+export interface LotRequest {
+    lotName: string;
+    academicYear?: string | null;
+    referenceDoc?: string | null;
+    description?: string | null;
+    purchaseDate: string; // LocalDate -> string ใน JSON
+    expireDate?: string | null;
+    lotTypeId: number;
+    equipmentList: EquipmentRequest[];
+}
+
+
 export interface LotCreateData {
     lotName: string;
     academicYear?: string | null;
@@ -418,6 +440,13 @@ export interface BorrowFilters {
     dateTo?: string;
     employeeId?: number;
 }
+
+export interface ApiError {
+    status: number;
+    message: string;
+    details?: string;
+}
+
 
 
 // UTILITY TYPES

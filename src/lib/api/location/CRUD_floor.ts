@@ -1,8 +1,8 @@
 import {Floor} from "@/types/type";
 
-const API_URL = process.env.API_URL || 'http://localhost:8080';
+import {API_URL} from "@/lib/config";
 
-export const CRUD_floor_api = {
+export const CRUD_floor = {
 
     floor: {
         getAll: async (): Promise<Floor[]> => {

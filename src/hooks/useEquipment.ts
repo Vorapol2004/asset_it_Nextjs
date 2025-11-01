@@ -1,21 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { EquipmentView } from '@/types/type';
-import { equipment_api } from '@/lib/equipment_api';
+import { equipment } from '@/lib/api/equipment/equipment';
+import { useMasterData } from '@/hooks/useMasterData';
 
-// ==================== Types ====================
-interface EquipmentStatus {
-    id: number; equipmentStatusName: string;
-}
-interface EquipmentType {
-    id: number; equipmentTypeName: string;
-}
 interface FilterParams {
     typeId?: number;
     statusId?: number;
     keyword?: string;
 }
 
-// ==================== Hook ====================
 export function useEquipment() {
     const [equipments, setEquipments] = useState<EquipmentView[]>([]);
     const [loading, setLoading] = useState(false);
@@ -24,36 +17,16 @@ export function useEquipment() {
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentView | null>(null);
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [errorDetail, setErrorDetail] = useState<string | null>(null);
-    const [statuses, setStatuses] = useState<EquipmentStatus[]>([]);
-    const [types, setTypes] = useState<EquipmentType[]>([]);
 
-    // ==================== Fetch Master ====================
-    const fetchDropDownData = async () => {
-        try {
-            const [statusRes, typeRes] = await Promise.all([
-                fetch('http://localhost:8080/public/e_status'),
-                fetch('http://localhost:8080/public/e_type'),
-            ]);
-            const [statusesData, typesData] = await Promise.all([
-                statusRes.json(),
-                typeRes.json(),
-            ]);
-            setStatuses(statusesData);
-            setTypes(typesData);
-        } catch (err) {
-            console.error('Error fetching equipment data:', err);
-        }
-    };
-    useEffect(() => {
-        fetchDropDownData();
-    }, []);
+    // ✅ ใช้ master data (ดึง dropdown จาก hook กลาง)
+    const { statuses, equipmentTypes: types } = useMasterData();
 
-    // ==================== Functions ====================
+    // ✅ ดึงข้อมูลอุปกรณ์ทั้งหมด
     const fetchEquipments = async () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await equipment_api.equipment.getAll();
+            const data = await equipment.equipment.getAll();
             setEquipments(data);
         } catch {
             setError('ไม่สามารถดึงข้อมูลอุปกรณ์ได้');
@@ -62,47 +35,51 @@ export function useEquipment() {
         }
     };
 
+    // ✅ ใช้ filterMultiple จาก backend
     const applyFilters = async (filters: FilterParams) => {
         setLoading(true);
         setError(null);
         try {
-            let data: EquipmentView[] = [];
-            if (filters.keyword) {
-                data = await equipment_api.equipment.search(filters.keyword);
-            } else if (filters.typeId || filters.statusId) {
-                data = await equipment_api.equipment.filterMultiple({
-                    typeId: filters.typeId,
-                    statusId: filters.statusId,
-                });
-            } else {
-                data = await equipment_api.equipment.getAll();
-            }
+            const data = await equipment.equipment.filterMultiple(filters);
             setEquipments(data);
         } catch {
-            setError('ไม่สามารถกรองข้อมูลได้');
+            setError('ไม่สามารถดึงข้อมูลอุปกรณ์ได้');
         } finally {
             setLoading(false);
         }
     };
 
+    // ✅ ดึงรายละเอียดอุปกรณ์แต่ละชิ้น
     const fetchEquipmentDetail = async (id: number, showModalOnOpen = false) => {
         if (showModalOnOpen) setShowModal(true);
         setLoadingDetail(true);
         setErrorDetail(null);
-
         try {
-            const data = await equipment_api.equipment.getById(id);
+            const data = await equipment.equipment.getById(id);
             setSelectedEquipment(data);
         } catch (err: unknown) {
             if (err instanceof Error) {
-                console.error("Fetch error:", err.message);
                 setErrorDetail(`เกิดข้อผิดพลาด: ${err.message}`);
             } else {
-                console.error("Unknown error:", err);
                 setErrorDetail('ไม่สามารถดึงรายละเอียดอุปกรณ์ได้');
             }
         } finally {
             setLoadingDetail(false);
+        }
+    };
+
+    // ✅ ลบอุปกรณ์
+    const deleteEquipment = async (id: number) => {
+        const confirmDelete = window.confirm('ต้องการลบอุปกรณ์นี้หรือไม่?');
+        if (!confirmDelete) return false;
+        try {
+            await equipment.equipment.delete(id);
+            alert('ลบอุปกรณ์สำเร็จ');
+            await fetchEquipments();
+            return true;
+        } catch (err: any) {
+            alert(err.message || 'เกิดข้อผิดพลาดในการลบอุปกรณ์');
+            return false;
         }
     };
 
@@ -114,7 +91,6 @@ export function useEquipment() {
         setErrorDetail(null);
     };
 
-    // ==================== Return ====================
     return {
         equipments,
         loading,
@@ -130,5 +106,6 @@ export function useEquipment() {
         openDetailModal,
         closeDetailModal,
         retryFetchDetail,
+        deleteEquipment,
     };
 }

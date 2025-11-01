@@ -1,7 +1,7 @@
 import {BorrowCreateData, BorrowCreateResponse, BorrowStatus, BorrowView, EquipmentView} from "@/types/type";
 
 const API_URL = process.env.API_URL || 'http://localhost:8080';
-export const borrow_api = {
+export const borrow = {
     borrow: {
 
         getAll: async (): Promise<BorrowView[]> => {

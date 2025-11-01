@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
-
+import {lot} from "@/lib/api/lot/lot";
 // ==================== Types ====================
 
 export interface EquipmentItem {
@@ -20,16 +19,6 @@ interface LotType {
     lotTypeName: string;
 }
 
-interface LotData {
-    lotName: string;
-    academicYear: string;
-    purchaseDate: string;
-    expireDate: string;
-    referenceDoc: string;
-    lotDescription: string;
-    lotTypeId: number;
-    items: EquipmentItem[];
-}
 
 // ==================== Custom Hook ====================
 
@@ -43,11 +32,11 @@ export function useAddEquipment() {
 
     // Loading & Error
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
     // Lot Types (Master Data)
-    const [lotTypes, setLotTypes] = useState<LotType[]>([]);
+    const [lotTypes] = useState<LotType[]>([]);
 
     // Lot Information
     const [lotName, setLotName] = useState('');
@@ -58,7 +47,8 @@ export function useAddEquipment() {
     const [lotDescription, setLotDescription] = useState('');
     const [lotTypeId, setLotTypeId] = useState<number>(1);
 
-    // Equipment Items
+
+    // Equipment Items เป็นตัวแรกตอน fetch หน้ามาเพราะถ้าเราไม่มีค่าตรงนี้ก็จะไม่มีให้กรอกลายละเอียดอุปกรณ์
     const [items, setItems] = useState<EquipmentItem[]>([
         {
             id: '1',
@@ -71,30 +61,6 @@ export function useAddEquipment() {
             description: ''
         }
     ]);
-
-    // ==================== Functions ====================
-
-    /**
-     * ดึง Lot Types จาก Backend
-     */
-    const fetchLotTypes = async () => {
-        try {
-            const data = await api.lot.getTypes();
-            setLotTypes(data);
-            if (data.length > 0) {
-                setLotTypeId(data[0].id);
-            }
-        } catch (err) {
-            console.error('Error fetching lot types:', err);
-            // Fallback ถ้า API ยังไม่พร้อม
-            setLotTypes([
-                { id: 1, lotTypeName: 'Purchase' },
-                { id: 2, lotTypeName: 'Rent' },
-                { id: 3, lotTypeName: 'Borrow' },
-                { id: 4, lotTypeName: 'Trial' }
-            ]);
-        }
-    };
 
     /**
      * เพิ่มรายการอุปกรณ์ใหม่
@@ -127,7 +93,7 @@ export function useAddEquipment() {
     /**
      * อัปเดตข้อมูลรายการอุปกรณ์
      */
-    const updateItem = (id: string, field: keyof EquipmentItem, value: any) => {
+    const updateItem = (id: string, field: keyof EquipmentItem, value: string) => {
         setItems(items.map(item =>
             item.id === id ? { ...item, [field]: value } : item
         ));
@@ -177,15 +143,16 @@ export function useAddEquipment() {
             referenceDoc: referenceDoc.trim() || null,
             description: lotDescription.trim() || null,
             lotTypeId: lotTypeId,
-            items: items.map(item => ({
+            // ✅ เปลี่ยนชื่อ field จาก items → equipmentList
+            equipmentList: items.map(item => ({
                 equipmentName: item.equipmentName.trim(),
                 brand: item.brand.trim() || null,
                 model: item.model.trim() || null,
                 serialNumber: item.type === 'hardware' ? item.serialNumber.trim() : null,
                 licenseKey: item.type === 'license' ? item.licenseKey.trim() : null,
-                equipmentTypeId: item.type === 'hardware' ? 2 : 1, // 1=Software/License, 2=Hardware
+                equipmentTypeId: item.type === 'hardware' ? 2 : 1, // 2=Hardware, 1=License
                 equipmentStatusId: 1, // Default = Available
-            }))
+            })),
         };
     };
 
@@ -196,23 +163,18 @@ export function useAddEquipment() {
         // Validate
         const validationError = validateData();
         if (validationError) {
-            setError(validationError);
             return false;
         }
 
         setLoading(true);
-        setError(null);
         setSuccess(false);
 
         try {
             // เตรียมข้อมูล
             const lotData = prepareSubmitData();
-
             console.log('🚀 Sending data to API:', lotData);
-
             // เรียก API
-            const result = await api.lot.create(lotData);
-
+            const result = await lot.create(lotData);
             console.log('✅ API Response:', result);
 
             // Success
@@ -227,7 +189,6 @@ export function useAddEquipment() {
 
         } catch (err: any) {
             console.error('❌ Error adding equipment:', err);
-            setError(err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
             return false;
         } finally {
             setLoading(false);
@@ -257,7 +218,6 @@ export function useAddEquipment() {
                 description: ''
             }
         ]);
-        setError(null);
         setSuccess(false);
     };
 
@@ -306,13 +266,11 @@ export function useAddEquipment() {
         items,
 
         // Functions
-        fetchLotTypes,
         addItem,
         removeItem,
         updateItem,
         submitEquipment,
         resetForm,
         cancel,
-        setError, // สำหรับล้าง error
     };
 }

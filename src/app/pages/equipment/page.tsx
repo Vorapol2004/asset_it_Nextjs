@@ -3,41 +3,32 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/component/Navbar/Navbar';
 import {
     RefreshCw, Package, Search, X, ChevronDown, Eye,
-    Calendar, FileText, Tag, AlertCircle
+    Calendar, FileText, Tag, AlertCircle, Trash2
 } from 'lucide-react';
 import { useEquipment } from '@/hooks/useEquipment';
+import { useMasterData } from '@/hooks/useMasterData';
 import { EquipmentView } from '@/types/type';
 
 export default function EquipmentPage() {
-
-    // ✅ ใช้ Hook ที่รวม Modal Logic แล้ว
     const {
-        // List States
         equipments,
         loading,
         error,
-
-        // Modal States
         showModal,
         selectedEquipment,
         loadingDetail,
         errorDetail,
-
-        // DropDownData
-        statuses,
-        types,
-
-        // List Functions
         fetchEquipments,
         applyFilters,
-
-        // Modal Functions
         openDetailModal,
         closeDetailModal,
         retryFetchDetail,
+        deleteEquipment,
     } = useEquipment();
 
+
     // ✅ State สำหรับ UI เท่านั้น
+    const { statuses, equipmentTypes: types } = useMasterData();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [selectedType, setSelectedType] = useState<string>('all');
@@ -55,11 +46,16 @@ export default function EquipmentPage() {
         setSearchTerm('');
         setSelectedStatus('all');
         setSelectedType('all');
+        applyFilters({});
     };
 
     useEffect(() => {
         handleApplyFilters();
     }, [selectedStatus, selectedType]);
+
+    useEffect(() => {
+        handleApplyFilters(); // โหลดทั้งหมดตอนเริ่มต้น
+    }, []); //รันครั้งเดียวตอน mount
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -149,7 +145,7 @@ export default function EquipmentPage() {
                                     className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-indigo-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
                                 >
                                     <option value="all">ทั้งหมด</option>
-                                    {statuses.map((s) => (
+                                    {statuses?.map((s) => (
                                         <option key={s.id} value={s.id}>
                                             {s.equipmentStatusName}
                                         </option>
@@ -223,22 +219,20 @@ export default function EquipmentPage() {
                                 <table className="w-full">
                                     <thead className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white">
                                     <tr>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">ID</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">ชื่ออุปกรณ์</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">ยี่ห้อ/รุ่น</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">LOT</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">ปีการศึกษา</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">ประเภท</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">สถานะ</th>
+                                        <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider ">ชื่ออุปกรณ์</th>
+                                        <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider ">ยี่ห้อ/รุ่น</th>
+                                        <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">LOT</th>
+                                        <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">ปีการศึกษา</th>
+                                        <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">ประเภท</th>
+                                        <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">สถานะ</th>
+                                        <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">ลบ</th>
                                         <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">Actions</th>
                                     </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
                                     {equipments.map((eq, i) => (
                                         <tr key={eq.id} className={`hover:bg-indigo-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                                            <td className="px-6 py-3">
-                                                <span className="font-bold text-indigo-600">#{eq.id}</span>
-                                            </td>
+
                                             <td className="px-6 py-3">
                                                 <span className="font-semibold text-gray-900">{eq.equipmentName}</span>
                                             </td>
@@ -289,6 +283,17 @@ export default function EquipmentPage() {
                                                     {eq.equipmentStatusName}
                                                 </span>
                                             </td>
+
+                                            <td className="px-6 py-3">
+                                                <button
+                                                    onClick={() => deleteEquipment(eq.id)}
+                                                    className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 font-medium text-sm cursor-pointer"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    ลบ
+                                                </button>
+                                            </td>
+
 
                                             {/* ✅ เรียกใช้ฟังก์ชันจาก Hook */}
                                             <td className="px-6 py-3">

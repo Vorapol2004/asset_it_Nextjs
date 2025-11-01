@@ -1,8 +1,8 @@
-import {BorrowCreateData, BorrowCreateResponse, BorrowView, EquipmentView} from "@/types/type";
+import { BorrowView } from "@/types/type";
 
-const API_URL = process.env.API_ENDPOINT || 'http://localhost:8080';
+import {API_URL} from "@/lib/config";
 
-export const borrow_history_api = {
+export const borrow_history = {
 
     filterMultiple: async (params: {
         statusId?: number;

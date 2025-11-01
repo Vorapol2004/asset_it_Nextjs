@@ -1,8 +1,8 @@
 import {Department} from "@/types/type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+import {API_URL} from "@/lib/config";
 
-export const CRUD_department_api = {
+export const CRUD_department = {
 
     department: {
         getAll: async (): Promise<Department[]> => {

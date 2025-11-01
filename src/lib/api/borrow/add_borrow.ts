@@ -1,7 +1,7 @@
 import {Equipment,} from "@/types/type";
 
 const API_URL = process.env.API_URL || 'http://localhost:8080';
-export const add_borrow_api = {
+export const add_borrow = {
     /**
      *  สร้างอุปกรณ์ใหม่
      */
