@@ -49,6 +49,28 @@ export function useEquipment() {
         }
     };
 
+    // ✅  ฟังก์ชันค้นหาอุปกรณ์
+    const searchEquipment = async (keyword: string) => {
+        if (!keyword.trim()) {
+            // ถ้าไม่ใส่ keyword ให้โหลดทั้งหมดแทน
+            await fetchEquipments();
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/equipment/search?keyword=${encodeURIComponent(keyword)}`);
+            if (!res.ok) throw new Error('ไม่สามารถค้นหาได้');
+            const data = await res.json();
+            setEquipments(data);
+        } catch (err) {
+            setError('เกิดข้อผิดพลาดในการค้นหา');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // ✅ ดึงรายละเอียดอุปกรณ์แต่ละชิ้น
     const fetchEquipmentDetail = async (id: number, showModalOnOpen = false) => {
         if (showModalOnOpen) setShowModal(true);
@@ -101,6 +123,7 @@ export function useEquipment() {
         errorDetail,
         statuses,
         types,
+        searchEquipment,
         fetchEquipments,
         applyFilters,
         openDetailModal,

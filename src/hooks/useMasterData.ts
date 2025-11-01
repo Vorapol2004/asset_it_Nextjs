@@ -19,14 +19,19 @@ export function useMasterData() {
 
     const fetchEquipmentTypes = async () => {
         try {
+            console.log("🔍 Fetching equipment types...");
             const res = await fetch(`${API_URL}/equipment/equipmentType/dropDown`);
+            console.log("Status:", res.status);
             const data = await res.json();
+            console.log("Response:", data);
             if (Array.isArray(data)) setEquipmentTypes(data);
-            else setEquipmentTypes([]); // ป้องกัน error ตอน 500
-        } catch {
+            else setEquipmentTypes([]);
+        } catch (error) {
+            console.error("Error fetching equipment types:", error);
             setEquipmentTypes([]);
         }
     };
+
 
     const fetchStatuses = async () => {
         try {

@@ -44,7 +44,6 @@ export default function AddEquipmentPage() {
         updateItem,
         submitEquipment,
         cancel,
-        setError,
     } = useAddEquipment();
 
     // ✅ master data เช่น dropdown (ดึงจาก API ครั้งเดียว)
@@ -89,7 +88,7 @@ export default function AddEquipmentPage() {
                             <p className="text-red-700 text-sm mt-1">{error}</p>
                         </div>
                         <button
-                            onClick={() => setError(null)}
+                            onClick={() =>(null)}
                             className="text-red-400 hover:text-red-600 ml-4"
                         >
                             <X className="h-5 w-5" />

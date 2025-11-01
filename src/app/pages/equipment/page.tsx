@@ -18,6 +18,7 @@ export default function EquipmentPage() {
         selectedEquipment,
         loadingDetail,
         errorDetail,
+        searchEquipment,
         fetchEquipments,
         applyFilters,
         openDetailModal,
@@ -26,20 +27,20 @@ export default function EquipmentPage() {
         deleteEquipment,
     } = useEquipment();
 
-
-    // ✅ State สำหรับ UI เท่านั้น
     const { statuses, equipmentTypes: types } = useMasterData();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [selectedType, setSelectedType] = useState<string>('all');
 
-    // ✅ UI Handlers
     const handleApplyFilters = async () => {
-        await applyFilters({
-            typeId: selectedType !== 'all' ? Number(selectedType) : undefined,
-            statusId: selectedStatus !== 'all' ? Number(selectedStatus) : undefined,
-            keyword: searchTerm.trim() || undefined,
-        });
+        if (searchTerm.trim()) {
+            await searchEquipment(searchTerm); //เรียก search
+        } else {
+            await applyFilters({
+                typeId: selectedType !== 'all' ? Number(selectedType) : undefined,
+                statusId: selectedStatus !== 'all' ? Number(selectedStatus) : undefined,
+            });
+        }
     };
 
     const handleClearFilters = () => {
@@ -49,13 +50,14 @@ export default function EquipmentPage() {
         applyFilters({});
     };
 
+    // 🔥 แก้ useEffect - auto filter เมื่อเปลี่ยน status/type
     useEffect(() => {
-        handleApplyFilters();
+        applyFilters({
+            typeId: selectedType !== 'all' ? Number(selectedType) : undefined,
+            statusId: selectedStatus !== 'all' ? Number(selectedStatus) : undefined,
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedStatus, selectedType]);
-
-    useEffect(() => {
-        handleApplyFilters(); // โหลดทั้งหมดตอนเริ่มต้น
-    }, []); //รันครั้งเดียวตอน mount
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -242,7 +244,7 @@ export default function EquipmentPage() {
                                                 </span>
                                             </td>
 
-                                            <td className="px-6 py-3">
+                                            <td className="px-6 py-3 text-center">
                                                 {eq.lotName ? (
                                                     <span className="text-gray-700 font-medium">{eq.lotName}</span>
                                                 ) : (

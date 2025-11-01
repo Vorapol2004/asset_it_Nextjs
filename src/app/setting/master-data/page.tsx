@@ -564,7 +564,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Briefcase, Building as BuildingIcon, Layers, DoorOpen,
-    Plus, Trash2, Edit, Search, AlertCircle, Loader2, ArrowLeft, X, Save, CheckCircle
+    Plus, Trash2, Edit, Search, Loader2, ArrowLeft, X, Save, CheckCircle
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Department, Building, Floor, Room } from '@/types/type';
