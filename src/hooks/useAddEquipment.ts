@@ -128,7 +128,7 @@ export function useAddEquipment() {
             }
         }
 
-        return null; // No error
+        return null;
     };
 
     /**

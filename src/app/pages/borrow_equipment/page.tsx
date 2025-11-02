@@ -13,7 +13,6 @@ import {
     CheckCircle,
     ClipboardList,
     Search,
-    Clock,
 } from 'lucide-react';
 
 export default function BorrowEquipmentLandingPage() {

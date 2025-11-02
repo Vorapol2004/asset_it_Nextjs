@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import Utcclogo from '../img/Utcclogo.png';
 import { Package, Menu, X, Home, History, PlusCircle, LogOut, User, Laptop, Settings } from 'lucide-react';
 import Link from 'next/link';
-import { api } from '@/lib/api';
 import { useUser } from '@/hooks/useUser';
 import { ROUTES, NAV_ITEMS } from '@/constants/routes';
 
