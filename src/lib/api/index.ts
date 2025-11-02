@@ -6,7 +6,6 @@ import { borrow_history} from './borrow/borrow_history';
 import { employee } from './employee/employee';
 import { CRUD_building } from './location/CRUD_building';
 import { CRUD_department } from './location/CRUD_department';
-import { CRUD_floor } from './location/CRUD_floor';
 import { CRUD_room } from './location/CRUD_room';
 
 export const api = {
@@ -18,6 +17,5 @@ export const api = {
     employee,
     CRUD_building,
     CRUD_department,
-    CRUD_floor,
     CRUD_room,
 };

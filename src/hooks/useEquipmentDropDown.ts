@@ -1,37 +1,25 @@
 import { useState, useEffect } from 'react';
 import { API_URL } from '@/lib/config';
 
-export function useMasterData() {
-    const [lotTypes, setLotTypes] = useState<{ id: number; lotTypeName: string }[]>([]);
+/**
+ * Hook สำหรับดึง dropdown data ที่ใช้ในหน้า equipment
+ * - Equipment Statuses
+ * - Equipment Types
+ */
+export function useEquipmentDropDown() {
     const [equipmentTypes, setEquipmentTypes] = useState<{ id: number; equipmentTypeName: string }[]>([]);
     const [statuses, setStatuses] = useState<{ id: number; equipmentStatusName: string }[]>([]);
 
-    const fetchLotTypes = async () => {
-        try {
-            const res = await fetch(`${API_URL}/equipment/lotType/dropDown`);
-            const data = await res.json();
-            if (Array.isArray(data)) setLotTypes(data);
-            else setLotTypes([]); // ป้องกัน error
-        } catch {
-            setLotTypes([]);
-        }
-    };
-
     const fetchEquipmentTypes = async () => {
         try {
-            console.log("🔍 Fetching equipment types...");
             const res = await fetch(`${API_URL}/equipment/equipmentType/dropDown`);
-            console.log("Status:", res.status);
             const data = await res.json();
-            console.log("Response:", data);
             if (Array.isArray(data)) setEquipmentTypes(data);
             else setEquipmentTypes([]);
-        } catch (error) {
-            console.error("Error fetching equipment types:", error);
+        } catch {
             setEquipmentTypes([]);
         }
     };
-
 
     const fetchStatuses = async () => {
         try {
@@ -45,10 +33,10 @@ export function useMasterData() {
     };
 
     useEffect(() => {
-        fetchLotTypes();
         fetchEquipmentTypes();
         fetchStatuses();
     }, []);
 
-    return { lotTypes, equipmentTypes, statuses };
+    return { equipmentTypes, statuses };
 }
+

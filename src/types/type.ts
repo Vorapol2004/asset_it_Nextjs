@@ -448,7 +448,6 @@ export interface ApiError {
 }
 
 
-
 // UTILITY TYPES
 export type EquipmentStatusType = 'available' | 'borrowed' | 'damaged' | 'lost';
 export type EquipmentTypeType = 'software' | 'hardware' | 'other';

@@ -12,7 +12,7 @@ export const ROUTES = {
     EQUIPMENT: '/pages/equipment',
     OLD_EQUIPMENT: '/pages/borrow_equipment/old_borrow',
     NEW_EQUIPMENT: '/pages/borrow_equipment/new_borrow',
-    MASTER_EQUIPMENT: '/setting/master-data',
+    SETTINGS_MASTER_DATA: '/setting/master-data',
 
 } as const;
 
@@ -49,7 +49,7 @@ export const NAV_ITEMS = [
     },
     {
         label: 'ตั้งค่า',
-        path: ROUTES.MASTER_EQUIPMENT,
+        path: ROUTES.SETTINGS_MASTER_DATA,
         icon: 'Settings',
     }
 

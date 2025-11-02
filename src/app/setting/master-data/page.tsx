@@ -686,9 +686,15 @@ function DepartmentSection() {
     };
 
     const handleAdd = () => {
-        setEditingId(null);
+        setEditingId(null); // ✅ ตั้งเป็น null เพื่อบอกว่าเป็นการเพิ่ม
         setFormData({ departmentName: '', isActive: true });
         setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setEditingId(null); // ✅ Reset เมื่อปิด modal
+        setFormData({ departmentName: '', isActive: true }); // ✅ Reset form data
     };
 
     const handleEdit = (dept: Department) => {
@@ -704,7 +710,7 @@ function DepartmentSection() {
             } else {
                 await api.department.create(formData);
             }
-            setShowModal(false);
+            handleCloseModal();
             fetchDepartments();
             alert(editingId ? '✅ แก้ไขเรียบร้อย' : '✅ เพิ่มเรียบร้อย');
         } catch (error) {
@@ -809,8 +815,8 @@ function DepartmentSection() {
                                 {editingId ? 'แก้ไขแผนก' : 'เพิ่มแผนก'}
                             </h3>
                             <button
-                                onClick={() => setShowModal(false)}
-                                className="text-gray-500 hover:text-gray-700"
+                                onClick={handleCloseModal}
+                                className="text-gray-500 hover:text-gray-700 cursor-pointer"
                             >
                                 <X className="h-6 w-6" />
                             </button>
@@ -857,7 +863,7 @@ function DepartmentSection() {
 
                         <div className="flex justify-end gap-3 mt-6">
                             <button
-                                onClick={() => setShowModal(false)}
+                                onClick={handleCloseModal}
                                 className="px-6 py-2 border-2 text-gray-600 border-gray-300 rounded-lg hover:bg-gray-400 cursor-pointer transition-all duration-300 ease-in-out"
                             >
                                 ยกเลิก
@@ -918,9 +924,15 @@ function BuildingSection() {
     };
 
     const handleAdd = () => {
-        setEditingId(null);
+        setEditingId(null); // ✅ ตั้งเป็น null เพื่อบอกว่าเป็นการเพิ่ม
         setFormData({ buildingName: '', isActive: true });
         setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setEditingId(null); // ✅ Reset เมื่อปิด modal
+        setFormData({ buildingName: '', isActive: true }); // ✅ Reset form data
     };
 
     const handleEdit = (item: Building) => {
@@ -936,7 +948,7 @@ function BuildingSection() {
             } else {
                 await api.building.create(formData);
             }
-            setShowModal(false);
+            handleCloseModal();
             fetchBuildings();
             alert(editingId ? '✅ แก้ไขเรียบร้อย' : '✅ เพิ่มเรียบร้อย');
         } catch (error) {
@@ -1034,11 +1046,11 @@ function BuildingSection() {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl">
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50">
+                    <div className="bg-white/90 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border border-gray-200">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-2xl font-bold">{editingId ? 'แก้ไขตึก' : 'เพิ่มตึก'}</h3>
-                            <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">
+                            <h3 className="text-2xl font-bold text-gray-900">{editingId ? 'แก้ไขตึก' : 'เพิ่มตึก'}</h3>
+                            <button onClick={handleCloseModal} className="text-gray-500 hover:text-gray-700 cursor-pointer">
                                 <X className="h-6 w-6" />
                             </button>
                         </div>
@@ -1083,10 +1095,10 @@ function BuildingSection() {
                         </div>
 
                         <div className="flex justify-end gap-3 mt-6">
-                            <button onClick={() => setShowModal(false)} className="px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100">
+                            <button onClick={handleCloseModal} className="px-6 py-2 border-2 text-gray-600 border-gray-300 rounded-lg hover:bg-gray-400 cursor-pointer transition-all duration-300 ease-in-out">
                                 ยกเลิก
                             </button>
-                            <button onClick={handleSubmit} disabled={!formData.buildingName.trim()} className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400">
+                            <button onClick={handleSubmit} disabled={!formData.buildingName.trim()} className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 cursor-pointer transition-all duration-300 ease-in-out">
                                 <Save className="h-5 w-5 inline mr-2" />
                                 บันทึก
                             </button>
@@ -1127,6 +1139,9 @@ function FloorSection() {
     const [buildings, setBuildings] = useState<Building[]>(mockBuildings);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [formData, setFormData] = useState({ floorName: '', buildingId: 0, isActive: true });
 
     // Join building data กับ floor
     const floorsWithBuilding = floors.map(floor => ({
@@ -1135,6 +1150,52 @@ function FloorSection() {
     }));
 
     const filtered = floorsWithBuilding.filter(f => f.floorName.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const handleAdd = () => {
+        setEditingId(null); // ✅ ตั้งเป็น null เพื่อบอกว่าเป็นการเพิ่ม
+        setFormData({ floorName: '', buildingId: 0, isActive: true });
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setEditingId(null); // ✅ Reset เมื่อปิด modal
+        setFormData({ floorName: '', buildingId: 0, isActive: true }); // ✅ Reset form data
+    };
+
+    const handleEdit = (item: Floor) => {
+        setEditingId(item.id);
+        setFormData({ floorName: item.floorName, buildingId: item.buildingId, isActive: item.isActive });
+        setShowModal(true);
+    };
+
+    const handleSubmit = async () => {
+        try {
+            // TODO: เมื่อมี API ให้เรียก api.floor.create หรือ api.floor.update
+            // if (editingId) {
+            //     await api.floor.update(editingId, formData);
+            // } else {
+            //     await api.floor.create(formData);
+            // }
+            handleCloseModal();
+            // fetchFloors();
+            alert(editingId ? '✅ แก้ไขเรียบร้อย' : '✅ เพิ่มเรียบร้อย');
+        } catch (error) {
+            alert('❌ เกิดข้อผิดพลาด');
+        }
+    };
+
+    const handleDelete = async (id: number, name: string) => {
+        if (!window.confirm(`ต้องการลบ "${name}" ใช่หรือไม่?`)) return;
+        try {
+            // TODO: เมื่อมี API ให้เรียก api.floor.delete(id);
+            // await api.floor.delete(id);
+            // fetchFloors();
+            alert('✅ ลบเรียบร้อย');
+        } catch (error) {
+            alert('❌ ไม่สามารถลบได้');
+        }
+    };
 
     return (
         <div>
@@ -1147,7 +1208,7 @@ function FloorSection() {
                         <p className="text-gray-600">มีทั้งหมด {floors.length} ชั้น</p>
                     </div>
                 </div>
-                <button className="flex items-center px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-all shadow-md font-semibold">
+                <button onClick={handleAdd} className="flex items-center px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-all shadow-md font-semibold cursor-pointer">
                     <Plus className="h-5 w-5 mr-2" />
                     เพิ่มชั้น
                 </button>
@@ -1197,10 +1258,10 @@ function FloorSection() {
                         </td>
                         <td className="px-6 py-4">
                             <div className="flex justify-center gap-2">
-                                <button className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg">
+                                <button onClick={() => handleEdit(item)} className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg cursor-pointer">
                                     <Edit className="h-5 w-5" />
                                 </button>
-                                <button className="p-2 text-red-600 hover:bg-red-100 rounded-lg">
+                                <button onClick={() => handleDelete(item.id, item.floorName)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg cursor-pointer">
                                     <Trash2 className="h-5 w-5" />
                                 </button>
                             </div>
@@ -1209,6 +1270,97 @@ function FloorSection() {
                 ))}
                 </tbody>
             </table>
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50">
+                    <div className="bg-white/90 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border border-gray-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-2xl font-bold text-gray-900">
+                                {editingId ? 'แก้ไขชั้น' : 'เพิ่มชั้น'}
+                            </h3>
+                            <button
+                                onClick={handleCloseModal}
+                                className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                            >
+                                <X className="h-6 w-6" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold mb-2 text-gray-800">ชื่อชั้น *</label>
+                                <input
+                                    type="text"
+                                    value={formData.floorName}
+                                    onChange={(e) => setFormData({ ...formData, floorName: e.target.value })}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-orange-500"
+                                    placeholder="เช่น ชั้น 1"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold mb-2 text-gray-800">ตึก *</label>
+                                <select
+                                    value={formData.buildingId}
+                                    onChange={(e) => setFormData({ ...formData, buildingId: Number(e.target.value) })}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-orange-500"
+                                >
+                                    <option value={0}>เลือกตึก</option>
+                                    {buildings.filter(b => b.isActive).map((building) => (
+                                        <option key={building.id} value={building.id}>
+                                            {building.buildingName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold mb-2 text-gray-800">สถานะ</label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center text-gray-600 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            checked={formData.isActive === true}
+                                            onChange={() => setFormData({ ...formData, isActive: true })}
+                                            className="mr-2"
+                                        />
+                                        <CheckCircle className="h-5 w-5 text-green-600 mr-1" />
+                                        ใช้งาน
+                                    </label>
+                                    <label className="flex items-center text-gray-600 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            checked={formData.isActive === false}
+                                            onChange={() => setFormData({ ...formData, isActive: false })}
+                                            className="mr-2"
+                                        />
+                                        <X className="h-5 w-5 text-red-600 mr-1" />
+                                        ไม่ใช้งาน
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button
+                                onClick={handleCloseModal}
+                                className="px-6 py-2 border-2 text-gray-600 border-gray-300 rounded-lg hover:bg-gray-400 cursor-pointer transition-all duration-300 ease-in-out"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                onClick={handleSubmit}
+                                disabled={!formData.floorName.trim() || formData.buildingId === 0}
+                                className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 cursor-pointer transition-all duration-300 ease-in-out"
+                            >
+                                <Save className="h-5 w-5 inline mr-2" />
+                                บันทึก
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -1243,10 +1395,23 @@ function RoomSection() {
         { id: 8, floorName: 'ชั้น 1 (ซ่อม)', buildingId: 3, isActive: false, createdAt: '2024-01-22T00:00:00Z', updatedAt: '2024-06-20T00:00:00Z' },
     ];
 
+    const mockBuildings: Building[] = [
+        { id: 1, buildingName: 'อาคาร A', isActive: true, createdAt: '2024-01-15T00:00:00Z', updatedAt: '2024-01-15T00:00:00Z' },
+        { id: 2, buildingName: 'อาคาร B', isActive: true, createdAt: '2024-01-16T00:00:00Z', updatedAt: '2024-01-16T00:00:00Z' },
+        { id: 3, buildingName: 'อาคาร C (ปรับปรุง)', isActive: false, createdAt: '2024-01-17T00:00:00Z', updatedAt: '2024-06-20T00:00:00Z' },
+        { id: 4, buildingName: 'อาคารจอดรถ', isActive: true, createdAt: '2024-01-18T00:00:00Z', updatedAt: '2024-01-18T00:00:00Z' },
+        { id: 5, buildingName: 'โกดังสินค้า 1', isActive: true, createdAt: '2024-01-19T00:00:00Z', updatedAt: '2024-01-19T00:00:00Z' },
+        { id: 6, buildingName: 'โกดังสินค้า 2', isActive: true, createdAt: '2024-01-20T00:00:00Z', updatedAt: '2024-01-20T00:00:00Z' },
+    ];
+
     const [rooms, setRooms] = useState<Room[]>(mockRooms);
     const [floors, setFloors] = useState<Floor[]>(mockFloors);
+    const [buildings] = useState<Building[]>(mockBuildings);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [formData, setFormData] = useState({ roomName: '', floorId: 0, isActive: true });
 
     // Join floor data กับ room
     const roomsWithFloor = rooms.map(room => ({
@@ -1255,6 +1420,52 @@ function RoomSection() {
     }));
 
     const filtered = roomsWithFloor.filter(r => r.roomName.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const handleAdd = () => {
+        setEditingId(null); // ✅ ตั้งเป็น null เพื่อบอกว่าเป็นการเพิ่ม
+        setFormData({ roomName: '', floorId: 0, isActive: true });
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setEditingId(null); // ✅ Reset เมื่อปิด modal
+        setFormData({ roomName: '', floorId: 0, isActive: true }); // ✅ Reset form data
+    };
+
+    const handleEdit = (item: Room) => {
+        setEditingId(item.id);
+        setFormData({ roomName: item.roomName, floorId: item.floorId, isActive: item.isActive });
+        setShowModal(true);
+    };
+
+    const handleSubmit = async () => {
+        try {
+            // TODO: เมื่อมี API ให้เรียก api.room.create หรือ api.room.update
+            // if (editingId) {
+            //     await api.room.update(editingId, formData);
+            // } else {
+            //     await api.room.create(formData);
+            // }
+            handleCloseModal();
+            // fetchRooms();
+            alert(editingId ? '✅ แก้ไขเรียบร้อย' : '✅ เพิ่มเรียบร้อย');
+        } catch (error) {
+            alert('❌ เกิดข้อผิดพลาด');
+        }
+    };
+
+    const handleDelete = async (id: number, name: string) => {
+        if (!window.confirm(`ต้องการลบ "${name}" ใช่หรือไม่?`)) return;
+        try {
+            // TODO: เมื่อมี API ให้เรียก api.room.delete(id);
+            // await api.room.delete(id);
+            // fetchRooms();
+            alert('✅ ลบเรียบร้อย');
+        } catch (error) {
+            alert('❌ ไม่สามารถลบได้');
+        }
+    };
 
     return (
         <div>
@@ -1267,7 +1478,7 @@ function RoomSection() {
                         <p className="text-gray-600">มีทั้งหมด {rooms.length} ห้อง</p>
                     </div>
                 </div>
-                <button className="flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-md font-semibold">
+                <button onClick={handleAdd} className="flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-md font-semibold cursor-pointer">
                     <Plus className="h-5 w-5 mr-2" />
                     เพิ่มห้อง
                 </button>
@@ -1317,10 +1528,10 @@ function RoomSection() {
                         </td>
                         <td className="px-6 py-4">
                             <div className="flex justify-center gap-2">
-                                <button className="p-2 text-purple-600 hover:bg-purple-100 rounded-lg">
+                                <button onClick={() => handleEdit(item)} className="p-2 text-purple-600 hover:bg-purple-100 rounded-lg cursor-pointer">
                                     <Edit className="h-5 w-5" />
                                 </button>
-                                <button className="p-2 text-red-600 hover:bg-red-100 rounded-lg">
+                                <button onClick={() => handleDelete(item.id, item.roomName)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg cursor-pointer">
                                     <Trash2 className="h-5 w-5" />
                                 </button>
                             </div>
@@ -1329,6 +1540,97 @@ function RoomSection() {
                 ))}
                 </tbody>
             </table>
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50">
+                    <div className="bg-white/90 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border border-gray-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-2xl font-bold text-gray-900">
+                                {editingId ? 'แก้ไขห้อง' : 'เพิ่มห้อง'}
+                            </h3>
+                            <button
+                                onClick={handleCloseModal}
+                                className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                            >
+                                <X className="h-6 w-6" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold mb-2 text-gray-800">ชื่อห้อง *</label>
+                                <input
+                                    type="text"
+                                    value={formData.roomName}
+                                    onChange={(e) => setFormData({ ...formData, roomName: e.target.value })}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500"
+                                    placeholder="เช่น ห้อง 101"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold mb-2 text-gray-800">ชั้น *</label>
+                                <select
+                                    value={formData.floorId}
+                                    onChange={(e) => setFormData({ ...formData, floorId: Number(e.target.value) })}
+                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500"
+                                >
+                                    <option value={0}>เลือกชั้น</option>
+                                    {floors.filter(f => f.isActive).map((floor) => (
+                                        <option key={floor.id} value={floor.id}>
+                                            {floor.floorName} ({buildings.find(b => b.id === floor.buildingId)?.buildingName})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold mb-2 text-gray-800">สถานะ</label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center text-gray-600 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            checked={formData.isActive === true}
+                                            onChange={() => setFormData({ ...formData, isActive: true })}
+                                            className="mr-2"
+                                        />
+                                        <CheckCircle className="h-5 w-5 text-green-600 mr-1" />
+                                        ใช้งาน
+                                    </label>
+                                    <label className="flex items-center text-gray-600 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            checked={formData.isActive === false}
+                                            onChange={() => setFormData({ ...formData, isActive: false })}
+                                            className="mr-2"
+                                        />
+                                        <X className="h-5 w-5 text-red-600 mr-1" />
+                                        ไม่ใช้งาน
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button
+                                onClick={handleCloseModal}
+                                className="px-6 py-2 border-2 text-gray-600 border-gray-300 rounded-lg hover:bg-gray-400 cursor-pointer transition-all duration-300 ease-in-out"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                onClick={handleSubmit}
+                                disabled={!formData.roomName.trim() || formData.floorId === 0}
+                                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 cursor-pointer transition-all duration-300 ease-in-out"
+                            >
+                                <Save className="h-5 w-5 inline mr-2" />
+                                บันทึก
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

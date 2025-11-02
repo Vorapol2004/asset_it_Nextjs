@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+
 import Navbar from '@/component/Navbar/Navbar';
 import {
     RefreshCw,
@@ -16,94 +16,38 @@ import {
     Calendar,
     ChevronDown,
 } from 'lucide-react';
-import { useBorrow } from '@/hooks/useBorrow';
-import { BorrowView } from '@/types/type';
-import { api } from '@/lib/api';
+import { useBorrowHistory } from '@/hooks/useBorrowHistory';
 
-const STATUS_MAP: Record<number, { label: string; color: string; icon: React.ElementType }> = {
-    1: { label: 'กำลังยืม', color: 'bg-yellow-100 text-yellow-800 border-yellow-300', icon: Clock },
-    2: { label: 'คืนแล้ว', color: 'bg-green-100 text-green-800 border-green-300', icon: CheckCircle },
-    3: { label: 'คืนบางส่วน', color: 'bg-blue-100 text-blue-800 border-blue-300', icon: Package },
-    4: { label: 'เกินกำหนด', color: 'bg-red-100 text-red-800 border-red-300', icon: AlertCircle },
-};
-
-type GroupedBorrow = Omit<BorrowView, 'items'> & {
-    items: BorrowView[];
+const STATUS_ICONS: Record<number, React.ElementType> = {
+    1: Clock,
+    2: CheckCircle,
+    3: Package,
+    4: AlertCircle,
 };
 
 export default function BorrowHistoryPage() {
-    const { returnEquipmentItem } = useBorrow();
-
-    const [records, setRecords] = useState<BorrowView[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [selected, setSelected] = useState<GroupedBorrow | null>(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedStatus, setSelectedStatus] = useState<string>('all');
-    const [selectedRole, setSelectedRole] = useState<string>('all');
-    const [selectedType, setSelectedType] = useState<string>('all');
-
-    // จัดกลุ่มข้อมูลตาม borrowId
-    const groupedRecords = records.reduce<GroupedBorrow[]>((acc, record) => {
-        const existingGroup = acc.find(g => g.id === record.id);
-
-        if (existingGroup) {
-            existingGroup.items.push(record);
-        } else {
-            const newGroup: GroupedBorrow = {
-                ...record,
-                items: [record]
-            };
-            acc.push(newGroup);
-        }
-
-        return acc;
-    }, []);
-
-    // ฟังก์ชัน Filter หลายเงื่อนไขพร้อมกัน (เรียก Backend API)
-    const applyFilters = async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            const data = await api.borrow.filterMultiple({
-                statusId: selectedStatus !== 'all' ? Number(selectedStatus) : undefined,
-                roleName: selectedRole !== 'all' ? selectedRole : undefined,
-                equipmentType: selectedType !== 'all' ? selectedType : undefined,
-                keyword: searchTerm.trim() || undefined,
-            });
-
-            setRecords(data);
-
-            if (data.length === 0) {
-                setError('ไม่พบรายการที่ตรงกับเงื่อนไขที่เลือก');
-            }
-        } catch (err) {
-            console.error('❌ กรองข้อมูลล้มเหลว:', err);
-            setError('ไม่สามารถกรองข้อมูลได้');
-            setRecords([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // ล้างฟิลเตอร์ทั้งหมด
-    const handleClearFilters = () => {
-        setSearchTerm('');
-        setSelectedStatus('all');
-        setSelectedRole('all');
-        setSelectedType('all');
-    };
-
-    // โหลดข้อมูลครั้งแรก
-    useEffect(() => {
-        applyFilters();
-    }, []);
-
-    // เรียก API ทันทีเมื่อ filter อื่นๆ เปลี่ยน (ยกเว้น searchTerm)
-    useEffect(() => {
-        applyFilters();
-    }, [selectedStatus, selectedRole, selectedType]);
+    const {
+        groupedRecords,
+        selected,
+        statuses,
+        roles,
+        equipmentTypes,
+        STATUS_MAP,
+        searchTerm,
+        selectedStatus,
+        selectedRole,
+        selectedType,
+        loading,
+        error,
+        setSearchTerm,
+        setSelectedStatus,
+        setSelectedRole,
+        setSelectedType,
+        setSelected,
+        applyFilters,
+        handleClearFilters,
+        returnEquipmentItem,
+    } = useBorrowHistory();
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -113,7 +57,7 @@ export default function BorrowHistoryPage() {
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-green-600 flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">ประวัติการยืมอุปกรณ์</h1>
-                        <p className="text-gray-600">ทั้งหมด {groupedRecords.length} ธุรกรรม ({records.length} รายการอุปกรณ์)</p>
+                        <p className="text-gray-600">ทั้งหมด {groupedRecords.length} ธุรกรรม ({groupedRecords.reduce((sum, g) => sum + g.items.length, 0)} รายการอุปกรณ์)</p>
                     </div>
                     <button
                         onClick={() => {
@@ -194,9 +138,9 @@ export default function BorrowHistoryPage() {
                                     className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-green-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
                                 >
                                     <option value="all">ทั้งหมด</option>
-                                    {Object.entries(STATUS_MAP).map(([id, { label }]) => (
-                                        <option key={id} value={id}>
-                                            {label}
+                                    {statuses.map((status) => (
+                                        <option key={status.id} value={status.id}>
+                                            {status.borrowStatusName}
                                         </option>
                                     ))}
                                 </select>
@@ -217,9 +161,11 @@ export default function BorrowHistoryPage() {
                                     className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-green-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
                                 >
                                     <option value="all">ทุกตำแหน่ง</option>
-                                    <option value="พนักงาน">พนักงาน</option>
-                                    <option value="อาจารย์">อาจารย์</option>
-                                    <option value="ส่วนกลาง">ส่วนกลาง</option>
+                                    {roles.map((role) => (
+                                        <option key={role.id} value={role.roleName}>
+                                            {role.roleName}
+                                        </option>
+                                    ))}
                                 </select>
                                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                             </div>
@@ -238,8 +184,11 @@ export default function BorrowHistoryPage() {
                                     className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-green-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
                                 >
                                     <option value="all">ทุกประเภท</option>
-                                    <option value="hardware">Hardware</option>
-                                    <option value="software">Software/License</option>
+                                    {equipmentTypes.map((type) => (
+                                        <option key={type.id} value={type.equipmentTypeName}>
+                                            {type.equipmentTypeName}
+                                        </option>
+                                    ))}
                                 </select>
                                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                             </div>
@@ -289,6 +238,7 @@ export default function BorrowHistoryPage() {
                                 <tbody className="divide-y divide-gray-200">
                                 {groupedRecords.map((group, i) => {
                                     const status = STATUS_MAP[group.borrowStatusId];
+                                    const StatusIcon = STATUS_ICONS[group.borrowStatusId];
                                     return (
                                         <tr key={group.id} className={`hover:bg-green-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                                             <td className="px-4 py-3">
@@ -308,7 +258,8 @@ export default function BorrowHistoryPage() {
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${status?.color || 'bg-gray-100 text-gray-700'}`}>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold border flex items-center gap-1 w-fit ${status?.color || 'bg-gray-100 text-gray-700'}`}>
+                                                    {StatusIcon && <StatusIcon className="h-3 w-3" />}
                                                     {status?.label || group.borrowStatusName}
                                                 </span>
                                             </td>
@@ -439,7 +390,7 @@ export default function BorrowHistoryPage() {
                                             ) : (
                                                 <button
                                                     onClick={async () => {
-                                                        await returnEquipmentItem(item.equipmentId);
+                                                        await returnEquipmentItem(item.borrowEquipmentId);
                                                         setSelected(null);
                                                     }}
                                                     className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"

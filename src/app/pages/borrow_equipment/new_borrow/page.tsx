@@ -1,388 +1,51 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import {
     Package, Plus, Trash2, Save, User, Calendar, FileText,
-    Mail, Phone, Building2, Layers, DoorOpen, Briefcase, UserCheck, ArrowLeft, Key, Laptop
+    Mail, Phone, Building2, DoorOpen, Briefcase, UserCheck, ArrowLeft, Key, Laptop
 } from 'lucide-react';
-import { api } from '@/lib/api';
-import { EquipmentView } from '@/types/type';
+import { useNewBorrow } from '@/hooks/useNewBorrow';
 import { ROUTES } from '@/constants/routes';
-
-// ✅ แก้ไข BorrowItem ให้กรอกข้อมูลเอง ไม่ใช่เลือกจาก dropdown
-interface BorrowItem {
-    equipmentType: string; // 'Hardware' | 'Software'
-    equipmentName: string; // ชื่ออุปกรณ์ (กรอกเอง)
-    brand: string;         // ยี่ห้อ (กรอกเอง)
-    model: string;         // รุ่น (กรอกเอง)
-    serialNumber?: string; // SN (Hardware)
-    licenseKey?: string;   // License (Software)
-    notes?: string;
-}
-
-interface Building {
-    id: number;
-    buildingName: string;
-}
-
-interface Floor {
-    id: number;
-    floorName: string;
-    buildingId: number;
-}
-
-interface Room {
-    id: number;
-    roomName: string;
-    floorId: number;
-}
-
-interface Department {
-    id: number;
-    departmentName: string;
-}
-
-// ✅ ข้อมูลที่ได้จาก old_borrow (ครบทุกอย่างยกเว้นวันที่และอุปกรณ์)
-interface SelectedBorrowerData {
-    borrowerFirstName: string;
-    borrowerLastName: string;
-    borrowerEmail: string;
-    borrowerPhone: string;
-    borrowerRole: string;
-    buildingId: number;
-    buildingName: string;
-    floorId: number;
-    floorName: string;
-    roomId: number;
-    roomName: string;
-    departmentId: number;
-    departmentName: string;
-    approverName: string;
-}
 
 export default function NewBorrowPage() {
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [equipmentList, setEquipmentList] = useState<EquipmentView[]>([]);
-
-    // Location & Organization
-    const [buildings, setBuildings] = useState<Building[]>([]);
-    const [floors, setFloors] = useState<Floor[]>([]);
-    const [rooms, setRooms] = useState<Room[]>([]);
-    const [departments, setDepartments] = useState<Department[]>([]);
-    const [borrowerRole, setBorrowerRole] = useState('');
-
-    // ✅ เปลี่ยนลำดับ: แผนก → ตึก → ชั้น → ห้อง
-    const [selectedDepartment, setSelectedDepartment] = useState<number>(0);
-    const [selectedBuilding, setSelectedBuilding] = useState<number>(0);
-    const [selectedFloor, setSelectedFloor] = useState<number>(0);
-    const [selectedRoom, setSelectedRoom] = useState<number>(0);
-    const [approverName, setApproverName] = useState('');
-
-    // ข้อมูลผู้ยืม
-    const [borrowerFirstName, setBorrowerFirstName] = useState('');
-    const [borrowerLastName, setBorrowerLastName] = useState('');
-    const [borrowerEmail, setBorrowerEmail] = useState('');
-    const [borrowerPhone, setBorrowerPhone] = useState('');
-    const [borrowDate, setBorrowDate] = useState('');
-    const [dueDate, setDueDate] = useState('');
-    const [referenceDoc, setReferenceDoc] = useState('');
-
-    // ✅ แก้ไข borrowItems ให้มีฟิลด์สำหรับกรอกเอง
-    const [borrowItems, setBorrowItems] = useState<BorrowItem[]>([
-        {
-            equipmentType: 'Hardware',
-            equipmentName: '',
-            brand: '',
-            model: '',
-            serialNumber: '',
-            licenseKey: '',
-            notes: ''
-        }
-    ]);
-
-    // ✅ Auto-fill จาก sessionStorage เมื่อมาจากหน้า old_borrow
-    useEffect(() => {
-        const selectedBorrowerData = sessionStorage.getItem('selectedBorrower');
-        if (selectedBorrowerData) {
-            try {
-                const data: SelectedBorrowerData = JSON.parse(selectedBorrowerData);
-
-                console.log('📥 Auto-filling data from old_borrow:', data);
-
-                // ✅ Auto-fill ข้อมูลผู้ยืม
-                setBorrowerFirstName(data.borrowerFirstName || '');
-                setBorrowerLastName(data.borrowerLastName || '');
-                setBorrowerEmail(data.borrowerEmail || '');
-                setBorrowerPhone(data.borrowerPhone || '');
-                setBorrowerRole(data.borrowerRole || '');
-
-                // ✅ Auto-fill หน่วยงาน (เลือกก่อน)
-                setSelectedDepartment(data.departmentId || 0);
-
-                // ✅ Auto-fill สถานที่
-                setSelectedBuilding(data.buildingId || 0);
-                setSelectedFloor(data.floorId || 0);
-                setSelectedRoom(data.roomId || 0);
-
-                // ✅ Auto-fill ผู้อนุมัติ
-                setApproverName(data.approverName || '');
-
-                // ✅ ล้างข้อมูลใน sessionStorage หลังใช้งาน
-                sessionStorage.removeItem('selectedBorrower');
-            } catch (error) {
-                console.error('Error parsing selected borrower data:', error);
-            }
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchAvailableEquipment();
-        fetchBuildings();
-        fetchDepartments();
-    }, []);
-
-    // ✅ Auto-fetch floors เมื่อ building ถูก auto-select
-    useEffect(() => {
-        if (selectedBuilding > 0) {
-            fetchFloors(selectedBuilding);
-        } else {
-            setFloors([]);
-            setRooms([]);
-        }
-    }, [selectedBuilding]);
-
-    // ✅ Auto-fetch rooms เมื่อ floor ถูก auto-select
-    useEffect(() => {
-        if (selectedFloor > 0) {
-            fetchRooms(selectedFloor);
-        } else {
-            setRooms([]);
-        }
-    }, [selectedFloor]);
-
-    const fetchAvailableEquipment = async () => {
-        try {
-            const data = await api.borrow.getAvailableEquipment();
-            setEquipmentList(data);
-        } catch (error) {
-            console.error('Error fetching available equipment:', error);
-        }
-    };
-
-    const fetchBuildings = async () => {
-        try {
-            setBuildings([
-                { id: 1, buildingName: 'อาคาร 1' },
-                { id: 2, buildingName: 'อาคาร 2' },
-                { id: 3, buildingName: 'อาคาร 3' }
-            ]);
-        } catch (error) {
-            console.error('Error fetching buildings:', error);
-        }
-    };
-
-    const fetchFloors = async (buildingId: number) => {
-        try {
-            setFloors([
-                { id: 1, floorName: 'ชั้น 1', buildingId },
-                { id: 2, floorName: 'ชั้น 2', buildingId },
-                { id: 3, floorName: 'ชั้น 3', buildingId }
-            ]);
-        } catch (error) {
-            console.error('Error fetching floors:', error);
-        }
-    };
-
-    const fetchRooms = async (floorId: number) => {
-        try {
-            setRooms([
-                { id: 1, roomName: 'ห้อง 101', floorId },
-                { id: 2, roomName: 'ห้อง 102', floorId },
-                { id: 3, roomName: 'ห้อง 103', floorId },
-                { id: 201, roomName: 'ห้อง 201', floorId },
-                { id: 205, roomName: 'ห้อง 205', floorId },
-                { id: 301, roomName: 'ห้อง 301', floorId }
-            ]);
-        } catch (error) {
-            console.error('Error fetching rooms:', error);
-        }
-    };
-
-    const fetchDepartments = async () => {
-        try {
-            setDepartments([
-                { id: 1, departmentName: 'ฝ่ายไอที' },
-                { id: 2, departmentName: 'ฝ่ายบัญชี' },
-                { id: 3, departmentName: 'ฝ่ายทรัพยากรบุคคล' }
-            ]);
-        } catch (error) {
-            console.error('Error fetching departments:', error);
-        }
-    };
-
-    const addBorrowItem = () => {
-        setBorrowItems([
-            ...borrowItems,
-            {
-                equipmentType: 'Hardware', // ✅ Default เป็น Hardware
-                equipmentName: '',
-                brand: '',
-                model: '',
-                serialNumber: '',
-                licenseKey: '',
-                notes: ''
-            }
-        ]);
-    };
-
-    const removeBorrowItem = (index: number) => {
-        if (borrowItems.length > 1) {
-            const newItems = borrowItems.filter((_, i) => i !== index);
-            setBorrowItems(newItems);
-        }
-    };
-
-    // ✅ แก้ไข updateBorrowItem ให้รองรับการเปลี่ยน equipmentType
-    const updateBorrowItem = (index: number, field: keyof BorrowItem, value: string | number) => {
-        const newItems = [...borrowItems];
-
-        // ✅ เมื่อเปลี่ยน equipmentType ให้ clear Serial/License
-        if (field === 'equipmentType') {
-            newItems[index] = {
-                ...newItems[index],
-                equipmentType: value as string,
-                serialNumber: '',
-                licenseKey: ''
-            };
-        } else {
-            newItems[index] = {
-                ...newItems[index],
-                [field]: value
-            };
-        }
-
-        setBorrowItems(newItems);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            // ✅ Validate
-            if (!borrowerFirstName.trim() || !borrowerLastName.trim()) {
-                alert('กรุณากรอกชื่อ-นามสกุลผู้ยืม');
-                setLoading(false);
-                return;
-            }
-
-            if (!borrowerRole) {
-                alert('กรุณาเลือกตำแหน่งผู้ยืม');
-                setLoading(false);
-                return;
-            }
-
-            if (selectedDepartment === 0) {
-                alert('กรุณาเลือกแผนก');
-                setLoading(false);
-                return;
-            }
-
-            if (selectedBuilding === 0 || selectedFloor === 0 || selectedRoom === 0) {
-                alert('กรุณาเลือกสถานที่ (ตึก, ชั้น, ห้อง)');
-                setLoading(false);
-                return;
-            }
-
-            if (!approverName.trim()) {
-                alert('กรุณากรอกชื่อผู้อนุมัติ');
-                setLoading(false);
-                return;
-            }
-
-            if (!borrowDate || !dueDate) {
-                alert('กรุณาเลือกวันที่ยืมและวันที่คืน');
-                setLoading(false);
-                return;
-            }
-
-            if (!borrowerPhone.trim()) {
-                alert('กรุณากรอกเบอร์โทรศัพท์');
-                setLoading(false);
-                return;
-            }
-
-            // ✅ Validate ประเภทและชื่ออุปกรณ์
-            const hasInvalidItems = borrowItems.some(
-                item => !item.equipmentType || !item.equipmentName.trim()
-            );
-            if (hasInvalidItems) {
-                alert('กรุณาเลือกประเภทและกรอกชื่ออุปกรณ์ให้ครบทุกรายการ');
-                setLoading(false);
-                return;
-            }
-
-            // ✅ Validate Serial Number / License Key
-            for (let i = 0; i < borrowItems.length; i++) {
-                const item = borrowItems[i];
-
-                if (item.equipmentType === 'Hardware' && !item.serialNumber?.trim()) {
-                    alert(`กรุณากรอก Serial Number ในรายการที่ ${i + 1}`);
-                    setLoading(false);
-                    return;
-                }
-
-                if (item.equipmentType === 'License' && !item.licenseKey?.trim()) {
-                    alert(`กรุณากรอก License Key ในรายการที่ ${i + 1}`);
-                    setLoading(false);
-                    return;
-                }
-            }
-
-            // ✅ Prepare data for Spring Boot API
-            const borrowData = {
-                borrowerFirstName: borrowerFirstName.trim(),
-                borrowerLastName: borrowerLastName.trim(),
-                borrowerEmail: borrowerEmail.trim() || null,
-                borrowerPhone: borrowerPhone.trim() || null,
-                borrowerRole: borrowerRole,
-                departmentId: selectedDepartment,
-                buildingId: selectedBuilding,
-                floorId: selectedFloor,
-                roomId: selectedRoom,
-                approverName: approverName.trim(),
-                borrowDate: borrowDate,
-                dueDate: dueDate,
-                referenceDoc: referenceDoc || null,
-                items: borrowItems.map(item => ({
-                    equipmentType: item.equipmentType,
-                    equipmentName: item.equipmentName.trim(),
-                    brand: item.brand.trim() || null,
-                    model: item.model.trim() || null,
-                    serialNumber: item.equipmentType === 'Hardware' ? item.serialNumber?.trim() : null,
-                    licenseKey: item.equipmentType === 'License' ? item.licenseKey?.trim() : null,
-                    notes: item.notes || undefined
-                }))
-            };
-
-            console.log('📤 Submitting borrow data:', borrowData);
-
-            // TODO: เรียก API Spring Boot
-            // const response = await api.borrow.createBorrow(borrowData);
-            // console.log('✅ Borrow created:', response);
-
-            alert('✅ บันทึกการยืมเรียบร้อยแล้ว!');
-            router.push(ROUTES.BORROW_EQUIPMENT);
-        } catch (error) {
-            console.error('Error submitting borrow:', error);
-            alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const {
+        loading,
+        buildings,
+        rooms,
+        departments,
+        borrowerRole,
+        selectedDepartment,
+        selectedBuilding,
+        selectedRoom,
+        approverName,
+        borrowerFirstName,
+        borrowerLastName,
+        borrowerEmail,
+        borrowerPhone,
+        borrowDate,
+        dueDate,
+        referenceDoc,
+        borrowItems,
+        setBorrowerRole,
+        setSelectedDepartment,
+        setSelectedBuilding,
+        setSelectedRoom,
+        setApproverName,
+        setBorrowerFirstName,
+        setBorrowerLastName,
+        setBorrowerEmail,
+        setBorrowerPhone,
+        setBorrowDate,
+        setDueDate,
+        setReferenceDoc,
+        addBorrowItem,
+        removeBorrowItem,
+        updateBorrowItem,
+        handleSubmit,
+    } = useNewBorrow();
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -514,7 +177,7 @@ export default function NewBorrowPage() {
                             <Building2 className="h-6 w-6 mr-2 text-blue-600" />
                             สถานที่และหน่วยงาน
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {/* แผนก */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -548,32 +211,11 @@ export default function NewBorrowPage() {
                                         onChange={(e) => setSelectedBuilding(Number(e.target.value))}
                                         className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium cursor-pointer outline-none focus:border-blue-500"
                                         required
+                                        disabled={selectedDepartment === 0}
                                     >
                                         <option value={0}>-- เลือกตึก --</option>
                                         {buildings.map(b => (
                                             <option key={b.id} value={b.id}>{b.buildingName}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* ชั้น */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                    ชั้น <span className="text-red-500">*</span>
-                                </label>
-                                <div className="relative">
-                                    <Layers className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                    <select
-                                        value={selectedFloor}
-                                        onChange={(e) => setSelectedFloor(Number(e.target.value))}
-                                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium cursor-pointer outline-none focus:border-blue-500"
-                                        required
-                                        disabled={selectedBuilding === 0}
-                                    >
-                                        <option value={0}>-- เลือกชั้น --</option>
-                                        {floors.map(f => (
-                                            <option key={f.id} value={f.id}>{f.floorName}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -591,7 +233,7 @@ export default function NewBorrowPage() {
                                         onChange={(e) => setSelectedRoom(Number(e.target.value))}
                                         className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium cursor-pointer outline-none focus:border-blue-500"
                                         required
-                                        disabled={selectedFloor === 0}
+                                        disabled={selectedBuilding === 0}
                                     >
                                         <option value={0}>-- เลือกห้อง --</option>
                                         {rooms.map(r => (
@@ -678,7 +320,7 @@ export default function NewBorrowPage() {
                         </div>
                     </div>
 
-                    {/* ✅ รายการอุปกรณ์ - คัดลอกจาก add_equipment */}
+                    {/* รายการอุปกรณ์ */}
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
                         <div className="flex justify-between items-center mb-4 pb-3 border-b-2 border-blue-100">
                             <h2 className="text-xl font-semibold text-gray-900 flex items-center">

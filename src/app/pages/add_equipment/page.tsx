@@ -16,7 +16,7 @@ import {
     X
 } from 'lucide-react';
 import { useAddEquipment } from '@/hooks/useAddEquipment';
-import { useMasterData } from '@/hooks/useMasterData';
+import { useAddEquipmentDropDown } from '@/hooks/useAddEquipmentDropDown';
 
 export default function AddEquipmentPage() {
     // ✅ ฟอร์มและการบันทึก (ไม่เกี่ยวกับ master data)
@@ -46,8 +46,8 @@ export default function AddEquipmentPage() {
         cancel,
     } = useAddEquipment();
 
-    // ✅ master data เช่น dropdown (ดึงจาก API ครั้งเดียว)
-    const { lotTypes, equipmentTypes } = useMasterData();
+    // ✅ dropdown data สำหรับ add_equipment
+    const { lotTypes, equipmentTypes } = useAddEquipmentDropDown();
 
     // ✅ Submit ฟอร์ม
     const handleSubmit = async (e: React.FormEvent) => {

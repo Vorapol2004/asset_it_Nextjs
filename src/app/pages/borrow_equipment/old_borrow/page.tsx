@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import {
@@ -8,208 +7,18 @@ import {
     History, ChevronRight, Mail, Phone, Building2, Briefcase
 } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
-
-// ✅ ข้อมูลผู้ยืมเก่า + ข้อมูลครั้งล่าสุดที่ยืม
-interface PreviousBorrower {
-    id: number;
-    borrowerFirstName: string;
-    borrowerLastName: string;
-    borrowerEmail: string;
-    borrowerPhone: string;
-    borrowerRole: string;
-
-
-    // ข้อมูลจากครั้งล่าสุดที่ยืม
-    buildingId: number;
-    buildingName: string;
-    floorId: number;
-    floorName: string;
-    roomId: number;
-    roomName: string;
-    departmentId: number;
-    departmentName: string;
-    approverName: string;
-
-    lastBorrowDate: string;
-    borrowCount: number;
-}
+import { useOldBorrow } from '@/hooks/useOldBorrow';
 
 export default function OldBorrowPage() {
     const router = useRouter();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [borrowers, setBorrowers] = useState<PreviousBorrower[]>([]);
-    const [filteredBorrowers, setFilteredBorrowers] = useState<PreviousBorrower[]>([]);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        fetchPreviousBorrowers();
-    }, []);
-
-    useEffect(() => {
-        if (searchTerm.trim() === '') {
-            setFilteredBorrowers(borrowers);
-        } else {
-            const filtered = borrowers.filter(b =>
-                b.borrowerFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                b.borrowerLastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                b.borrowerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                b.borrowerPhone.includes(searchTerm)
-            );
-            setFilteredBorrowers(filtered);
-        }
-    }, [searchTerm, borrowers]);
-
-    const fetchPreviousBorrowers = async () => {
-        setLoading(true);
-        try {
-            // TODO: Replace with real Spring Boot API
-            // const response = await fetch('http://localhost:8080/employee/all', {
-            //     method: 'GET',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            // });
-            // const data = await response.json();
-            // setBorrowers(data);
-            // setFilteredBorrowers(data);
-
-            // ✅ Mock data ชั่วคราว (รวมข้อมูลครั้งล่าสุด)
-            const mockData: PreviousBorrower[] = [
-                {
-                    id: 1,
-                    borrowerFirstName: 'สมชาย',
-                    borrowerLastName: 'ใจดี',
-                    borrowerEmail: 'somchai@email.com',
-                    borrowerPhone: '081-234-5678',
-                    borrowerRole: 'พนักงาน',
-                    // ข้อมูลจากครั้งล่าสุด
-                    buildingId: 1,
-                    buildingName: 'อาคาร 1',
-                    floorId: 2,
-                    floorName: 'ชั้น 2',
-                    roomId: 3,
-                    roomName: 'ห้อง 201',
-                    departmentId: 1,
-                    departmentName: 'ฝ่ายไอที',
-                    approverName: 'ผู้จัดการไอที',
-                    lastBorrowDate: '2025-01-15',
-                    borrowCount: 5
-                },
-                {
-                    id: 2,
-                    borrowerFirstName: 'สมหญิง',
-                    borrowerLastName: 'รักงาน',
-                    borrowerEmail: 'somying@email.com',
-                    borrowerPhone: '082-345-6789',
-                    borrowerRole: 'ส่วนกลาง',
-                    buildingId: 2,
-                    buildingName: 'อาคาร 2',
-                    floorId: 1,
-                    floorName: 'ชั้น 1',
-                    roomId: 2,
-                    roomName: 'ห้อง 105',
-                    departmentId: 2,
-                    departmentName: 'ฝ่ายบัญชี',
-                    approverName: 'หัวหน้าบัญชี',
-                    lastBorrowDate: '2025-01-10',
-                    borrowCount: 3
-                },
-                {
-                    id: 3,
-                    borrowerFirstName: 'วิชัย',
-                    borrowerLastName: 'สุขใจ',
-                    borrowerEmail: 'wichai@email.com',
-                    borrowerPhone: '083-456-7890',
-                    borrowerRole: 'ส่วนกลาง',
-                    buildingId: 1,
-                    buildingName: 'อาคาร 1',
-                    floorId: 3,
-                    floorName: 'ชั้น 3',
-                    roomId: 1,
-                    roomName: 'ห้อง 301',
-                    departmentId: 3,
-                    departmentName: 'ฝ่ายทรัพยากรบุคคล',
-                    approverName: 'ผู้อำนวยการ HR',
-                    lastBorrowDate: '2024-12-20',
-                    borrowCount: 2
-                },
-                {
-                    id: 4,
-                    borrowerFirstName: 'ประภา',
-                    borrowerLastName: 'มั่นใจ',
-                    borrowerEmail: 'prapa@email.com',
-                    borrowerPhone: '084-567-8901',
-                    borrowerRole: 'พนักงาน',
-                    buildingId: 3,
-                    buildingName: 'อาคาร 3',
-                    floorId: 2,
-                    floorName: 'ชั้น 2',
-                    roomId: 3,
-                    roomName: 'ห้อง 205',
-                    departmentId: 1,
-                    departmentName: 'ฝ่ายไอที',
-                    approverName: 'ผู้จัดการไอที',
-                    lastBorrowDate: '2024-12-05',
-                    borrowCount: 7
-                },
-                {
-                    id: 5,
-                    borrowerFirstName: 'ธนาคาร',
-                    borrowerLastName: 'เจริญ',
-                    borrowerEmail: 'thanakarn@email.com',
-                    borrowerPhone: '085-678-9012',
-                    borrowerRole: 'พนักงาน',
-                    buildingId: 2,
-                    buildingName: 'อาคาร 2',
-                    floorId: 3,
-                    floorName: 'ชั้น 3',
-                    roomId: 1,
-                    roomName: 'ห้อง 301',
-                    departmentId: 2,
-                    departmentName: 'ฝ่ายบัญชี',
-                    approverName: 'หัวหน้าบัญชี',
-                    lastBorrowDate: '2024-11-28',
-                    borrowCount: 4
-                }
-            ];
-
-            setBorrowers(mockData);
-            setFilteredBorrowers(mockData);
-        } catch (error) {
-            console.error('Error fetching previous borrowers:', error);
-            alert('❌ ไม่สามารถดึงข้อมูลผู้ยืมเก่าได้');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSelectBorrower = (borrower: PreviousBorrower) => {
-        // ✅ ส่งข้อมูลเฉพาะข้อมูลส่วนตัว
-        const selectedData = {
-            // ข้อมูลผู้ยืม
-            borrowerFirstName: borrower.borrowerFirstName,
-            borrowerLastName: borrower.borrowerLastName,
-            borrowerEmail: borrower.borrowerEmail,
-            borrowerPhone: borrower.borrowerPhone,
-            borrowerRole: borrower.borrowerRole,
-
-        };
-
-        // เก็บข้อมูลใน sessionStorage
-        sessionStorage.setItem('selectedBorrower', JSON.stringify(selectedData));
-
-        // Redirect ไปหน้า new_borrow
-        router.push(ROUTES.NEW_EQUIPMENT);
-    };
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('th-TH', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-    };
+    const {
+        searchTerm,
+        filteredBorrowers,
+        loading,
+        setSearchTerm,
+        handleSelectBorrower,
+        formatDate,
+    } = useOldBorrow();
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -312,32 +121,42 @@ export default function OldBorrowPage() {
                                                             </div>
                                                             <span className="font-medium">{borrower.borrowerEmail}</span>
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                                                            <div className="bg-green-100 p-1.5 rounded-lg">
-                                                                <Phone className="h-4 w-4 text-green-600" />
+                                                        {borrower.borrowerPhone && (
+                                                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                                                <div className="bg-green-100 p-1.5 rounded-lg">
+                                                                    <Phone className="h-4 w-4 text-green-600" />
+                                                                </div>
+                                                                <span className="font-medium">{borrower.borrowerPhone}</span>
                                                             </div>
-                                                            <span className="font-medium">{borrower.borrowerPhone}</span>
-                                                        </div>
+                                                        )}
                                                     </div>
 
-                                                    {/* ✅ แสดงข้อมูลครั้งล่าสุดที่ยืม */}
-                                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                                                        <p className="text-xs font-semibold text-blue-800 mb-2">📍 ข้อมูลจากครั้งล่าสุด:</p>
-                                                        <div className="grid grid-cols-2 gap-2 text-xs">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <Building2 className="h-3 w-3 text-blue-600" />
-                                                                <span className="text-gray-700">{borrower.buildingName} › {borrower.floorName} › {borrower.roomName}</span>
+                                                    {/* แสดงข้อมูลครั้งล่าสุดที่ยืม (ถ้ามี) */}
+                                                    {(borrower.buildingName || borrower.departmentName || borrower.approverName) && (
+                                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                                                            <p className="text-xs font-semibold text-blue-800 mb-2">📍 ข้อมูลจากครั้งล่าสุด:</p>
+                                                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                                                {borrower.buildingName && (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Building2 className="h-3 w-3 text-blue-600" />
+                                                                        <span className="text-gray-700">{borrower.buildingName} {borrower.roomName ? `› ${borrower.roomName}` : ''}</span>
+                                                                    </div>
+                                                                )}
+                                                                {borrower.departmentName && (
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Briefcase className="h-3 w-3 text-blue-600" />
+                                                                        <span className="text-gray-700">{borrower.departmentName}</span>
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                            <div className="flex items-center gap-1.5">
-                                                                <Briefcase className="h-3 w-3 text-blue-600" />
-                                                                <span className="text-gray-700">{borrower.departmentName}</span>
-                                                            </div>
+                                                            {borrower.approverName && (
+                                                                <div className="mt-2 flex items-center gap-1.5 text-xs">
+                                                                    <User className="h-3 w-3 text-blue-600" />
+                                                                    <span className="text-gray-700">ผู้อนุมัติ: {borrower.approverName}</span>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        <div className="mt-2 flex items-center gap-1.5 text-xs">
-                                                            <User className="h-3 w-3 text-blue-600" />
-                                                            <span className="text-gray-700">ผู้อนุมัติ: {borrower.approverName}</span>
-                                                        </div>
-                                                    </div>
+                                                    )}
 
                                                     <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
                                                         <span className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-lg">

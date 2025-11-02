@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { EquipmentView } from '@/types/type';
 import { equipment } from '@/lib/api/equipment/equipment';
-import { useMasterData } from '@/hooks/useMasterData';
+import { useEquipmentDropDown } from '@/hooks/useEquipmentDropDown';
 
 interface FilterParams {
     typeId?: number;
@@ -18,15 +18,15 @@ export function useEquipment() {
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
-    // ✅ ใช้ master data (ดึง dropdown จาก hook กลาง)
-    const { statuses, equipmentTypes: types } = useMasterData();
+    // ✅ ใช้ dropdown data สำหรับ equipment
+    const { statuses, equipmentTypes: types } = useEquipmentDropDown();
 
     // ✅ ดึงข้อมูลอุปกรณ์ทั้งหมด
     const fetchEquipments = async () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await equipment.equipment.getAll();
+            const data = await equipment.getAll();
             setEquipments(data);
         } catch {
             setError('ไม่สามารถดึงข้อมูลอุปกรณ์ได้');
@@ -35,13 +35,31 @@ export function useEquipment() {
         }
     };
 
-    // ✅ ใช้ filterMultiple จาก backend
+    /**
+     * กรองอุปกรณ์ตาม type และ status
+     * Note: ถ้าต้องการค้นหา keyword ต้องเรียก searchEquipment() แยก
+     */
     const applyFilters = async (filters: FilterParams) => {
         setLoading(true);
         setError(null);
         try {
-            const data = await equipment.equipment.filterMultiple(filters);
-            setEquipments(data);
+            // ถ้ามี keyword → เรียก search
+            if (filters.keyword && filters.keyword.trim()) {
+                const data = await equipment.search(filters.keyword);
+                setEquipments(data);
+            }
+            // ถ้ามี type หรือ status → เรียก filter
+            else if (filters.typeId || filters.statusId) {
+                const data = await equipment.filter({
+                    typeId: filters.typeId,
+                    statusId: filters.statusId,
+                });
+                setEquipments(data);
+            }
+            // ไม่มี filter → เรียกทั้งหมด
+            else {
+                await fetchEquipments();
+            }
         } catch {
             setError('ไม่สามารถดึงข้อมูลอุปกรณ์ได้');
         } finally {
@@ -49,10 +67,11 @@ export function useEquipment() {
         }
     };
 
-    // ✅  ฟังก์ชันค้นหาอุปกรณ์
+    /**
+     * ค้นหาอุปกรณ์ด้วย keyword (เรียก API ตรงๆ)
+     */
     const searchEquipment = async (keyword: string) => {
         if (!keyword.trim()) {
-            // ถ้าไม่ใส่ keyword ให้โหลดทั้งหมดแทน
             await fetchEquipments();
             return;
         }
@@ -60,11 +79,9 @@ export function useEquipment() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/equipment/search?keyword=${encodeURIComponent(keyword)}`);
-            if (!res.ok) throw new Error('ไม่สามารถค้นหาได้');
-            const data = await res.json();
+            const data = await equipment.search(keyword);
             setEquipments(data);
-        } catch (err) {
+        } catch {
             setError('เกิดข้อผิดพลาดในการค้นหา');
         } finally {
             setLoading(false);
@@ -77,7 +94,7 @@ export function useEquipment() {
         setLoadingDetail(true);
         setErrorDetail(null);
         try {
-            const data = await equipment.equipment.getById(id);
+            const data = await equipment.getById(id);
             setSelectedEquipment(data);
         } catch (err: unknown) {
             if (err instanceof Error) {
@@ -95,7 +112,7 @@ export function useEquipment() {
         const confirmDelete = window.confirm('ต้องการลบอุปกรณ์นี้หรือไม่?');
         if (!confirmDelete) return false;
         try {
-            await equipment.equipment.delete(id);
+            await equipment.delete(id);
             alert('ลบอุปกรณ์สำเร็จ');
             await fetchEquipments();
             return true;

@@ -6,7 +6,6 @@ import {
     Calendar, FileText, Tag, AlertCircle, Trash2
 } from 'lucide-react';
 import { useEquipment } from '@/hooks/useEquipment';
-import { useMasterData } from '@/hooks/useMasterData';
 import { EquipmentView } from '@/types/type';
 
 export default function EquipmentPage() {
@@ -18,6 +17,8 @@ export default function EquipmentPage() {
         selectedEquipment,
         loadingDetail,
         errorDetail,
+        statuses,
+        types,
         searchEquipment,
         fetchEquipments,
         applyFilters,
@@ -27,19 +28,25 @@ export default function EquipmentPage() {
         deleteEquipment,
     } = useEquipment();
 
-    const { statuses, equipmentTypes: types } = useMasterData();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [selectedType, setSelectedType] = useState<string>('all');
 
     const handleApplyFilters = async () => {
+        // ถ้ามี keyword → เรียก search
         if (searchTerm.trim()) {
-            await searchEquipment(searchTerm); //เรียก search
-        } else {
+            await searchEquipment(searchTerm);
+        } 
+        // ถ้ามี type หรือ status → เรียก filter
+        else if (selectedType !== 'all' || selectedStatus !== 'all') {
             await applyFilters({
                 typeId: selectedType !== 'all' ? Number(selectedType) : undefined,
                 statusId: selectedStatus !== 'all' ? Number(selectedStatus) : undefined,
             });
+        }
+        // ไม่มี filter → เรียกทั้งหมด
+        else {
+            await fetchEquipments();
         }
     };
 
@@ -50,7 +57,7 @@ export default function EquipmentPage() {
         applyFilters({});
     };
 
-    // 🔥 แก้ useEffect - auto filter เมื่อเปลี่ยน status/type
+    // 🔥useEffect filter เมื่อเปลี่ยน status/type
     useEffect(() => {
         applyFilters({
             typeId: selectedType !== 'all' ? Number(selectedType) : undefined,
@@ -147,7 +154,7 @@ export default function EquipmentPage() {
                                     className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-indigo-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
                                 >
                                     <option value="all">ทั้งหมด</option>
-                                    {statuses?.map((s) => (
+                                    {statuses.map((s) => (
                                         <option key={s.id} value={s.id}>
                                             {s.equipmentStatusName}
                                         </option>
