@@ -25,6 +25,17 @@ export const CRUD_floor = {
             else return res.json();
         },
 
+        /**
+         * ดึงชั้นตาม buildingId
+         * Backend: GET /floor/filter?buildingId={id}
+         */
+        filter: async (buildingId: number): Promise<Floor[]> => {
+            const res = await fetch(`${API_URL}/floor/filter?buildingId=${buildingId}`);
+            if (res.status === 204) return [];
+            else if (!res.ok) throw new Error('Failed to filter floors');
+            else return res.json();
+        },
+
         create: async (data: Partial<Floor>): Promise<Floor> => {
             const res = await fetch(`${API_URL}/floors`, {
                 method: 'POST',

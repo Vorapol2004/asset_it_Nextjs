@@ -11,6 +11,17 @@ export const CRUD_building = {
             else return res.json();
         },
 
+        /**
+         * ดึงตึกตาม departmentId
+         * Backend: GET /building/filter?departmentId={id}
+         */
+        filter: async (departmentId: number): Promise<Building[]> => {
+            const res = await fetch(`${API_URL}/building/filter?departmentId=${departmentId}`);
+            if (res.status === 204) return [];
+            else if (!res.ok) throw new Error('Failed to filter buildings');
+            else return res.json();
+        },
+
         getById: async (id: number): Promise<Building> => {
             const res = await fetch(`${API_URL}/buildings/${id}`);
             if (!res.ok) throw new Error('Failed to fetch building');

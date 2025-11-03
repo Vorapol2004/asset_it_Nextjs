@@ -119,4 +119,20 @@ export const employee = {
             return res.json();
         }
     },
+
+    /**
+     *  ดึงพนักงานตาม Department และ Role
+     *  Backend: GET /employee/dep/{idDep}/role/{idRole}
+     */
+    getByDepartmentAndRole: async (departmentId: number, roleId: number): Promise<EmployeeView[]> => {
+        const res = await fetch(`${API_URL}/employee/dep/${departmentId}/role/${roleId}`);
+
+        if (res.status === 204 || res.status === 404) {
+            return [];
+        } else if (!res.ok) {
+            throw new Error('Failed to fetch employees by department and role');
+        } else {
+            return res.json();
+        }
+    },
 }

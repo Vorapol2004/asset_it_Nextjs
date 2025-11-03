@@ -74,10 +74,10 @@ export const borrow_history = {
 
     /**
      * ดึงประเภทอุปกรณ์ทั้งหมดสำหรับ dropdown
-     * Backend: GET /borrow/equipmentType/dropDown
+     * Backend: GET /equipment_type/type
      */
     getEquipmentTypes: async (): Promise<{ id: number; equipmentTypeName: string }[]> => {
-        const res = await fetch(`${API_URL}/borrow/equipmentType/dropDown`);
+        const res = await fetch(`${API_URL}/equipment_type/type`);
         
         if (res.status === 204) {
             return [];

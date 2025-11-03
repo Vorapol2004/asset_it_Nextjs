@@ -16,14 +16,15 @@ import {
     X
 } from 'lucide-react';
 import { useAddEquipment } from '@/hooks/useAddEquipment';
-import { useAddEquipmentDropDown } from '@/hooks/useAddEquipmentDropDown';
 
 export default function AddEquipmentPage() {
-    // ✅ ฟอร์มและการบันทึก (ไม่เกี่ยวกับ master data)
+    // ✅ ฟอร์มและการบันทึก รวม dropdown data
     const {
         loading,
         error,
         success,
+        lotTypes,
+        equipmentTypes,
         lotName,
         setLotName,
         academicYear,
@@ -45,9 +46,6 @@ export default function AddEquipmentPage() {
         submitEquipment,
         cancel,
     } = useAddEquipment();
-
-    // ✅ dropdown data สำหรับ add_equipment
-    const { lotTypes, equipmentTypes } = useAddEquipmentDropDown();
 
     // ✅ Submit ฟอร์ม
     const handleSubmit = async (e: React.FormEvent) => {
@@ -130,17 +128,22 @@ export default function AddEquipmentPage() {
                                     <span className="text-red-500 ml-1">*</span>
                                 </label>
                                 <select
-                                    value={lotTypeId}
+                                    value={lotTypeId || ''}
                                     onChange={(e) => setLotTypeId(Number(e.target.value))}
                                     disabled={loading}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                     required
                                 >
-                                    {lotTypes.map(type => (
-                                        <option key={type.id} value={type.id}>
-                                            {type.lotTypeName}
-                                        </option>
-                                    ))}
+                                    <option value="">-- เลือกประเภท Lot --</option>
+                                    {lotTypes.length > 0 ? (
+                                        lotTypes.map(type => (
+                                            <option key={type.id} value={type.id}>
+                                                {type.lotTypeName}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option disabled>กำลังโหลด...</option>
+                                    )}
                                 </select>
                             </div>
 

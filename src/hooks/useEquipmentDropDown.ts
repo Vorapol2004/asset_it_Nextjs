@@ -12,7 +12,7 @@ export function useEquipmentDropDown() {
 
     const fetchEquipmentTypes = async () => {
         try {
-            const res = await fetch(`${API_URL}/equipment/equipmentType/dropDown`);
+            const res = await fetch(`${API_URL}/equipment_type/type`);
             const data = await res.json();
             if (Array.isArray(data)) setEquipmentTypes(data);
             else setEquipmentTypes([]);
@@ -23,7 +23,7 @@ export function useEquipmentDropDown() {
 
     const fetchStatuses = async () => {
         try {
-            const res = await fetch(`${API_URL}/equipment/equipmentStatus/dropDown`);
+            const res = await fetch(`${API_URL}/equipment_status/status`);
             const data = await res.json();
             if (Array.isArray(data)) setStatuses(data);
             else setStatuses([]);

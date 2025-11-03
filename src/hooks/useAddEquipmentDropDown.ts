@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_URL } from '@/lib/config';
+import { api } from '@/lib/api';
 
 /**
  * Hook สำหรับดึง dropdown data ที่ใช้ในหน้า add_equipment
@@ -12,8 +13,7 @@ export function useAddEquipmentDropDown() {
 
     const fetchLotTypes = async () => {
         try {
-            const res = await fetch(`${API_URL}/equipment/lotType/dropDown`);
-            const data = await res.json();
+            const data = await api.lot.getTypes();
             if (Array.isArray(data)) setLotTypes(data);
             else setLotTypes([]);
         } catch {
@@ -23,7 +23,7 @@ export function useAddEquipmentDropDown() {
 
     const fetchEquipmentTypes = async () => {
         try {
-            const res = await fetch(`${API_URL}/equipment/equipmentType/dropDown`);
+            const res = await fetch(`${API_URL}/equipment_type/type`);
             const data = await res.json();
             if (Array.isArray(data)) setEquipmentTypes(data);
             else setEquipmentTypes([]);

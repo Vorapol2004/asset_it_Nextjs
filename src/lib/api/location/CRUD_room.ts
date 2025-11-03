@@ -25,6 +25,17 @@ export const CRUD_room = {
             else return res.json();
         },
 
+        /**
+         * ดึงห้องตาม floorId
+         * Backend: GET /room/filter?floorId={id}
+         */
+        filter: async (floorId: number): Promise<Room[]> => {
+            const res = await fetch(`${API_URL}/room/filter?floorId=${floorId}`);
+            if (res.status === 204) return [];
+            else if (!res.ok) throw new Error('Failed to filter rooms');
+            else return res.json();
+        },
+
         create: async (data: Partial<Room>): Promise<Room> => {
             const res = await fetch(`${API_URL}/rooms`, {
                 method: 'POST',

@@ -5,13 +5,12 @@ import { EquipmentView, BorrowCreateData, Building, Floor, Room, Department } fr
 import { ROUTES } from '@/constants/routes';
 
 export interface BorrowItem {
-    equipmentType: string;
-    equipmentName: string;
-    brand: string;
-    model: string;
-    serialNumber?: string;
-    licenseKey?: string;
-    notes?: string;
+    searchValue: string;     // ค่าที่ใช้ search (licensekey หรือ serialnumber)
+    equipmentId: number;     // อุปกรณ์ที่ค้นหาเจอ (0 ถ้ายังไม่เจอ)
+    equipmentName: string;   // ชื่ออุปกรณ์ (auto-fill)
+    brand: string;           // ยี่ห้อ (auto-fill)
+    model: string;           // รุ่น (auto-fill)
+    notes?: string;          // หมายเหตุ
 }
 
 export interface SelectedBorrowerData {
@@ -34,14 +33,17 @@ export function useNewBorrow() {
     const [loading, setLoading] = useState(false);
     const [equipmentList, setEquipmentList] = useState<EquipmentView[]>([]);
 
+
     // Location & Organization
     const [buildings, setBuildings] = useState<Building[]>([]);
+    const [floors, setFloors] = useState<Floor[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [departments, setDepartments] = useState<Department[]>([]);
     const [borrowerRole, setBorrowerRole] = useState('');
 
     const [selectedDepartment, setSelectedDepartment] = useState<number>(0);
     const [selectedBuilding, setSelectedBuilding] = useState<number>(0);
+    const [selectedFloor, setSelectedFloor] = useState<number>(0);
     const [selectedRoom, setSelectedRoom] = useState<number>(0);
     const [approverName, setApproverName] = useState('');
 
@@ -56,12 +58,11 @@ export function useNewBorrow() {
 
     const [borrowItems, setBorrowItems] = useState<BorrowItem[]>([
         {
-            equipmentType: 'Hardware',
+            searchValue: '',
+            equipmentId: 0,
             equipmentName: '',
             brand: '',
             model: '',
-            serialNumber: '',
-            licenseKey: '',
             notes: ''
         }
     ]);
@@ -110,7 +111,6 @@ export function useNewBorrow() {
     }, []);
 
     useEffect(() => {
-        fetchAvailableEquipment();
         fetchDepartments();
     }, []);
 
@@ -119,21 +119,108 @@ export function useNewBorrow() {
     }, [selectedDepartment]);
 
     useEffect(() => {
-        fetchRooms();
-    }, [selectedDepartment, selectedBuilding]);
+        fetchFloors();
+    }, [selectedBuilding]);
 
-    const fetchAvailableEquipment = async () => {
+    useEffect(() => {
+        fetchRooms();
+    }, [selectedFloor]);
+
+    /**
+     * ค้นหาอุปกรณ์ด้วย licensekey หรือ serialnumber
+     * Backend: GET /equipment/select_equipment_type?licensekey={value} หรือ ?serialnumber={value}
+     * ลองค้นหาด้วย licensekey ก่อน ถ้าไม่เจอค่อยลอง serialnumber
+     */
+    const searchEquipment = async (itemIndex: number, searchValue: string) => {
+        if (!searchValue.trim()) {
+            // Clear data when search value is empty
+            setBorrowItems(prev => {
+                const newItems = [...prev];
+                newItems[itemIndex] = {
+                    ...newItems[itemIndex],
+                    searchValue: '',
+                    equipmentId: 0,
+                    equipmentName: '',
+                    brand: '',
+                    model: ''
+                };
+                return newItems;
+            });
+            return;
+        }
+
         try {
-            const data = await api.borrow.getAvailableEquipment();
-            setEquipmentList(data);
+            // ลองค้นหาด้วย licensekey ก่อน
+            let data: EquipmentView[] = [];
+            try {
+                data = await api.borrow.searchEquipment('licensekey', searchValue.trim());
+                // ถ้าเจอแล้ว (array มีข้อมูล) ให้ใช้ค่านี้
+                if (data.length > 0) {
+                    // เจอแล้ว - จะ auto-fill ด้านล่าง
+                } else {
+                    // ไม่เจอด้วย licensekey ลอง serialnumber
+                    data = await api.borrow.searchEquipment('serialnumber', searchValue.trim());
+                }
+            } catch (error) {
+                // ถ้ามี error ในการค้นหาด้วย licensekey ลอง serialnumber
+                try {
+                    data = await api.borrow.searchEquipment('serialnumber', searchValue.trim());
+                } catch (serialError) {
+                    // ถ้าค้นหาทั้งสองแบบไม่เจอ หรือ error ให้ data เป็น array ว่าง
+                    data = [];
+                }
+            }
+
+            // ถ้าเจออุปกรณ์ (ควรเจอ 1 อัน) ให้ auto-fill ข้อมูล
+            if (data.length > 0) {
+                const equipment = data[0];
+                setBorrowItems(prev => {
+                    const newItems = [...prev];
+                    newItems[itemIndex] = {
+                        ...newItems[itemIndex],
+                        searchValue: searchValue.trim(),
+                        equipmentId: equipment.id,
+                        equipmentName: equipment.equipmentName || '',
+                        brand: equipment.brand || '',
+                        model: equipment.model || ''
+                    };
+                    return newItems;
+                });
+            } else {
+                // ไม่เจอ - clear ข้อมูลอุปกรณ์ แต่เก็บ search value ไว้
+                setBorrowItems(prev => {
+                    const newItems = [...prev];
+                    newItems[itemIndex] = {
+                        ...newItems[itemIndex],
+                        searchValue: searchValue.trim(),
+                        equipmentId: 0,
+                        equipmentName: '',
+                        brand: '',
+                        model: ''
+                    };
+                    return newItems;
+                });
+            }
         } catch (error) {
-            console.error('Error fetching available equipment:', error);
+            console.error('Error searching equipment:', error);
+            // Clear data on error แต่เก็บ search value ไว้
+            setBorrowItems(prev => {
+                const newItems = [...prev];
+                newItems[itemIndex] = {
+                    ...newItems[itemIndex],
+                    equipmentId: 0,
+                    equipmentName: '',
+                    brand: '',
+                    model: ''
+                };
+                return newItems;
+            });
         }
     };
 
     /**
      * ดึงตึกตาม departmentId ที่เลือก
-     * Backend: GET /borrow/buildings/{departmentId}
+     * Backend: GET /building/filter?departmentId={id}
      */
     const fetchBuildings = async () => {
         if (!selectedDepartment || selectedDepartment === 0) {
@@ -143,8 +230,10 @@ export function useNewBorrow() {
         try {
             const data = await api.borrow.getBuildingsByDepartment(selectedDepartment);
             setBuildings(data);
-            // Reset building and room selection when department changes
+            // Reset building, floor, and room selection when department changes
             setSelectedBuilding(0);
+            setFloors([]);
+            setSelectedFloor(0);
             setRooms([]);
             setSelectedRoom(0);
         } catch (error) {
@@ -153,18 +242,42 @@ export function useNewBorrow() {
     };
 
     /**
-     * ดึงห้องตาม departmentId และ buildingId ที่เลือก
-     * Backend: GET /borrow/rooms?departmentId={id}&buildingId={id}
+     * ดึงชั้นตาม buildingId ที่เลือก
+     * Backend: GET /floor/filter?buildingId={id}
      */
-    const fetchRooms = async () => {
-        if (!selectedDepartment || selectedDepartment === 0 || !selectedBuilding || selectedBuilding === 0) {
+    const fetchFloors = async () => {
+        if (!selectedBuilding || selectedBuilding === 0) {
+            setFloors([]);
+            setSelectedFloor(0);
             setRooms([]);
             return;
         }
         try {
-            const data = await api.borrow.getRoomsByDepartmentAndBuilding(selectedDepartment, selectedBuilding);
+            const data = await api.borrow.getFloorsByBuilding(selectedBuilding);
+            setFloors(data);
+            // Reset floor and room selection when building changes
+            setSelectedFloor(0);
+            setRooms([]);
+            setSelectedRoom(0);
+        } catch (error) {
+            console.error('Error fetching floors:', error);
+        }
+    };
+
+    /**
+     * ดึงห้องตาม floorId ที่เลือก
+     * Backend: GET /room/filter?floorId={id}
+     */
+    const fetchRooms = async () => {
+        if (!selectedFloor || selectedFloor === 0) {
+            setRooms([]);
+            setSelectedRoom(0);
+            return;
+        }
+        try {
+            const data = await api.borrow.getRoomsByFloor(selectedFloor);
             setRooms(data);
-            // Reset room selection when building changes
+            // Reset room selection when floor changes
             setSelectedRoom(0);
         } catch (error) {
             console.error('Error fetching rooms:', error);
@@ -184,12 +297,11 @@ export function useNewBorrow() {
         setBorrowItems([
             ...borrowItems,
             {
-                equipmentType: 'Hardware',
+                searchValue: '',
+                equipmentId: 0,
                 equipmentName: '',
                 brand: '',
                 model: '',
-                serialNumber: '',
-                licenseKey: '',
                 notes: ''
             }
         ]);
@@ -204,21 +316,10 @@ export function useNewBorrow() {
 
     const updateBorrowItem = (index: number, field: keyof BorrowItem, value: string | number) => {
         const newItems = [...borrowItems];
-
-        if (field === 'equipmentType') {
-            newItems[index] = {
-                ...newItems[index],
-                equipmentType: value as string,
-                serialNumber: '',
-                licenseKey: ''
-            };
-        } else {
-            newItems[index] = {
-                ...newItems[index],
-                [field]: value
-            };
-        }
-
+        newItems[index] = {
+            ...newItems[index],
+            [field]: value
+        };
         setBorrowItems(newItems);
     };
 
@@ -235,8 +336,8 @@ export function useNewBorrow() {
             return 'กรุณาเลือกแผนก';
         }
 
-        if (selectedBuilding === 0 || selectedRoom === 0) {
-            return 'กรุณาเลือกสถานที่ (ตึก, ห้อง)';
+        if (selectedBuilding === 0 || selectedFloor === 0 || selectedRoom === 0) {
+            return 'กรุณาเลือกสถานที่ (ตึก, ชั้น, ห้อง)';
         }
 
         if (!approverName.trim()) {
@@ -252,22 +353,10 @@ export function useNewBorrow() {
         }
 
         const hasInvalidItems = borrowItems.some(
-            item => !item.equipmentType || !item.equipmentName.trim()
+            item => !item.searchValue.trim() || !item.equipmentId || item.equipmentId === 0 || !item.equipmentName.trim()
         );
         if (hasInvalidItems) {
-            return 'กรุณาเลือกประเภทและกรอกชื่ออุปกรณ์ให้ครบทุกรายการ';
-        }
-
-        for (let i = 0; i < borrowItems.length; i++) {
-            const item = borrowItems[i];
-
-            if (item.equipmentType === 'Hardware' && !item.serialNumber?.trim()) {
-                return `กรุณากรอก Serial Number ในรายการที่ ${i + 1}`;
-            }
-
-            if (item.equipmentType === 'License' && !item.licenseKey?.trim()) {
-                return `กรุณากรอก License Key ในรายการที่ ${i + 1}`;
-            }
+            return 'กรุณาค้นหาอุปกรณ์ให้ครบทุกรายการ (ต้องพบอุปกรณ์ที่ตรงกับ License Key หรือ Serial Number)';
         }
 
         return null;
@@ -294,27 +383,23 @@ export function useNewBorrow() {
                 dueDate: dueDate,
                 referenceDoc: referenceDoc || null,
                 items: borrowItems.map(item => {
-                    // Note: The API might need equipmentId, but we're creating new equipment
-                    // This might need adjustment based on actual API requirements
                     return {
-                        equipmentId: 0, // Will need to be set based on actual equipment selection or creation
-                        serialNumber: item.equipmentType === 'Hardware' ? item.serialNumber?.trim() : undefined,
-                        licenseKey: item.equipmentType === 'License' ? item.licenseKey?.trim() : undefined,
-                        notes: item.notes || undefined
+                        equipmentId: item.equipmentId,
+                        notes: item.notes?.trim() || undefined
                     };
                 })
             };
 
-            console.log('📤 Submitting borrow data:', borrowData);
+            console.log('Submitting borrow data:', borrowData);
 
             const response = await api.borrow.create(borrowData);
-            console.log('✅ Borrow created:', response);
+            console.log('Borrow created:', response);
 
-            alert('✅ บันทึกการยืมเรียบร้อยแล้ว!');
+            alert('บันทึกการยืมเรียบร้อยแล้ว!');
             router.push(ROUTES.BORROW_EQUIPMENT);
         } catch (error) {
             console.error('Error submitting borrow:', error);
-            alert('❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
         } finally {
             setLoading(false);
         }
@@ -323,13 +408,14 @@ export function useNewBorrow() {
     return {
         // State
         loading,
-        equipmentList,
         buildings,
+        floors,
         rooms,
         departments,
         borrowerRole,
         selectedDepartment,
         selectedBuilding,
+        selectedFloor,
         selectedRoom,
         approverName,
         borrowerFirstName,
@@ -345,6 +431,7 @@ export function useNewBorrow() {
         setBorrowerRole,
         setSelectedDepartment,
         setSelectedBuilding,
+        setSelectedFloor,
         setSelectedRoom,
         setApproverName,
         setBorrowerFirstName,
@@ -359,6 +446,7 @@ export function useNewBorrow() {
         addBorrowItem,
         removeBorrowItem,
         updateBorrowItem,
+        searchEquipment,
         handleSubmit,
     };
 }

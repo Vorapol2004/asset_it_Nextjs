@@ -7,6 +7,7 @@ import { employee } from './employee/employee';
 import { CRUD_building } from './location/CRUD_building';
 import { CRUD_department } from './location/CRUD_department';
 import { CRUD_room } from './location/CRUD_room';
+import { CRUD_floor } from './location/CRUD_floor';
 
 export const api = {
     lot,
@@ -18,4 +19,5 @@ export const api = {
     CRUD_building,
     CRUD_department,
     CRUD_room,
+    CRUD_floor,
 };

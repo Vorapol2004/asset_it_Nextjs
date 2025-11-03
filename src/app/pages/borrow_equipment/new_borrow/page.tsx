@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import {
     Package, Plus, Trash2, Save, User, Calendar, FileText,
-    Mail, Phone, Building2, DoorOpen, Briefcase, UserCheck, ArrowLeft, Key, Laptop
+    Mail, Phone, Building2, DoorOpen, Briefcase, UserCheck, ArrowLeft, Layers, Search
 } from 'lucide-react';
 import { useNewBorrow } from '@/hooks/useNewBorrow';
 import { ROUTES } from '@/constants/routes';
@@ -14,11 +14,13 @@ export default function NewBorrowPage() {
     const {
         loading,
         buildings,
+        floors,
         rooms,
         departments,
         borrowerRole,
         selectedDepartment,
         selectedBuilding,
+        selectedFloor,
         selectedRoom,
         approverName,
         borrowerFirstName,
@@ -32,6 +34,7 @@ export default function NewBorrowPage() {
         setBorrowerRole,
         setSelectedDepartment,
         setSelectedBuilding,
+        setSelectedFloor,
         setSelectedRoom,
         setApproverName,
         setBorrowerFirstName,
@@ -44,6 +47,7 @@ export default function NewBorrowPage() {
         addBorrowItem,
         removeBorrowItem,
         updateBorrowItem,
+        searchEquipment,
         handleSubmit,
     } = useNewBorrow();
 
@@ -177,7 +181,7 @@ export default function NewBorrowPage() {
                             <Building2 className="h-6 w-6 mr-2 text-blue-600" />
                             สถานที่และหน่วยงาน
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {/* แผนก */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -221,6 +225,28 @@ export default function NewBorrowPage() {
                                 </div>
                             </div>
 
+                            {/* ชั้น */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    ชั้น <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <Layers className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                    <select
+                                        value={selectedFloor}
+                                        onChange={(e) => setSelectedFloor(Number(e.target.value))}
+                                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium cursor-pointer outline-none focus:border-blue-500"
+                                        required
+                                        disabled={selectedBuilding === 0}
+                                    >
+                                        <option value={0}>-- เลือกชั้น --</option>
+                                        {floors.map(f => (
+                                            <option key={f.id} value={f.id}>{f.floorName}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
                             {/* ห้อง */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -233,7 +259,7 @@ export default function NewBorrowPage() {
                                         onChange={(e) => setSelectedRoom(Number(e.target.value))}
                                         className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium cursor-pointer outline-none focus:border-blue-500"
                                         required
-                                        disabled={selectedBuilding === 0}
+                                        disabled={selectedFloor === 0}
                                     >
                                         <option value={0}>-- เลือกห้อง --</option>
                                         {rooms.map(r => (
@@ -354,103 +380,105 @@ export default function NewBorrowPage() {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {/* Type */}
+                                        {/* Field ค้นหา License Key หรือ Serial Number */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                ประเภท <span className="text-red-500">*</span>
+                                                License Key หรือ Serial Number <span className="text-red-500">*</span>
                                             </label>
-                                            <select
-                                                value={item.equipmentType}
-                                                onChange={(e) => updateBorrowItem(index, 'equipmentType', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500"
-                                            >
-                                                <option value="Hardware">Hardware (อุปกรณ์)</option>
-                                                <option value="License">License (ใบอนุญาต/ซองซอฟต์แวร์)</option>
-                                            </select>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={item.searchValue || ''}
+                                                    onChange={(e) => updateBorrowItem(index, 'searchValue', e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            if (item.searchValue.trim()) {
+                                                                searchEquipment(index, item.searchValue);
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500"
+                                                    placeholder="กรอก License Key หรือ Serial Number"
+                                                    required
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (item.searchValue.trim()) {
+                                                            searchEquipment(index, item.searchValue);
+                                                        }
+                                                    }}
+                                                    disabled={!item.searchValue.trim()}
+                                                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
+                                                >
+                                                    <Search className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                            {item.searchValue.trim() && item.equipmentId === 0 && (
+                                                <p className="mt-2 text-sm text-red-600">⚠️ ไม่พบอุปกรณ์ที่ค้นหา</p>
+                                            )}
+                                            {item.equipmentId > 0 && (
+                                                <p className="mt-2 text-sm text-green-600">✅ พบอุปกรณ์</p>
+                                            )}
                                         </div>
 
-                                        {/* Equipment Name */}
+                                        {/* ชื่ออุปกรณ์ (Auto-fill) */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-800 mb-2">
                                                 ชื่ออุปกรณ์ <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
-                                                value={item.equipmentName}
-                                                onChange={(e) => updateBorrowItem(index, 'equipmentName', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500"
-                                                placeholder="เช่น Notebook Dell Latitude 5420"
-                                                required
+                                                value={item.equipmentName || ''}
+                                                readOnly
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium bg-gray-50 cursor-not-allowed"
+                                                placeholder="จะแสดงอัตโนมัติเมื่อค้นหาเจอ"
                                             />
                                         </div>
 
-                                        {/* Brand */}
+                                        {/* ยี่ห้อ (Auto-fill) */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                ยี่ห้อ (Brand)
+                                                ยี่ห้อ
                                             </label>
                                             <input
                                                 type="text"
-                                                value={item.brand}
-                                                onChange={(e) => updateBorrowItem(index, 'brand', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500"
-                                                placeholder="เช่น Dell, HP, Microsoft"
+                                                value={item.brand || ''}
+                                                readOnly
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium bg-gray-50 cursor-not-allowed"
+                                                placeholder="จะแสดงอัตโนมัติเมื่อค้นหาเจอ"
                                             />
                                         </div>
 
-                                        {/* Model */}
+                                        {/* รุ่น (Auto-fill) */}
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                รุ่น (Model)
+                                                รุ่น
                                             </label>
                                             <input
                                                 type="text"
-                                                value={item.model}
-                                                onChange={(e) => updateBorrowItem(index, 'model', e.target.value)}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500"
-                                                placeholder="เช่น Latitude 5420, Office 365"
+                                                value={item.model || ''}
+                                                readOnly
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium bg-gray-50 cursor-not-allowed"
+                                                placeholder="จะแสดงอัตโนมัติเมื่อค้นหาเจอ"
                                             />
                                         </div>
 
-                                        {/* Serial Number (Hardware) */}
-                                        {item.equipmentType === 'Hardware' && (
-                                            <div className="md:col-span-2">
-                                                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                    <Laptop className="inline h-4 w-4 mr-1" />
-                                                    Serial Number (SN)
-                                                    <span className="text-red-500 ml-1">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={item.serialNumber || ''}
-                                                    onChange={(e) => updateBorrowItem(index, 'serialNumber', e.target.value)}
-                                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono font-medium outline-none focus:border-blue-500"
-                                                    placeholder="กรอก Serial Number ของอุปกรณ์"
-                                                    required
-                                                />
-                                                <p className="text-xs text-gray-500 mt-1">ระบุ Serial Number ที่ติดอยู่บนตัวอุปกรณ์</p>
-                                            </div>
-                                        )}
-
-                                        {/* License Key (License) */}
-                                        {item.equipmentType === 'License' && (
-                                            <div className="md:col-span-2">
-                                                <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                                    <Key className="inline h-4 w-4 mr-1" />
-                                                    License Key
-                                                    <span className="text-red-500 ml-1">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={item.licenseKey || ''}
-                                                    onChange={(e) => updateBorrowItem(index, 'licenseKey', e.target.value)}
-                                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono font-medium outline-none focus:border-blue-500"
-                                                    placeholder="กรอก License Key หรือ Product Key"
-                                                    required
-                                                />
-                                                <p className="text-xs text-gray-500 mt-1">ระบุ License Key หรือ Serial ของใบอนุญาต</p>
-                                            </div>
-                                        )}
+                                        {/* หมายเหตุ */}
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                                <FileText className="inline h-4 w-4 mr-1 text-blue-600" />
+                                                หมายเหตุ
+                                            </label>
+                                            <textarea
+                                                value={item.notes || ''}
+                                                onChange={(e) => updateBorrowItem(index, 'notes', e.target.value)}
+                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 outline-none focus:border-blue-500"
+                                                rows={3}
+                                                placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             ))}

@@ -48,6 +48,7 @@ export const equipment = {
 
     /**
      * กรองอุปกรณ์ตาม type และ status
+     * Backend: GET /equipment/filter?equipmentStatus={id}&equipmentType={id}
      * Note: Backend รองรับแค่ filter type/status เท่านั้น
      * ถ้าต้องการ keyword ต้องเรียก search() แยก
      */
@@ -56,8 +57,8 @@ export const equipment = {
         statusId?: number;
     }): Promise<EquipmentView[]> => {
         const queryParams = new URLSearchParams();
-        if (params.typeId) queryParams.append("equipmentType", String(params.typeId));
         if (params.statusId) queryParams.append("equipmentStatus", String(params.statusId));
+        if (params.typeId) queryParams.append("equipmentType", String(params.typeId));
         
         const url = `${API_URL}/equipment/filter?${queryParams.toString()}`;
         const res = await fetch(url);
@@ -69,6 +70,27 @@ export const equipment = {
         }
         
         return res.json();
+    },
+
+    /**
+     * ดึงอุปกรณ์ตามประเภทอุปกรณ์
+     * Backend: GET /equipment/select_equipment_type?equipmentId={id}
+     */
+    getByType: async (equipmentTypeId?: number): Promise<EquipmentView[]> => {
+        let url = `${API_URL}/equipment/select_equipment_type`;
+        if (equipmentTypeId) {
+            url += `?equipmentId=${equipmentTypeId}`;
+        }
+        
+        const res = await fetch(url);
+        
+        if (res.status === 204) {
+            return [];
+        } else if (!res.ok) {
+            throw new Error('Failed to fetch equipment by type');
+        } else {
+            return res.json();
+        }
     },
 
     async delete(id: number) {

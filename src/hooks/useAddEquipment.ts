@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {lot} from "@/lib/api/lot/lot";
+import { useAddEquipmentDropDown } from '@/hooks/useAddEquipmentDropDown';
 // ==================== Types ====================
 
 export interface EquipmentItem {
@@ -13,12 +14,6 @@ export interface EquipmentItem {
     type: 'hardware' | 'license';
     description: string;
 }
-
-interface LotType {
-    id: number;
-    lotTypeName: string;
-}
-
 
 // ==================== Custom Hook ====================
 
@@ -35,8 +30,8 @@ export function useAddEquipment() {
     const [error] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    // Lot Types (Master Data)
-    const [lotTypes] = useState<LotType[]>([]);
+    // ✅ ใช้ dropdown data สำหรับ add_equipment
+    const { lotTypes, equipmentTypes } = useAddEquipmentDropDown();
 
     // Lot Information
     const [lotName, setLotName] = useState('');
@@ -45,7 +40,14 @@ export function useAddEquipment() {
     const [expireDate, setExpireDate] = useState('');
     const [referenceDoc, setReferenceDoc] = useState('');
     const [lotDescription, setLotDescription] = useState('');
-    const [lotTypeId, setLotTypeId] = useState<number>(1);
+    const [lotTypeId, setLotTypeId] = useState<number>(0);
+
+    // Set default lotTypeId when lotTypes loaded
+    useEffect(() => {
+        if (lotTypes.length > 0 && lotTypeId === 0) {
+            setLotTypeId(lotTypes[0].id);
+        }
+    }, [lotTypes, lotTypeId]);
 
 
     // Equipment Items เป็นตัวแรกตอน fetch หน้ามาเพราะถ้าเราไม่มีค่าตรงนี้ก็จะไม่มีให้กรอกลายละเอียดอุปกรณ์
@@ -62,9 +64,7 @@ export function useAddEquipment() {
         }
     ]);
 
-    /**
-     * เพิ่มรายการอุปกรณ์ใหม่
-     */
+    // เพิ่มรายการอุปกรณ์ใหม่
     const addItem = () => {
         setItems([
             ...items,
@@ -81,27 +81,23 @@ export function useAddEquipment() {
         ]);
     };
 
-    /**
-     * ลบรายการอุปกรณ์
-     */
+    // ลบรายการอุปกรณ์
     const removeItem = (id: string) => {
         if (items.length > 1) {
             setItems(items.filter(item => item.id !== id));
         }
     };
+    
+    // อัปเดตข้อมูลรายการอุปกรณ์
 
-    /**
-     * อัปเดตข้อมูลรายการอุปกรณ์
-     */
     const updateItem = (id: string, field: keyof EquipmentItem, value: string) => {
         setItems(items.map(item =>
             item.id === id ? { ...item, [field]: value } : item
         ));
     };
 
-    /**
-     * Validate ข้อมูลก่อนส่ง
-     */
+    // Validate ข้อมูลก่อนส่ง
+    
     const validateData = (): string | null => {
         // เช็ค Lot Information
         if (!lotName.trim()) {
@@ -131,9 +127,9 @@ export function useAddEquipment() {
         return null;
     };
 
-    /**
-     * เตรียมข้อมูลสำหรับส่ง Backend
-     */
+    
+    //เตรียมข้อมูลสำหรับส่ง Backend
+    
     const prepareSubmitData = () => {
         return {
             lotName: lotName.trim(),
@@ -156,9 +152,9 @@ export function useAddEquipment() {
         };
     };
 
-    /**
-     * บันทึกข้อมูลอุปกรณ์
-     */
+    
+    // บันทึกข้อมูลอุปกรณ์
+    
     const submitEquipment = async () => {
         // Validate
         const validationError = validateData();
@@ -173,11 +169,8 @@ export function useAddEquipment() {
             // เตรียมข้อมูล
             const lotData = prepareSubmitData();
             console.log('🚀 Sending data to API:', lotData);
-            // เรียก API
             const result = await lot.create(lotData);
             console.log('✅ API Response:', result);
-
-            // Success
             setSuccess(true);
 
             // Redirect หลัง 1.5 วินาที
@@ -195,9 +188,9 @@ export function useAddEquipment() {
         }
     };
 
-    /**
-     * รีเซ็ตฟอร์ม
-     */
+
+    //รีเซ็ตฟอร์ม
+
     const resetForm = () => {
         setLotName('');
         setAcademicYear('');
@@ -205,7 +198,7 @@ export function useAddEquipment() {
         setExpireDate('');
         setReferenceDoc('');
         setLotDescription('');
-        setLotTypeId(lotTypes[0]?.id || 1);
+        setLotTypeId(lotTypes[0]?.id || 0);
         setItems([
             {
                 id: '1',
@@ -221,9 +214,8 @@ export function useAddEquipment() {
         setSuccess(false);
     };
 
-    /**
-     * ยกเลิกและกลับหน้าเดิม
-     */
+    // ยกเลิกและกลับหน้าเดิม
+
     const cancel = () => {
         if (loading) return;
 
@@ -244,7 +236,10 @@ export function useAddEquipment() {
         loading,
         error,
         success,
+        
+        // Dropdown Data
         lotTypes,
+        equipmentTypes,
 
         // Lot Information
         lotName,

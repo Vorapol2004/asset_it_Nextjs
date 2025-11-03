@@ -151,10 +151,10 @@ export const borrow = {
 
     /**
      *  ดึงตึกตาม departmentId
-     *  Backend: GET /borrow/buildings/{departmentId}
+     *  Backend: GET /building/filter?departmentId={id}
      */
     getBuildingsByDepartment: async (departmentId: number): Promise<Building[]> => {
-        const res = await fetch(`${API_URL}/borrow/buildings/${departmentId}`);
+        const res = await fetch(`${API_URL}/building/filter?departmentId=${departmentId}`);
 
         if (res.status === 204) {
             return [];
@@ -165,13 +165,44 @@ export const borrow = {
         }
     },
 
+    /**
+     *  ดึงแผนกทั้งหมด (dropdown)
+     *  Backend: GET /department/drop_down
+     */
+    getDepartments: async (): Promise<Department[]> => {
+        const res = await fetch(`${API_URL}/department/drop_down`);
+
+        if (res.status === 204) {
+            return [];
+        } else if (!res.ok) {
+            throw new Error('Failed to fetch departments');
+        } else {
+            return res.json();
+        }
+    },
 
     /**
-     *  ดึงห้องตาม departmentId และ buildingId
-     *  Backend: GET /borrow/rooms?departmentId={id}&buildingId={id}
+     *  ดึงชั้นตาม buildingId
+     *  Backend: GET /floor/filter?buildingId={id}
      */
-    getRoomsByDepartmentAndBuilding: async (departmentId: number, buildingId: number): Promise<Room[]> => {
-        const res = await fetch(`${API_URL}/borrow/rooms?departmentId=${departmentId}&buildingId=${buildingId}`);
+    getFloorsByBuilding: async (buildingId: number): Promise<Floor[]> => {
+        const res = await fetch(`${API_URL}/floor/filter?buildingId=${buildingId}`);
+
+        if (res.status === 204) {
+            return [];
+        } else if (!res.ok) {
+            throw new Error('Failed to fetch floors');
+        } else {
+            return res.json();
+        }
+    },
+
+    /**
+     *  ดึงห้องตาม floorId
+     *  Backend: GET /room/filter?floorId={id}
+     */
+    getRoomsByFloor: async (floorId: number): Promise<Room[]> => {
+        const res = await fetch(`${API_URL}/room/filter?floorId=${floorId}`);
 
         if (res.status === 204) {
             return [];
@@ -183,17 +214,55 @@ export const borrow = {
     },
 
     /**
-     *  ดึงแผนกทั้งหมด
+     *  ดึงประเภทอุปกรณ์ทั้งหมด
+     *  Backend: GET /equipment_type/type
      */
-    getDepartments: async (): Promise<Department[]> => {
-        const res = await fetch(`${API_URL}/departments/all`);
+    getEquipmentTypes: async (): Promise<{ id: number; equipmentTypeName: string }[]> => {
+        const res = await fetch(`${API_URL}/equipment_type/type`);
 
         if (res.status === 204) {
             return [];
         } else if (!res.ok) {
-            throw new Error('Failed to fetch departments');
+            throw new Error('Failed to fetch equipment types');
         } else {
             return res.json();
+        }
+    },
+
+    /**
+     *  ดึงอุปกรณ์ตามประเภทอุปกรณ์
+     *  Backend: GET /equipment/select_equipment_type?equipmentId={id}
+     */
+    getEquipmentByType: async (equipmentTypeId: number): Promise<EquipmentView[]> => {
+        const res = await fetch(`${API_URL}/equipment/select_equipment_type?equipmentId=${equipmentTypeId}`);
+
+        if (res.status === 204) {
+            return [];
+        } else if (!res.ok) {
+            throw new Error('Failed to fetch equipment by type');
+        } else {
+            return res.json();
+        }
+    },
+
+    /**
+     *  ค้นหาอุปกรณ์ด้วย licensekey หรือ serialnumber
+     *  Backend: GET /equipment/select_equipment_type?licensekey={value} หรือ ?serialnumber={value}
+     *  Note: Backend จะค้นหาและส่งกลับเฉพาะอุปกรณ์ที่ยังไม่ได้ยืมมา
+     *  TODO: อนาคตอาจจะเปลี่ยน endpoint เป็น GET /equipment/search?licensekey={value} หรือ ?serialnumber={value}
+     */
+    searchEquipment: async (searchType: 'licensekey' | 'serialnumber', searchValue: string): Promise<EquipmentView[]> => {
+        const queryParam = searchType === 'licensekey' ? 'licensekey' : 'serialnumber';
+        // TODO: เมื่อ backend เปลี่ยน endpoint ให้เปลี่ยนเป็น: `${API_URL}/equipment/search?${queryParam}=${encodeURIComponent(searchValue)}`
+        const res = await fetch(`${API_URL}/equipment/select_equipment_type?${queryParam}=${encodeURIComponent(searchValue)}`);
+
+        if (res.status === 204) {
+            return []; // ไม่เจอ - return empty array
+        } else if (!res.ok) {
+            throw new Error('Failed to search equipment');
+        } else {
+            const data = await res.json();
+            return Array.isArray(data) ? data : []; // ตรวจสอบว่าเป็น array
         }
     },
 }
