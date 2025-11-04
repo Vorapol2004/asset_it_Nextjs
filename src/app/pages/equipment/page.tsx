@@ -57,6 +57,11 @@ export default function EquipmentPage() {
         applyFilters({});
     };
 
+    // ใช้งานดึงข้อมูลอุปกรณ์ทั้งหมดพร้อมกับการเรียงข้อมูลใหม่เก่า 
+    useEffect(() => {
+        fetchEquipments();
+    }, []);
+
     // 🔥useEffect filter เมื่อเปลี่ยน status/type
     useEffect(() => {
         applyFilters({
@@ -154,11 +159,15 @@ export default function EquipmentPage() {
                                     className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-indigo-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
                                 >
                                     <option value="all">ทั้งหมด</option>
-                                    {statuses.map((s) => (
-                                        <option key={s.id} value={s.id}>
-                                            {s.equipmentStatusName}
-                                        </option>
-                                    ))}
+                                    {statuses && statuses.length > 0 ? (
+                                        statuses.map((s) => (
+                                            <option key={s.id} value={s.id}>
+                                                {s.equipmentStatusName}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option disabled>กำลังโหลด...</option>
+                                    )}
                                 </select>
                                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                             </div>
@@ -177,11 +186,15 @@ export default function EquipmentPage() {
                                     className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-indigo-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
                                 >
                                     <option value="all">ทั้งหมด</option>
-                                    {types.map((t) => (
-                                        <option key={t.id} value={t.id}>
-                                            {t.equipmentTypeName}
-                                        </option>
-                                    ))}
+                                    {types && types.length > 0 ? (
+                                        types.map((t) => (
+                                            <option key={t.id} value={t.id}>
+                                                {t.equipmentTypeName}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option disabled>กำลังโหลด...</option>
+                                    )}
                                 </select>
                                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                             </div>

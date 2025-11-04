@@ -182,6 +182,15 @@ export interface BorrowEquipmentView {
 }
 
 export interface BorrowCreateData {
+    employeeId: number;
+    referenceDoc?: string | null;
+    borrowDate: string;
+    dueDate: string;
+    equipmentIds: number[];
+}
+
+// Interface เดิม (อาจใช้ในที่อื่น)
+export interface BorrowCreateDataOld {
     borrowerFirstName: string;
     borrowerLastName: string;
     borrowerEmail?: string | null;

@@ -74,11 +74,22 @@ export function useBorrowHistory() {
 
     /**
      * กรองข้อมูลการยืม (เรียก API ตรงๆ ตาม backend)
-     * Note: Backend รองรับแค่ search และ filterByStatus
-     * role และ equipmentType ยังไม่มี endpoint filter แยก
-     * - ถ้ามี keyword → เรียก search
-     * - ถ้ามี status → เรียก filterByStatus  
-     * - ถ้าไม่มี filter → เรียก getAll
+     * 
+     * Priority:
+     * 1. ถ้ามี keyword → เรียก search
+     * 2. ถ้ามี status → เรียก filterByStatus
+     * 3. ถ้ามี role → เรียก filterByRole (ถ้า backend มี endpoint)
+     * 4. ถ้ามี equipmentType → เรียก filterByEquipmentType (ถ้า backend มี endpoint)
+     * 5. ไม่มี filter → เรียก getAll
+     * 
+     * Note: ปัจจุบัน backend รองรับ:
+     * - search (keyword)
+     * - filterByStatus (statusId)
+     * - getAll (ทั้งหมด)
+     * 
+     * TODO: ถ้า backend มี endpoint สำหรับ filter role และ equipmentType:
+     * - api.borrow_history.filterByRole(roleId)
+     * - api.borrow_history.filterByEquipmentType(equipmentTypeId)
      */
     const applyFilters = async () => {
         setLoading(true);
@@ -95,12 +106,26 @@ export function useBorrowHistory() {
             else if (selectedStatus !== 'all') {
                 data = await api.borrow_history.filterByStatus(Number(selectedStatus));
             }
+            // TODO: ถ้า backend มี endpoint สำหรับ filter role
+            // else if (selectedRole !== 'all') {
+            //     const roleId = roles.find(r => r.roleName === selectedRole)?.id;
+            //     if (roleId) {
+            //         data = await api.borrow_history.filterByRole(roleId);
+            //     }
+            // }
+            // TODO: ถ้า backend มี endpoint สำหรับ filter equipmentType
+            // else if (selectedType !== 'all') {
+            //     const typeId = equipmentTypes.find(t => t.equipmentTypeName === selectedType)?.id;
+            //     if (typeId) {
+            //         data = await api.borrow_history.filterByEquipmentType(typeId);
+            //     }
+            // }
             // ไม่มี filter → เรียกทั้งหมด
             else {
                 data = await api.borrow.getAll();
             }
 
-            // TODO: ถ้า backend มี endpoint สำหรับ filter role และ equipmentType
+            // TODO: ถ้า backend รองรับ filter หลายตัวพร้อมกัน (เช่น filterByStatus + filterByRole)
             // ให้เพิ่ม logic ที่นี่
 
             setRecords(data);

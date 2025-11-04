@@ -1,8 +1,14 @@
-import {Equipment,} from "@/types/type";
+import {Equipment} from "@/types/type";
 import {API_URL} from "@/lib/config";
-export const add_borrow = {
+
+/**
+ * API endpoints สำหรับการเพิ่ม/แก้ไข/ลบอุปกรณ์
+ * ใช้สำหรับหน้า add_equipment
+ */
+export const add_equipment = {
     /**
      *  สร้างอุปกรณ์ใหม่
+     *  Backend: POST /equipment/create
      */
     create: async (data: Partial<Equipment>): Promise<Equipment> => {
         const res = await fetch(`${API_URL}/equipment/create`, {
@@ -21,6 +27,7 @@ export const add_borrow = {
 
     /**
      *  อัปเดตอุปกรณ์
+     *  Backend: PUT /equipment/{id}
      */
     update: async (id: number, data: Partial<Equipment>): Promise<Equipment> => {
         const res = await fetch(`${API_URL}/equipment/${id}`, {
@@ -38,6 +45,7 @@ export const add_borrow = {
 
     /**
      *  ลบอุปกรณ์
+     *  Backend: DELETE /equipment/{id}
      */
     delete: async (id: number): Promise<void> => {
         const res = await fetch(`${API_URL}/equipment/${id}`, {
@@ -51,3 +59,4 @@ export const add_borrow = {
         }
     },
 }
+

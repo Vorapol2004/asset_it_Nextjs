@@ -69,7 +69,8 @@ export const employee = {
         });
 
         if (!res.ok) {
-            throw new Error('Failed to create employee');
+            const errorData = await res.json().catch(() => ({ message: 'Failed to create employee' }));
+            throw new Error(errorData.message || `Failed to create employee: ${res.status} ${res.statusText}`);
         } else {
             return res.json();
         }

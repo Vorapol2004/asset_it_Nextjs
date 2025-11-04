@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { EquipmentView } from '@/types/type';
 import { equipment } from '@/lib/api/equipment/equipment';
-import { useEquipmentDropDown } from '@/hooks/useEquipmentDropDown';
+import { API_URL } from '@/lib/config';
 
 interface FilterParams {
     typeId?: number;
@@ -18,8 +18,53 @@ export function useEquipment() {
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
-    // ✅ ใช้ dropdown data สำหรับ equipment
-    const { statuses, equipmentTypes: types } = useEquipmentDropDown();
+    // ✅ Dropdown data สำหรับ equipment
+    const [statuses, setStatuses] = useState<{ id: number; equipmentStatusName: string }[]>([]);
+    const [equipmentTypes, setEquipmentTypes] = useState<{ id: number; equipmentTypeName: string }[]>([]);
+
+    // ดึงข้อมูล dropdown เมื่อ โหลดหน้าอุปกรณ์ 
+    useEffect(() => {
+        const loadDropdownData = async () => {
+            try {
+                // ดึง Equipment Types
+                const typesRes = await fetch(`${API_URL}/equipment_type/type`);
+                const typesData = await typesRes.json();
+                if (Array.isArray(typesData)) {
+                    setEquipmentTypes(typesData);
+                } else {
+                    setEquipmentTypes([]);
+                }
+
+                // ดึง Equipment Statuses
+                const statusesRes = await fetch(`${API_URL}/equipment_status/status`);
+                const statusesData = await statusesRes.json();
+                if (Array.isArray(statusesData)) {
+                    setStatuses(statusesData);
+                } else {
+                    setStatuses([]);
+                }
+            } catch (err) {
+                console.error('Error loading dropdown data:', err);
+                setEquipmentTypes([]);
+                setStatuses([]);
+            }
+        };
+
+        loadDropdownData();
+    }, []);
+
+    // ✅ เรียงลำดับอุปกรณ์ให้ล่าสุดอยู่ข้างบนสุด
+    const sortEquipmentsByNewest = (data: EquipmentView[]): EquipmentView[] => {
+        return [...data].sort((a, b) => {
+            // ใช้ createdAt ถ้ามี
+            if (a.createdAt && b.createdAt) {
+                const dateA = new Date(a.createdAt).getTime();
+                const dateB = new Date(b.createdAt).getTime();
+                return dateB - dateA; // ใหม่ → เก่า โดยจะทำการจับคู่ข้อมูลทีละ 2 ตัว” มาเปรียบเทียบซ้ำ ๆ ไปเรื่อย ๆ
+            }
+            return b.id - a.id;
+        });
+    };
 
     // ✅ ดึงข้อมูลอุปกรณ์ทั้งหมด
     const fetchEquipments = async () => {
@@ -27,7 +72,8 @@ export function useEquipment() {
         setError(null);
         try {
             const data = await equipment.getAll();
-            setEquipments(data);
+            const sortedData = sortEquipmentsByNewest(data);
+            setEquipments(sortedData);
         } catch {
             setError('ไม่สามารถดึงข้อมูลอุปกรณ์ได้');
         } finally {
@@ -46,7 +92,8 @@ export function useEquipment() {
             // ถ้ามี keyword → เรียก search
             if (filters.keyword && filters.keyword.trim()) {
                 const data = await equipment.search(filters.keyword);
-                setEquipments(data);
+                const sortedData = sortEquipmentsByNewest(data);
+                setEquipments(sortedData);
             }
             // ถ้ามี type หรือ status → เรียก filter
             else if (filters.typeId || filters.statusId) {
@@ -54,7 +101,8 @@ export function useEquipment() {
                     typeId: filters.typeId,
                     statusId: filters.statusId,
                 });
-                setEquipments(data);
+                const sortedData = sortEquipmentsByNewest(data);
+                setEquipments(sortedData);
             }
             // ไม่มี filter → เรียกทั้งหมด
             else {
@@ -80,7 +128,8 @@ export function useEquipment() {
         setError(null);
         try {
             const data = await equipment.search(keyword);
-            setEquipments(data);
+            const sortedData = sortEquipmentsByNewest(data);
+            setEquipments(sortedData);
         } catch {
             setError('เกิดข้อผิดพลาดในการค้นหา');
         } finally {
@@ -139,7 +188,7 @@ export function useEquipment() {
         loadingDetail,
         errorDetail,
         statuses,
-        types,
+        types: equipmentTypes,
         searchEquipment,
         fetchEquipments,
         applyFilters,

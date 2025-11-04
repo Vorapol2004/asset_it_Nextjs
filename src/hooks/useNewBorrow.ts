@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { EquipmentView, BorrowCreateData, Building, Floor, Room, Department } from '@/types/type';
+import { EquipmentView, Building, Floor, Room, Department, Role, Employee } from '@/types/type';
 import { ROUTES } from '@/constants/routes';
 
 export interface BorrowItem {
@@ -26,6 +26,7 @@ export interface SelectedBorrowerData {
     departmentId: number;
     departmentName: string;
     approverName: string;
+    fromOldBorrow?: boolean; // Flag เพื่อบอกว่ามาจาก old_borrow
 }
 
 export function useNewBorrow() {
@@ -39,6 +40,7 @@ export function useNewBorrow() {
     const [floors, setFloors] = useState<Floor[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [departments, setDepartments] = useState<Department[]>([]);
+    const [roles, setRoles] = useState<Role[]>([]);
     const [borrowerRole, setBorrowerRole] = useState('');
 
     const [selectedDepartment, setSelectedDepartment] = useState<number>(0);
@@ -112,6 +114,7 @@ export function useNewBorrow() {
 
     useEffect(() => {
         fetchDepartments();
+        fetchRoles();
     }, []);
 
     useEffect(() => {
@@ -150,26 +153,8 @@ export function useNewBorrow() {
         }
 
         try {
-            // ลองค้นหาด้วย licensekey ก่อน
-            let data: EquipmentView[] = [];
-            try {
-                data = await api.borrow.searchEquipment('licensekey', searchValue.trim());
-                // ถ้าเจอแล้ว (array มีข้อมูล) ให้ใช้ค่านี้
-                if (data.length > 0) {
-                    // เจอแล้ว - จะ auto-fill ด้านล่าง
-                } else {
-                    // ไม่เจอด้วย licensekey ลอง serialnumber
-                    data = await api.borrow.searchEquipment('serialnumber', searchValue.trim());
-                }
-            } catch (error) {
-                // ถ้ามี error ในการค้นหาด้วย licensekey ลอง serialnumber
-                try {
-                    data = await api.borrow.searchEquipment('serialnumber', searchValue.trim());
-                } catch (serialError) {
-                    // ถ้าค้นหาทั้งสองแบบไม่เจอ หรือ error ให้ data เป็น array ว่าง
-                    data = [];
-                }
-            }
+            // Backend จะค้นหาทั้ง licensekey และ serialnumber เอง
+            const data = await api.borrow.searchEquipment(searchValue.trim());
 
             // ถ้าเจออุปกรณ์ (ควรเจอ 1 อัน) ให้ auto-fill ข้อมูล
             if (data.length > 0) {
@@ -228,7 +213,7 @@ export function useNewBorrow() {
             return;
         }
         try {
-            const data = await api.borrow.getBuildingsByDepartment(selectedDepartment);
+            const data = await api.building.filter(selectedDepartment);
             setBuildings(data);
             // Reset building, floor, and room selection when department changes
             setSelectedBuilding(0);
@@ -253,7 +238,7 @@ export function useNewBorrow() {
             return;
         }
         try {
-            const data = await api.borrow.getFloorsByBuilding(selectedBuilding);
+            const data = await api.floor.getByBuilding(selectedBuilding);
             setFloors(data);
             // Reset floor and room selection when building changes
             setSelectedFloor(0);
@@ -275,7 +260,7 @@ export function useNewBorrow() {
             return;
         }
         try {
-            const data = await api.borrow.getRoomsByFloor(selectedFloor);
+            const data = await api.room.getByFloor(selectedFloor);
             setRooms(data);
             // Reset room selection when floor changes
             setSelectedRoom(0);
@@ -286,10 +271,20 @@ export function useNewBorrow() {
 
     const fetchDepartments = async () => {
         try {
-            const data = await api.borrow.getDepartments();
+            const data = await api.department.getAll();
             setDepartments(data);
         } catch (error) {
             console.error('Error fetching departments:', error);
+        }
+    };
+
+    const fetchRoles = async () => {
+        try {
+            const data = await api.role.filter();
+            setRoles(data);
+        } catch (error) {
+            console.error('Error fetching roles:', error);
+            setRoles([]);
         }
     };
 
@@ -367,39 +362,120 @@ export function useNewBorrow() {
         setLoading(true);
 
         try {
-            const validationError = validateForm();
-            if (validationError) {
-                alert(validationError);
+            // Validate ข้อมูลผู้ยืมและสถานที่
+            if (!borrowerFirstName.trim() || !borrowerLastName.trim()) {
+                alert('กรุณากรอกชื่อและนามสกุล');
+                setLoading(false);
+                return;
+            }
+            if (!borrowerPhone.trim()) {
+                alert('กรุณากรอกเบอร์โทรศัพท์');
+                setLoading(false);
+                return;
+            }
+            if (!borrowerRole) {
+                alert('กรุณาเลือกตำแหน่ง');
+                setLoading(false);
+                return;
+            }
+            if (!selectedDepartment || selectedDepartment === 0) {
+                alert('กรุณาเลือกแผนก');
+                setLoading(false);
+                return;
+            }
+            if (!selectedBuilding || selectedBuilding === 0) {
+                alert('กรุณาเลือกตึก');
+                setLoading(false);
+                return;
+            }
+            if (!selectedFloor || selectedFloor === 0) {
+                alert('กรุณาเลือกชั้น');
+                setLoading(false);
+                return;
+            }
+            if (!selectedRoom || selectedRoom === 0) {
+                alert('กรุณาเลือกห้อง');
+                setLoading(false);
+                return;
+            }
+            if (!approverName.trim()) {
+                alert('กรุณากรอกชื่อผู้อนุมัติ');
                 setLoading(false);
                 return;
             }
 
-            const borrowData: BorrowCreateData = {
-                borrowerFirstName: borrowerFirstName.trim(),
-                borrowerLastName: borrowerLastName.trim(),
-                borrowerEmail: borrowerEmail.trim() || null,
-                borrowerPhone: borrowerPhone.trim() || null,
-                borrowDate: borrowDate,
-                dueDate: dueDate,
-                referenceDoc: referenceDoc || null,
-                items: borrowItems.map(item => {
-                    return {
-                        equipmentId: item.equipmentId,
-                        notes: item.notes?.trim() || undefined
-                    };
-                })
+            // หา roleId จาก roleName
+            const selectedRole = roles.find(r => r.roleName === borrowerRole);
+            if (!selectedRole) {
+                alert('ไม่พบตำแหน่งที่เลือก');
+                setLoading(false);
+                return;
+            }
+
+            // สร้าง employee ผ่าน API
+            // Backend endpoint: POST /employee
+            const employeeData: Partial<Employee> = {
+                firstName: borrowerFirstName.trim(),
+                lastName: borrowerLastName.trim(),
+                email: borrowerEmail.trim() || undefined,
+                phone: borrowerPhone.trim(),
+                description: null,
+                roleId: selectedRole.id,
+                departmentId: selectedDepartment,
             };
 
-            console.log('Submitting borrow data:', borrowData);
+            console.log('📤 Creating employee:', employeeData);
+            
+            // เรียก API เพื่อสร้าง employee
+            const employee = await api.employee.create(employeeData);
+            console.log('✅ Employee created successfully:', employee);
 
-            const response = await api.borrow.create(borrowData);
-            console.log('Borrow created:', response);
+            if (!employee || !employee.id) {
+                throw new Error('ไม่ได้รับข้อมูล employee หลังจากสร้าง');
+            }
 
-            alert('บันทึกการยืมเรียบร้อยแล้ว!');
-            router.push(ROUTES.BORROW_EQUIPMENT);
-        } catch (error) {
-            console.error('Error submitting borrow:', error);
-            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+            // เก็บแค่ employeeId ไปหน้า borrow (ผ่าน sessionStorage)
+            // หน้า borrow/page.tsx จะดึง employeeId นี้ไปดึงข้อมูล employee มาแสดง
+            const borrowData = {
+                employeeId: employee.id,
+            };
+
+            console.log('📦 Storing borrow data:', borrowData);
+            
+            // ตรวจสอบว่า sessionStorage ทำงานได้
+            try {
+                sessionStorage.setItem('borrowData', JSON.stringify(borrowData));
+                const stored = sessionStorage.getItem('borrowData');
+                console.log('✅ Stored in sessionStorage:', stored);
+                
+                if (!stored) {
+                    throw new Error('Failed to store data in sessionStorage');
+                }
+                
+                // รอสักครู่เพื่อให้แน่ใจว่า sessionStorage ถูก set แล้ว
+                await new Promise(resolve => setTimeout(resolve, 50));
+                
+                // ไปหน้า borrow
+                console.log('🚀 Navigating to borrow page');
+                router.push(ROUTES.BORROW);
+            } catch (storageError) {
+                console.error('❌ SessionStorage error:', storageError);
+                alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองอีกครั้ง');
+                setLoading(false);
+                return;
+            }
+        } catch (error: any) {
+            console.error('❌ Error creating employee:', error);
+            
+            // แสดง error message ที่ชัดเจน
+            let errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
+            if (error.message) {
+                errorMessage = error.message;
+            } else if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            
+            alert(`❌ ${errorMessage}\n\nกรุณาตรวจสอบ:\n- ข้อมูลที่กรอกครบถ้วนหรือไม่\n- อีเมลซ้ำกับที่มีอยู่แล้วหรือไม่\n- API backend ทำงานปกติหรือไม่`);
         } finally {
             setLoading(false);
         }
@@ -412,6 +488,7 @@ export function useNewBorrow() {
         floors,
         rooms,
         departments,
+        roles,
         borrowerRole,
         selectedDepartment,
         selectedBuilding,

@@ -35,23 +35,34 @@ export const borrow_history = {
     },
 
     /**
-     *  ดึงสถานะการยืมทั้งหมด
-     *  TODO: เปลี่ยน endpoint เมื่อ backend พร้อม
+     * ดึงสถานะการยืมทั้งหมด
+     * Backend: GET /borrow/statuses
+     * 
+     * Note: ถ้า backend ยังไม่มี endpoint นี้ ให้:
+     * 1. Comment บรรทัด fetch และ uncomment mock data
+     * 2. หรือเปลี่ยน endpoint path ให้ตรงกับ backend
      */
     getStatuses: async (): Promise<BorrowStatus[]> => {
-        // TODO: เปลี่ยนเป็น endpoint จริงเมื่อ backend พร้อม
-        // const res = await fetch(`${API_URL}/borrow/statuses`);
-        // if (res.status === 204) return [];
-        // if (!res.ok) throw new Error('Failed to fetch borrow statuses');
-        // return res.json();
+        const res = await fetch(`${API_URL}/borrow/statuses`);
+        
+        if (res.status === 204) {
+            return [];
+        } else if (!res.ok) {
+            // ถ้า backend ยังไม่มี endpoint ให้ใช้ mock data
+            // Uncomment mock data ด้านล่างและ comment บรรทัด throw
+            throw new Error('Failed to fetch borrow statuses');
+        } else {
+            return res.json();
+        }
 
-        // Mock data ชั่วคราว
-        return [
-            { id: 1, borrowStatusName: 'กำลังยืม' },
-            { id: 2, borrowStatusName: 'คืนแล้ว' },
-            { id: 3, borrowStatusName: 'คืนบางส่วน' },
-            { id: 4, borrowStatusName: 'เกินกำหนด' },
-        ];
+        // Mock data (ใช้เมื่อ backend ยังไม่มี endpoint)
+        // Uncomment ส่วนนี้เมื่อ backend ยังไม่มี endpoint
+        // return [
+        //     { id: 1, borrowStatusName: 'กำลังยืม' },
+        //     { id: 2, borrowStatusName: 'คืนแล้ว' },
+        //     { id: 3, borrowStatusName: 'คืนบางส่วน' },
+        //     { id: 4, borrowStatusName: 'เกินกำหนด' },
+        // ];
     },
 
     /**

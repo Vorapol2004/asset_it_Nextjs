@@ -12,6 +12,7 @@ export const ROUTES = {
     EQUIPMENT: '/pages/equipment',
     OLD_EQUIPMENT: '/pages/borrow_equipment/old_borrow',
     NEW_EQUIPMENT: '/pages/borrow_equipment/new_borrow',
+    BORROW: '/pages/borrow_equipment/borrow',
     SETTINGS_MASTER_DATA: '/setting/master-data',
 
 } as const;

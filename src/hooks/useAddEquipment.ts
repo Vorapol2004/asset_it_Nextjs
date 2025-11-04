@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {lot} from "@/lib/api/lot/lot";
-import { useAddEquipmentDropDown } from '@/hooks/useAddEquipmentDropDown';
+import { api } from '@/lib/api';
+import { API_URL } from '@/lib/config';
 // ==================== Types ====================
 
 export interface EquipmentItem {
@@ -30,8 +31,39 @@ export function useAddEquipment() {
     const [error] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    // ✅ ใช้ dropdown data สำหรับ add_equipment
-    const { lotTypes, equipmentTypes } = useAddEquipmentDropDown();
+    // ✅ Dropdown data สำหรับ add_equipment
+    const [lotTypes, setLotTypes] = useState<{ id: number; lotTypeName: string }[]>([]);
+    const [equipmentTypes, setEquipmentTypes] = useState<{ id: number; equipmentTypeName: string }[]>([]);
+
+    // ✅ โหลดข้อมูล dropdown เมื่อ component mount
+    useEffect(() => {
+        const loadDropdownData = async () => {
+            try {
+                // ดึง Lot Types
+                const lotTypesData = await api.lot.getTypes();
+                if (Array.isArray(lotTypesData)) {
+                    setLotTypes(lotTypesData);
+                } else {
+                    setLotTypes([]);
+                }
+
+                // ดึง Equipment Types
+                const res = await fetch(`${API_URL}/equipment_type/type`);
+                const equipmentTypesData = await res.json();
+                if (Array.isArray(equipmentTypesData)) {
+                    setEquipmentTypes(equipmentTypesData);
+                } else {
+                    setEquipmentTypes([]);
+                }
+            } catch (err) {
+                console.error('Error loading dropdown data:', err);
+                setLotTypes([]);
+                setEquipmentTypes([]);
+            }
+        };
+
+        loadDropdownData();
+    }, []);
 
     // Lot Information
     const [lotName, setLotName] = useState('');
