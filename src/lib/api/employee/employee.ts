@@ -32,6 +32,21 @@ export const employee = {
     },
 
     /**
+     *  เลือกพนักงาน (สำหรับหน้า borrow)
+     *  Backend endpoint: GET /employee/select_employee?employeeId={id}
+     */
+    selectEmployee: async (employeeId: number): Promise<EmployeeView> => {
+        const res = await fetch(`${API_URL}/employee/select_employee?employeeId=${employeeId}`);
+
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: 'Failed to select employee' }));
+            throw new Error(errorData.message || 'Failed to select employee');
+        } else {
+            return res.json();
+        }
+    },
+
+    /**
      *  ดึงพนักงานตาม Role
      */
     getByRole: async (roleId: number): Promise<EmployeeView[]> => {
@@ -61,8 +76,8 @@ export const employee = {
         }
     },
 
-    create: async (data: Partial<Employee>): Promise<Employee> => {
-        const res = await fetch(`${API_URL}/employee`, {
+    create: async (data: Partial<Employee> & { roomId?: number }): Promise<Employee> => {
+        const res = await fetch(`${API_URL}/employee/add`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -72,7 +87,12 @@ export const employee = {
             const errorData = await res.json().catch(() => ({ message: 'Failed to create employee' }));
             throw new Error(errorData.message || `Failed to create employee: ${res.status} ${res.statusText}`);
         } else {
-            return res.json();
+            const response = await res.json();
+            // Normalize response: ถ้า backend ส่ง employeeId แทน id ให้แปลงเป็น id
+            if (response.employeeId && !response.id) {
+                response.id = response.employeeId;
+            }
+            return response;
         }
     },
 

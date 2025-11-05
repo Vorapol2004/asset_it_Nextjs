@@ -48,11 +48,7 @@ export const NAV_ITEMS = [
         path: ROUTES.BORROW_HISTORY,
         icon: 'History',
     },
-    {
-        label: 'ตั้งค่า',
-        path: ROUTES.SETTINGS_MASTER_DATA,
-        icon: 'Settings',
-    }
+
 
 
 ] as const;

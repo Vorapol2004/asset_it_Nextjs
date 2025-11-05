@@ -23,6 +23,7 @@ export function useBorrow() {
     const [borrowDate, setBorrowDate] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [referenceDoc, setReferenceDoc] = useState('');
+    const [approverName, setApproverName] = useState('');
     const [employeeId, setEmployeeId] = useState<number>(0);
     const [employee, setEmployee] = useState<EmployeeView | null>(null);
     const [employeeLoading, setEmployeeLoading] = useState(false);
@@ -54,8 +55,6 @@ export function useBorrow() {
             return;
         }
 
-        console.log('🔍 Checking sessionStorage for borrowData...');
-        
         const checkData = () => {
             // ถ้าเช็คแล้ว ให้ skip
             if (hasCheckedStorage.current || employeeId > 0) {
@@ -66,12 +65,10 @@ export function useBorrow() {
             
             if (borrowDataStr) {
                 try {
-                    console.log('📥 Found borrowData in sessionStorage:', borrowDataStr);
                     const data: BorrowPageData = JSON.parse(borrowDataStr);
                     
                     // ตรวจสอบว่า employeeId ถูกต้อง
                     if (!data.employeeId || data.employeeId === 0) {
-                        console.error('❌ Invalid employeeId:', data);
                         hasCheckedStorage.current = true;
                         alert('ไม่พบข้อมูลผู้ยืม กรุณาเริ่มใหม่');
                         sessionStorage.removeItem('borrowData');
@@ -81,23 +78,19 @@ export function useBorrow() {
 
                     setEmployeeId(data.employeeId);
                     hasCheckedStorage.current = true;
-                    console.log('✅ Loaded borrow data successfully:', data);
                     
                     // ลบข้อมูลออกจาก sessionStorage หลังจากโหลดแล้ว
                     sessionStorage.removeItem('borrowData');
-                    console.log('🗑️ Removed borrowData from sessionStorage');
                 } catch (error) {
-                    console.error('❌ Error parsing borrow data:', error);
-                    console.error('Raw data:', borrowDataStr);
+                    console.error('Error parsing borrow data:', error);
                     hasCheckedStorage.current = true;
                     sessionStorage.removeItem('borrowData');
                     alert('เกิดข้อผิดพลาดในการอ่านข้อมูล กรุณาเริ่มใหม่');
                     router.push(ROUTES.NEW_EQUIPMENT);
                 }
             } else {
-                // ถ้าไม่มีข้อมูลให้ redirect (แต่ต้องแน่ใจว่าไม่ได้ redirect ไปแล้ว)
+                // ถ้าไม่มีข้อมูลให้ redirect
                 if (!hasCheckedStorage.current) {
-                    console.warn('⚠️ No borrowData found in sessionStorage');
                     hasCheckedStorage.current = true;
                     router.push(ROUTES.NEW_EQUIPMENT);
                 }
@@ -121,17 +114,19 @@ export function useBorrow() {
     }, []); // ทำงานแค่ครั้งเดียวเมื่อ component mount
 
     // ดึงข้อมูล employee เมื่อ employeeId มีค่า
-    // Backend endpoint: GET /employee/{id}
+    // Backend endpoint: GET /employee/select_employee?employeeId={id}
     useEffect(() => {
         const fetchEmployee = async () => {
             if (employeeId && employeeId > 0) {
                 setEmployeeLoading(true);
                 try {
-                    const employeeData = await api.employee.getById(employeeId);
+                    const employeeData = await api.employee.selectEmployee(employeeId);
                     setEmployee(employeeData);
-                    console.log('✅ Employee data loaded:', employeeData);
                 } catch (error) {
-                    console.error('❌ Error fetching employee:', error);
+                    console.error('Error fetching employee:', error);
+                    alert('ไม่สามารถดึงข้อมูลพนักงานได้ กรุณาลองอีกครั้ง');
+                    sessionStorage.removeItem('borrowData');
+                    router.push(ROUTES.NEW_EQUIPMENT);
                 } finally {
                     setEmployeeLoading(false);
                 }
@@ -139,7 +134,7 @@ export function useBorrow() {
         };
 
         fetchEmployee();
-    }, [employeeId]);
+    }, [employeeId, router]);
 
     // ดึงข้อมูล location จาก employee (ถ้า employee มี departmentId)
     useEffect(() => {
@@ -174,10 +169,8 @@ export function useBorrow() {
                             }
                         }
                     }
-                    
-                    console.log('✅ Location data loaded from employee');
                 } catch (error) {
-                    console.error('❌ Error fetching location data:', error);
+                    console.error('Error fetching location data:', error);
                 } finally {
                     setLocationLoading(false);
                 }
@@ -322,6 +315,12 @@ export function useBorrow() {
                 return;
             }
 
+            if (!approverName.trim()) {
+                alert('กรุณากรอกชื่อผู้อนุมัติ');
+                setLoading(false);
+                return;
+            }
+
             const hasInvalidItems = borrowItems.some(
                 item => !item.searchValue.trim() || !item.equipmentId || item.equipmentId === 0
             );
@@ -346,23 +345,22 @@ export function useBorrow() {
             //   "referenceDoc": String (optional, nullable),
             //   "borrowDate": "YYYY-MM-DD" (LocalDate),
             //   "dueDate": "YYYY-MM-DD" (LocalDate),
-            //   "equipmentIds": [Integer, Integer, ...]
+            //   "equipmentIds": [Integer, Integer, ...],
+            //   "approverName": String (optional, nullable)
             // }
             const borrowData: BorrowCreateData = {
                 employeeId: employeeId,
                 referenceDoc: referenceDoc.trim() || null,
                 borrowDate: borrowDate,
                 dueDate: dueDate,
+                approverName: approverName?.trim() || null,
                 equipmentIds: borrowItems
                     .filter(item => item.equipmentId && item.equipmentId > 0)
                     .map(item => item.equipmentId)
             };
 
-            console.log('📤 Submitting borrow data:', borrowData);
-
             // ส่งข้อมูลไปยัง backend
-            const response = await api.borrow.create(borrowData);
-            console.log('Borrow created:', response);
+            await api.borrow.create(borrowData);
 
             alert('บันทึกการยืมเรียบร้อยแล้ว!');
             router.push(ROUTES.BORROW_EQUIPMENT);
@@ -379,6 +377,7 @@ export function useBorrow() {
         borrowDate,
         dueDate,
         referenceDoc,
+        approverName,
         borrowItems,
         employeeId,
         employee,
@@ -392,6 +391,7 @@ export function useBorrow() {
         setBorrowDate,
         setDueDate,
         setReferenceDoc,
+        setApproverName,
         addBorrowItem,
         removeBorrowItem,
         updateBorrowItem,

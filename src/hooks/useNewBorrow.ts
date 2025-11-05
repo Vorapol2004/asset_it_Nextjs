@@ -25,7 +25,6 @@ export interface SelectedBorrowerData {
     roomName: string;
     departmentId: number;
     departmentName: string;
-    approverName: string;
     fromOldBorrow?: boolean; // Flag เพื่อบอกว่ามาจาก old_borrow
 }
 
@@ -47,7 +46,6 @@ export function useNewBorrow() {
     const [selectedBuilding, setSelectedBuilding] = useState<number>(0);
     const [selectedFloor, setSelectedFloor] = useState<number>(0);
     const [selectedRoom, setSelectedRoom] = useState<number>(0);
-    const [approverName, setApproverName] = useState('');
 
     // Borrower info
     const [borrowerFirstName, setBorrowerFirstName] = useState('');
@@ -76,8 +74,6 @@ export function useNewBorrow() {
             try {
                 const data: SelectedBorrowerData = JSON.parse(selectedBorrowerData);
 
-                console.log('📥 Auto-filling data from old_borrow:', data);
-
                 // Set borrower info
                 setBorrowerFirstName(data.borrowerFirstName || '');
                 setBorrowerLastName(data.borrowerLastName || '');
@@ -95,19 +91,10 @@ export function useNewBorrow() {
                 if (data.roomId && data.roomId > 0) {
                     setSelectedRoom(data.roomId);
                 }
-                setApproverName(data.approverName || '');
-
-                console.log('✅ Auto-filled values:', {
-                    firstName: data.borrowerFirstName,
-                    lastName: data.borrowerLastName,
-                    email: data.borrowerEmail,
-                    phone: data.borrowerPhone,
-                    role: data.borrowerRole,
-                });
 
                 sessionStorage.removeItem('selectedBorrower');
             } catch (error) {
-                console.error('❌ Error parsing selected borrower data:', error);
+                console.error('Error parsing selected borrower data:', error);
             }
         }
     }, []);
@@ -335,9 +322,6 @@ export function useNewBorrow() {
             return 'กรุณาเลือกสถานที่ (ตึก, ชั้น, ห้อง)';
         }
 
-        if (!approverName.trim()) {
-            return 'กรุณากรอกชื่อผู้อนุมัติ';
-        }
 
         if (!borrowDate || !dueDate) {
             return 'กรุณาเลือกวันที่ยืมและวันที่คืน';
@@ -398,11 +382,6 @@ export function useNewBorrow() {
                 setLoading(false);
                 return;
             }
-            if (!approverName.trim()) {
-                alert('กรุณากรอกชื่อผู้อนุมัติ');
-                setLoading(false);
-                return;
-            }
 
             // หา roleId จาก roleName
             const selectedRole = roles.find(r => r.roleName === borrowerRole);
@@ -414,7 +393,7 @@ export function useNewBorrow() {
 
             // สร้าง employee ผ่าน API
             // Backend endpoint: POST /employee
-            const employeeData: Partial<Employee> = {
+            const employeeData: Partial<Employee> & { roomId?: number } = {
                 firstName: borrowerFirstName.trim(),
                 lastName: borrowerLastName.trim(),
                 email: borrowerEmail.trim() || undefined,
@@ -422,50 +401,26 @@ export function useNewBorrow() {
                 description: null,
                 roleId: selectedRole.id,
                 departmentId: selectedDepartment,
+                ...(selectedRoom && selectedRoom > 0 ? { roomId: selectedRoom } : {}),
             };
 
-            console.log('📤 Creating employee:', employeeData);
-            
             // เรียก API เพื่อสร้าง employee
             const employee = await api.employee.create(employeeData);
-            console.log('✅ Employee created successfully:', employee);
 
-            if (!employee || !employee.id) {
-                throw new Error('ไม่ได้รับข้อมูล employee หลังจากสร้าง');
-            }
-
-            // เก็บแค่ employeeId ไปหน้า borrow (ผ่าน sessionStorage)
-            // หน้า borrow/page.tsx จะดึง employeeId นี้ไปดึงข้อมูล employee มาแสดง
-            const borrowData = {
-                employeeId: employee.id,
-            };
-
-            console.log('📦 Storing borrow data:', borrowData);
+            // รองรับทั้ง id และ employeeId จาก response
+            const employeeId = (employee as any).id || (employee as any).employeeId;
             
-            // ตรวจสอบว่า sessionStorage ทำงานได้
-            try {
-                sessionStorage.setItem('borrowData', JSON.stringify(borrowData));
-                const stored = sessionStorage.getItem('borrowData');
-                console.log('✅ Stored in sessionStorage:', stored);
-                
-                if (!stored) {
-                    throw new Error('Failed to store data in sessionStorage');
-                }
-                
-                // รอสักครู่เพื่อให้แน่ใจว่า sessionStorage ถูก set แล้ว
-                await new Promise(resolve => setTimeout(resolve, 50));
-                
-                // ไปหน้า borrow
-                console.log('🚀 Navigating to borrow page');
-                router.push(ROUTES.BORROW);
-            } catch (storageError) {
-                console.error('❌ SessionStorage error:', storageError);
-                alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองอีกครั้ง');
-                setLoading(false);
-                return;
+            if (!employeeId || employeeId === 0) {
+                throw new Error('ไม่ได้รับข้อมูล employee ID หลังจากสร้าง');
             }
+
+            // เก็บ employeeId ไปหน้า borrow
+            sessionStorage.setItem('borrowData', JSON.stringify({ employeeId }));
+            
+            // ไปหน้า borrow
+            router.push(ROUTES.BORROW);
         } catch (error: any) {
-            console.error('❌ Error creating employee:', error);
+            console.error('Error creating employee:', error);
             
             // แสดง error message ที่ชัดเจน
             let errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
@@ -475,7 +430,7 @@ export function useNewBorrow() {
                 errorMessage = error.message;
             }
             
-            alert(`❌ ${errorMessage}\n\nกรุณาตรวจสอบ:\n- ข้อมูลที่กรอกครบถ้วนหรือไม่\n- อีเมลซ้ำกับที่มีอยู่แล้วหรือไม่\n- API backend ทำงานปกติหรือไม่`);
+            alert(`${errorMessage}\n\nกรุณาตรวจสอบ:\n- ข้อมูลที่กรอกครบถ้วนหรือไม่\n- อีเมลซ้ำกับที่มีอยู่แล้วหรือไม่\n- API backend ทำงานปกติหรือไม่`);
         } finally {
             setLoading(false);
         }
@@ -494,7 +449,6 @@ export function useNewBorrow() {
         selectedBuilding,
         selectedFloor,
         selectedRoom,
-        approverName,
         borrowerFirstName,
         borrowerLastName,
         borrowerEmail,
@@ -510,7 +464,6 @@ export function useNewBorrow() {
         setSelectedBuilding,
         setSelectedFloor,
         setSelectedRoom,
-        setApproverName,
         setBorrowerFirstName,
         setBorrowerLastName,
         setBorrowerEmail,

@@ -6,39 +6,6 @@ import { BorrowView } from '@/types/type';
  */
 export const oldBorrow = {
     /**
-     *  ดึงรายการผู้ยืมเก่า (distinct borrowers)
-     *  TODO: เปลี่ยนเป็น endpoint จริงเมื่อ backend พร้อม
-     *  Endpoint ที่ควรจะเป็น: GET /borrow/borrowers หรือ GET /borrow/distinct-borrowers
-     *  Response ควรมีข้อมูลครบ: firstName, lastName, email, phone, roleName, 
-     *                             buildingId, buildingName, roomId, roomName, 
-     *                             departmentId, departmentName, approverName
-     *  
-     *  ตอนนี้ใช้ /borrow/all ซึ่ง BorrowView อาจไม่มี field ครบ:
-     *  - phone (ต้องดึงจาก employee หรือ join table)
-     *  - buildingId, buildingName (ต้อง join กับ location tables)
-     *  - roomId, roomName (ต้อง join กับ location tables)
-     *  - departmentId, departmentName (ต้อง join กับ department table)
-     *  - approverName (ต้อง join กับ employee หรือ approver table)
-     */
-    getPreviousBorrowers: async (): Promise<BorrowView[]> => {
-        // TODO: เปลี่ยนเป็น endpoint จริงเมื่อ backend พร้อม
-        // const res = await fetch(`${API_URL}/borrow/borrowers`); 
-        // หรือ
-        // const res = await fetch(`${API_URL}/borrow/distinct-borrowers`);
-        
-        // ตอนนี้ใช้ endpoint ชั่วคราว
-        const res = await fetch(`${API_URL}/borrow/all`);
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch previous borrowers');
-        } else {
-            return res.json();
-        }
-    },
-
-    /**
      *  ลบ borrow record
      *  Backend endpoint: DELETE /borrow/{id}
      *  TODO: ตรวจสอบ endpoint ที่ถูกต้องจาก backend

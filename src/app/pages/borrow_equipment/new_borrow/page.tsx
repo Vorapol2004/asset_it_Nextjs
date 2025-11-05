@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import {
-    Package, Save, User, Mail, Phone, Building2, DoorOpen, Briefcase, UserCheck, ArrowLeft, Layers
+    Package, Save, User, Mail, Phone, Building2, DoorOpen, Briefcase, ArrowLeft, Layers
 } from 'lucide-react';
 import { useNewBorrow } from '@/hooks/useNewBorrow';
 import { ROUTES } from '@/constants/routes';
@@ -22,7 +22,6 @@ export default function NewBorrowPage() {
         selectedBuilding,
         selectedFloor,
         selectedRoom,
-        approverName,
         borrowerFirstName,
         borrowerLastName,
         borrowerEmail,
@@ -32,7 +31,6 @@ export default function NewBorrowPage() {
         setSelectedBuilding,
         setSelectedFloor,
         setSelectedRoom,
-        setApproverName,
         setBorrowerFirstName,
         setBorrowerLastName,
         setBorrowerEmail,
@@ -273,24 +271,6 @@ export default function NewBorrowPage() {
                                         ))}
                                     </select>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* ผู้อนุมัติ */}
-                        <div className="mt-4">
-                            <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                ผู้อนุมัติ <span className="text-red-500">*</span>
-                            </label>
-                            <div className="relative">
-                                <UserCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    value={approverName}
-                                    onChange={(e) => setApproverName(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500"
-                                    placeholder="ชื่อผู้อนุมัติ"
-                                    required
-                                />
                             </div>
                         </div>
                     </div>

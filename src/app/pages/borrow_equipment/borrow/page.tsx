@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import {
     Package, Plus, Trash2, Save, Calendar, FileText,
-    ArrowLeft, Search, User, Mail, Phone, Briefcase, Building2, DoorOpen, Layers, Lock
+    ArrowLeft, Search, User, Mail, Phone, Briefcase, Building2, DoorOpen, Layers, Lock, UserCheck
 } from 'lucide-react';
 import { useBorrow } from '@/hooks/useBorrow';
 import { ROUTES } from '@/constants/routes';
@@ -16,6 +16,7 @@ export default function BorrowPage() {
         borrowDate,
         dueDate,
         referenceDoc,
+        approverName,
         borrowItems,
         employee,
         employeeLoading,
@@ -28,6 +29,7 @@ export default function BorrowPage() {
         setBorrowDate,
         setDueDate,
         setReferenceDoc,
+        setApproverName,
         addBorrowItem,
         removeBorrowItem,
         updateBorrowItem,
@@ -327,6 +329,22 @@ export default function BorrowPage() {
                                         onChange={(e) => setReferenceDoc(e.target.value)}
                                         className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500"
                                         placeholder="เลขที่เอกสาร (ถ้ามี)"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                    ผู้อนุมัติ <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <UserCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={approverName}
+                                        onChange={(e) => setApproverName(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500"
+                                        placeholder="ชื่อผู้อนุมัติ"
+                                        required
                                     />
                                 </div>
                             </div>

@@ -18,7 +18,6 @@ export default function OldBorrowPage() {
         setSearchTerm,
         handleSelectBorrower,
         handleDeleteBorrower,
-        formatDate,
     } = useOldBorrow();
 
     return (
@@ -97,9 +96,9 @@ export default function OldBorrowPage() {
                         </div>
                     ) : (
                         <div className="divide-y divide-gray-200">
-                            {filteredBorrowers.map((borrower, index) => {
+                            {filteredBorrowers.map((employee, index) => {
                                 // สร้าง unique key ที่ไม่ซ้ำกัน
-                                const uniqueKey = `borrower-${borrower.id}-${index}-${borrower.borrowerEmail || 'noemail'}-${borrower.borrowCount}`;
+                                const uniqueKey = `employee-${employee.id}-${index}-${employee.email || 'noemail'}`;
                                 return (
                                 <div
                                     key={uniqueKey}
@@ -114,9 +113,9 @@ export default function OldBorrowPage() {
 
                                                 <div className="flex-1">
                                                     {/* ชื่อ-นามสกุล */}
-                                                    {(borrower.borrowerFirstName || borrower.borrowerLastName) ? (
+                                                    {(employee.firstName || employee.lastName) ? (
                                                         <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                                            {borrower.borrowerFirstName || ''} {borrower.borrowerLastName || ''}
+                                                            {employee.firstName || ''} {employee.lastName || ''}
                                                         </h3>
                                                     ) : (
                                                         <h3 className="text-xl font-bold text-gray-500 mb-2 italic">
@@ -126,71 +125,44 @@ export default function OldBorrowPage() {
 
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                                                         {/* อีเมล */}
-                                                        {borrower.borrowerEmail && (
+                                                        {employee.email && (
                                                             <div className="flex items-center gap-2 text-sm text-gray-700">
                                                                 <div className="bg-blue-100 p-1.5 rounded-lg">
                                                                     <Mail className="h-4 w-4 text-blue-600" />
                                                                 </div>
-                                                                <span className="font-medium">{borrower.borrowerEmail}</span>
+                                                                <span className="font-medium">{employee.email}</span>
                                                             </div>
                                                         )}
                                                         {/* เบอร์โทร */}
-                                                        {borrower.borrowerPhone && (
+                                                        {employee.phone && (
                                                             <div className="flex items-center gap-2 text-sm text-gray-700">
                                                                 <div className="bg-green-100 p-1.5 rounded-lg">
                                                                     <Phone className="h-4 w-4 text-green-600" />
                                                                 </div>
-                                                                <span className="font-medium">{borrower.borrowerPhone}</span>
+                                                                <span className="font-medium">{employee.phone}</span>
                                                             </div>
                                                         )}
                                                         {/* ตำแหน่ง */}
-                                                        {borrower.borrowerRole && (
+                                                        {employee.roleName && (
                                                             <div className="flex items-center gap-2 text-sm text-gray-700">
                                                                 <div className="bg-purple-100 p-1.5 rounded-lg">
                                                                     <Briefcase className="h-4 w-4 text-purple-600" />
                                                                 </div>
-                                                                <span className="font-medium">{borrower.borrowerRole}</span>
+                                                                <span className="font-medium">{employee.roleName}</span>
                                                             </div>
                                                         )}
                                                     </div>
 
-                                                    {/* แสดงข้อมูลครั้งล่าสุดที่ยืม (ถ้ามี) */}
-                                                    {(borrower.buildingName || borrower.departmentName || borrower.approverName) && (
+                                                    {/* แสดงข้อมูลแผนก */}
+                                                    {employee.departmentName && (
                                                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                                                            <p className="text-xs font-semibold text-blue-800 mb-2">📍 ข้อมูลจากครั้งล่าสุด:</p>
-                                                            <div className="grid grid-cols-2 gap-2 text-xs">
-                                                                {borrower.buildingName && (
-                                                                    <div className="flex items-center gap-1.5">
-                                                                        <Building2 className="h-3 w-3 text-blue-600" />
-                                                                        <span className="text-gray-700">{borrower.buildingName} {borrower.roomName ? `› ${borrower.roomName}` : ''}</span>
-                                                                    </div>
-                                                                )}
-                                                                {borrower.departmentName && (
-                                                                    <div className="flex items-center gap-1.5">
-                                                                        <Briefcase className="h-3 w-3 text-blue-600" />
-                                                                        <span className="text-gray-700">{borrower.departmentName}</span>
-                                                                    </div>
-                                                                )}
+                                                            <p className="text-xs font-semibold text-blue-800 mb-2">📍 ข้อมูลแผนก:</p>
+                                                            <div className="flex items-center gap-1.5 text-xs">
+                                                                <Briefcase className="h-3 w-3 text-blue-600" />
+                                                                <span className="text-gray-700">{employee.departmentName}</span>
                                                             </div>
-                                                            {borrower.approverName && (
-                                                                <div className="mt-2 flex items-center gap-1.5 text-xs">
-                                                                    <User className="h-3 w-3 text-blue-600" />
-                                                                    <span className="text-gray-700">ผู้อนุมัติ: {borrower.approverName}</span>
-                                                                </div>
-                                                            )}
                                                         </div>
                                                     )}
-
-                                                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                                                        <span className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-lg">
-                                                            <Calendar className="h-3.5 w-3.5 text-gray-600" />
-                                                            <span className="font-medium">ยืมล่าสุด: {formatDate(borrower.lastBorrowDate)}</span>
-                                                        </span>
-                                                        <span className="flex items-center gap-1.5 bg-orange-100 px-3 py-1.5 rounded-lg">
-                                                            <Package className="h-3.5 w-3.5 text-orange-600" />
-                                                            <span className="font-medium text-orange-700">ยืมไปแล้ว: {borrower.borrowCount} ครั้ง</span>
-                                                        </span>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -200,17 +172,17 @@ export default function OldBorrowPage() {
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleDeleteBorrower(borrower);
+                                                    handleDeleteBorrower(employee);
                                                 }}
                                                 className="bg-red-600 text-white px-4 py-3 rounded-xl font-semibold flex items-center gap-2 hover:bg-red-700 transition-all shadow-md hover:shadow-lg"
-                                                title="ลบข้อมูลการยืม"
+                                                title="ลบข้อมูลพนักงาน"
                                             >
                                                 <Trash2 className="h-5 w-5" />
                                                 <span className="hidden sm:inline">ลบ</span>
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => handleSelectBorrower(borrower)}
+                                                onClick={() => handleSelectBorrower(employee)}
                                                 className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 hover:bg-purple-700 transition-all shadow-md hover:shadow-lg group-hover:px-7"
                                             >
                                                 เลือก

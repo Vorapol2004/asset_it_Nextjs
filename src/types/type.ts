@@ -187,6 +187,7 @@ export interface BorrowCreateData {
     borrowDate: string;
     dueDate: string;
     equipmentIds: number[];
+    approverName?: string | null;
 }
 
 // Interface เดิม (อาจใช้ในที่อื่น)
