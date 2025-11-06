@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Navbar from '@/component/Navbar/Navbar';
 import {
     RefreshCw,
@@ -15,6 +16,12 @@ import {
     Undo2,
     Calendar,
     ChevronDown,
+    User,
+    Mail,
+    Phone,
+    Briefcase,
+    Building2,
+    UserCheck,
 } from 'lucide-react';
 import { useBorrowHistory } from '@/hooks/useBorrowHistory';
 
@@ -32,12 +39,15 @@ export default function BorrowHistoryPage() {
         statuses,
         roles,
         equipmentTypes,
+        equipmentStatuses,
+        returnEquipmentStatuses,
         STATUS_MAP,
         searchTerm,
         selectedStatus,
         selectedRole,
         selectedType,
         loading,
+        selectedLoading,
         error,
         setSearchTerm,
         setSelectedStatus,
@@ -47,7 +57,11 @@ export default function BorrowHistoryPage() {
         applyFilters,
         handleClearFilters,
         returnEquipmentItem,
+        loadBorrowDetails,
     } = useBorrowHistory();
+
+    // State สำหรับเลือกสถานะอุปกรณ์ก่อนคืน
+    const [selectedReturnStatus, setSelectedReturnStatus] = useState<Record<number, number>>({});
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -124,7 +138,7 @@ export default function BorrowHistoryPage() {
                     </div>
 
                     {/* Filters Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
                         {/* สถานะการยืม */}
                         <div>
                             <label className="block text-sm font-semibold mb-2 text-gray-700">
@@ -138,11 +152,15 @@ export default function BorrowHistoryPage() {
                                     className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-green-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
                                 >
                                     <option value="all">ทั้งหมด</option>
-                                    {statuses.map((status) => (
-                                        <option key={status.id} value={status.id}>
-                                            {status.borrowStatusName}
-                                        </option>
-                                    ))}
+                                    {statuses && statuses.length > 0 ? (
+                                        statuses.map((status) => (
+                                            <option key={status.id} value={status.id}>
+                                                {status.borrowStatusName}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option value="all" disabled>กำลังโหลด...</option>
+                                    )}
                                 </select>
                                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                             </div>
@@ -161,11 +179,15 @@ export default function BorrowHistoryPage() {
                                     className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-green-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
                                 >
                                     <option value="all">ทุกตำแหน่ง</option>
-                                    {roles.map((role) => (
-                                        <option key={role.id} value={role.roleName}>
-                                            {role.roleName}
-                                        </option>
-                                    ))}
+                                    {roles && roles.length > 0 ? (
+                                        roles.map((role) => (
+                                            <option key={role.id} value={role.roleName}>
+                                                {role.roleName}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option value="all" disabled>กำลังโหลด...</option>
+                                    )}
                                 </select>
                                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                             </div>
@@ -203,47 +225,50 @@ export default function BorrowHistoryPage() {
                             <table className="w-full border-collapse">
                                 <thead className="bg-gradient-to-r from-green-600 to-green-700">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">ID</th>
                                     <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">ชื่อผู้ยืม</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">ตำแหน่ง</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">วันที่ยืม</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">จำนวนอุปกรณ์</th>
-                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase">สถานะ</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase">ตำแหน่ง</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase">วันที่ยืม</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase">จำนวนอุปกรณ์</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase">สถานะ</th>
                                     <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase">จัดการ</th>
                                 </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                 {groupedRecords.map((group, i) => {
                                     const status = STATUS_MAP[group.borrowStatusId];
-                                    const StatusIcon = STATUS_ICONS[group.borrowStatusId];
                                     return (
                                         <tr key={group.id} className={`hover:bg-green-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                                            <td className="px-4 py-3">
-                                                <span className="text-sm font-bold text-green-600">#{group.id}</span>
+                                            
+                                            <td className="px-4 py-3 text-left">
+                                                <div className="text-sm font-semibold text-gray-900">
+                                                    {group.employeeName?.trim() || 
+                                                     `${group.firstName || ''} ${group.lastName || ''}`.trim() || 
+                                                     'ไม่ระบุชื่อ'}
+                                                </div>
                                             </td>
-                                            <td className="px-4 py-3">
-                                                <div className="text-sm font-semibold text-gray-900">{group.employeeName}</div>
-                                                <div className="text-xs text-gray-500">{group.email}</div>
+                                            <td className="px-4 py-3 text-sm text-gray-700 text-center">
+                                                {group.roleName || '-'}
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-gray-700">{group.roleName || '-'}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-700">
+                                            <td className="px-4 py-3 text-sm text-gray-700 text-center">
                                                 {new Date(group.borrowDate).toLocaleDateString('th-TH')}
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-4 py-3 text-center">
                                                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-                                                    {group.items.length} รายการ
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold border flex items-center gap-1 w-fit ${status?.color || 'bg-gray-100 text-gray-700'}`}>
-                                                    {StatusIcon && <StatusIcon className="h-3 w-3" />}
-                                                    {status?.label || group.borrowStatusName}
+                                                    {(group as any).borrowEquipmentCount ?? group.items.length} รายการ
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3 text-center">
+                                                <div className="flex justify-center">
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border flex items-center gap-1 w-fit ${status?.color || 'bg-gray-100 text-gray-700'}`}>
+                                                        {status?.label || group.borrowStatusName}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
                                                 <button
-                                                    onClick={() => setSelected(group)}
-                                                    className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-1 mx-auto transition-colors"
+                                                    onClick={() => loadBorrowDetails(group.id)}
+                                                    disabled={selectedLoading}
+                                                    className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1 mx-auto transition-colors"
                                                 >
                                                     <Eye className="h-4 w-4" /> ดูรายละเอียด
                                                 </button>
@@ -265,47 +290,99 @@ export default function BorrowHistoryPage() {
                         <div className="sticky top-0 bg-gradient-to-r from-green-600 to-green-700 text-white p-6 flex justify-between items-center rounded-t-xl">
                             <div>
                                 <h2 className="text-2xl font-bold">รายละเอียดการยืม</h2>
-                                <p className="text-sm opacity-90 mt-1">รหัส: #{selected.id}</p>
+                                <p className="text-sm opacity-90 mt-1">Id: {selected.id}</p>
                             </div>
                             <button
                                 onClick={() => setSelected(null)}
-                                className="hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-colors"
+                                disabled={selectedLoading}
+                                className="hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-colors disabled:opacity-50"
                             >
                                 <X className="h-6 w-6" />
                             </button>
                         </div>
 
+                        {selectedLoading ? (
+                            <div className="flex flex-col items-center py-20">
+                                <RefreshCw className="w-12 h-12 text-green-600 animate-spin mb-4" />
+                                <span className="text-gray-600 font-medium">กำลังโหลดรายละเอียด...</span>
+                            </div>
+                        ) : (
                         <div className="p-6 space-y-6">
                             {/* ข้อมูลผู้ยืม */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                <div>
-                                    <p className="text-sm text-gray-600 font-medium">ผู้ยืม</p>
-                                    <p className="font-semibold text-gray-900">{selected.employeeName}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600 font-medium">อีเมล</p>
-                                    <p className="font-semibold text-gray-900">{selected.email}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600 font-medium">ตำแหน่ง</p>
-                                    <p className="font-semibold text-gray-900">{selected.roleName}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600 font-medium">วันที่ยืม</p>
-                                    <p className="font-semibold text-gray-900">
-                                        {new Date(selected.borrowDate).toLocaleDateString('th-TH')}
-                                    </p>
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <User className="h-5 w-5 text-green-600" />
+                                    ข้อมูลผู้ยืม
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-sm text-gray-600 font-medium mb-1">ชื่อ-นามสกุล</p>
+                                        <p className="font-semibold text-gray-900">
+                                            {selected.employeeName?.trim() || 
+                                             `${selected.firstName || ''} ${selected.lastName || ''}`.trim() || 
+                                             'ไม่ระบุชื่อ'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600 font-medium mb-1 flex items-center gap-1">
+                                            <Mail className="h-4 w-4" />
+                                            อีเมล
+                                        </p>
+                                        <p className="font-semibold text-gray-900">{selected.email || '-'}</p>
+                                    </div>
+                                    {(selected as any).phone && (
+                                        <div>
+                                            <p className="text-sm text-gray-600 font-medium mb-1 flex items-center gap-1">
+                                                <Phone className="h-4 w-4" />
+                                                เบอร์โทรศัพท์
+                                            </p>
+                                            <p className="font-semibold text-gray-900">{(selected as any).phone}</p>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <p className="text-sm text-gray-600 font-medium mb-1 flex items-center gap-1">
+                                            <Briefcase className="h-4 w-4" />
+                                            ตำแหน่ง
+                                        </p>
+                                        <p className="font-semibold text-gray-900">
+                                            {selected.roleName && (selected.roleName as string) !== 'ไม่ระบุ' ? selected.roleName : '-'}
+                                        </p>
+                                    </div>
+                                    {(selected as any).departmentName && (
+                                        <div>
+                                            <p className="text-sm text-gray-600 font-medium mb-1 flex items-center gap-1">
+                                                <Building2 className="h-4 w-4" />
+                                                แผนก
+                                            </p>
+                                            <p className="font-semibold text-gray-900">{(selected as any).departmentName}</p>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <p className="text-sm text-gray-600 font-medium mb-1 flex items-center gap-1">
+                                            <Calendar className="h-4 w-4" />
+                                            วันที่ยืม
+                                        </p>
+                                        <p className="font-semibold text-gray-900">
+                                            {new Date(selected.borrowDate).toLocaleDateString('th-TH')}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600 font-medium mb-1">เอกสารอ้างอิง</p>
+                                        <p className="font-semibold text-gray-900">
+                                            {selected.referenceDoc || '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600 font-medium mb-1 flex items-center gap-1">
+                                            <UserCheck className="h-4 w-4" />
+                                            ชื่อผู้อนุมัติ
+                                        </p>
+                                        <p className="font-semibold text-gray-900">
+                                            {(selected as any).approverName || '-'}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-
-                            {selected.referenceDoc && (
-                                <div>
-                                    <p className="text-sm text-gray-600 mb-2 font-medium">วัตถุประสงค์</p>
-                                    <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                        {selected.referenceDoc}
-                                    </p>
-                                </div>
-                            )}
 
                             {/* รายการอุปกรณ์ทั้งหมด */}
                             <div>
@@ -365,26 +442,70 @@ export default function BorrowHistoryPage() {
                                                     คืนแล้ว: {new Date(item.returnDate).toLocaleDateString('th-TH')}
                                                 </p>
                                             ) : (
-                                                <button
-                                                    onClick={async () => {
-                                                        await returnEquipmentItem(item.borrowEquipmentId);
-                                                        setSelected(null);
-                                                    }}
-                                                    className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
-                                                >
-                                                    <Undo2 className="h-4 w-4" /> คืนอุปกรณ์นี้
-                                                </button>
+                                                <div className="mt-3 space-y-2">
+                                                    <div>
+                                                        <label className="block text-xs text-gray-600 font-medium mb-1">
+                                                            เลือกสถานะอุปกรณ์ก่อนคืน
+                                                        </label>
+                                                        <div className="relative">
+                                                            <select
+                                                                value={selectedReturnStatus[item.borrowEquipmentId] || ''}
+                                                                onChange={(e) => {
+                                                                    setSelectedReturnStatus(prev => ({
+                                                                        ...prev,
+                                                                        [item.borrowEquipmentId]: Number(e.target.value)
+                                                                    }));
+                                                                }}
+                                                                className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg outline-none text-sm text-gray-700 font-medium bg-white focus:border-blue-500 appearance-none cursor-pointer transition-colors"
+                                                            >
+                                                                <option value="">-- เลือกสถานะ --</option>
+                                                                {returnEquipmentStatuses.map((status: { id: number; equipmentStatusName: string }) => (
+                                                                    <option key={status.id} value={status.id}>
+                                                                        {status.equipmentStatusName}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={async () => {
+                                                            const statusId = selectedReturnStatus[item.borrowEquipmentId];
+                                                            if (!statusId) {
+                                                                alert('กรุณาเลือกสถานะอุปกรณ์ก่อนคืน');
+                                                                return;
+                                                            }
+                                                            if (!item.equipmentId) {
+                                                                alert('ไม่พบข้อมูล equipmentId');
+                                                                return;
+                                                            }
+                                                            await returnEquipmentItem(item.borrowEquipmentId, item.equipmentId, statusId);
+                                                            // ลบสถานะที่เลือกออกหลังจากคืนสำเร็จ
+                                                            setSelectedReturnStatus(prev => {
+                                                                const newState = { ...prev };
+                                                                delete newState[item.borrowEquipmentId];
+                                                                return newState;
+                                                            });
+                                                        }}
+                                                        disabled={!selectedReturnStatus[item.borrowEquipmentId]}
+                                                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors font-medium"
+                                                    >
+                                                        <Undo2 className="h-4 w-4" /> คืนอุปกรณ์นี้
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         </div>
+                        )}
 
                         <div className="sticky bottom-0 bg-gray-50 border-t-2 border-gray-200 p-6 rounded-b-xl">
                             <button
                                 onClick={() => setSelected(null)}
-                                className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors"
+                                disabled={selectedLoading}
+                                className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                             >
                                 ปิด
                             </button>

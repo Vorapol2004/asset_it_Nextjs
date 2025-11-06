@@ -4,16 +4,36 @@ import {API_URL} from "@/lib/config";
 
 export const borrow_history = {
     /**
-     * กรองข้อมูลการยืมตาม status
-     * Backend: GET /borrow/filter/Status/{id}
+     * กรองข้อมูลการยืมตาม status และ role
+     * Backend: GET /borrow/filter?borrowStatusId={id}&roleId={id}
      */
-    filterByStatus: async (statusId: number): Promise<BorrowView[]> => {
-        const res = await fetch(`${API_URL}/borrow/filter/Status/${statusId}`);
+    filterByStatus: async (statusId?: number, roleId?: number): Promise<BorrowView[]> => {
+        const params = new URLSearchParams();
+        if (statusId && statusId > 0) {
+            params.append('borrowStatusId', statusId.toString());
+        }
+        if (roleId && roleId > 0) {
+            params.append('roleId', roleId.toString());
+        }
+
+        // ถ้าไม่มี parameter เลย ให้เรียก getAll แทน
+        if (params.toString() === '') {
+            const res = await fetch(`${API_URL}/borrow/all`);
+            if (res.status === 204) {
+                return [];
+            } else if (!res.ok) {
+                throw new Error('Failed to fetch all borrows');
+            } else {
+                return res.json();
+            }
+        }
+
+        const res = await fetch(`${API_URL}/borrow/filter?${params.toString()}`);
 
         if (res.status === 204) {
             return [];
         } else if (!res.ok) {
-            throw new Error('Failed to filter borrows by status');
+            throw new Error('Failed to filter borrows');
         } else {
             return res.json();
         }
@@ -36,49 +56,17 @@ export const borrow_history = {
 
     /**
      * ดึงสถานะการยืมทั้งหมด
-     * Backend: GET /borrow/statuses
-     * 
-     * Note: ถ้า backend ยังไม่มี endpoint นี้ ให้:
-     * 1. Comment บรรทัด fetch และ uncomment mock data
-     * 2. หรือเปลี่ยน endpoint path ให้ตรงกับ backend
+     * Backend: GET /borrow_status/status
      */
     getStatuses: async (): Promise<BorrowStatus[]> => {
-        const res = await fetch(`${API_URL}/borrow/statuses`);
+        const res = await fetch(`${API_URL}/borrow_status/status`);
         
         if (res.status === 204) {
             return [];
         } else if (!res.ok) {
-            // ถ้า backend ยังไม่มี endpoint ให้ใช้ mock data
-            // Uncomment mock data ด้านล่างและ comment บรรทัด throw
             throw new Error('Failed to fetch borrow statuses');
         } else {
-            return res.json();
-        }
-
-        // Mock data (ใช้เมื่อ backend ยังไม่มี endpoint)
-        // Uncomment ส่วนนี้เมื่อ backend ยังไม่มี endpoint
-        // return [
-        //     { id: 1, borrowStatusName: 'กำลังยืม' },
-        //     { id: 2, borrowStatusName: 'คืนแล้ว' },
-        //     { id: 3, borrowStatusName: 'คืนบางส่วน' },
-        //     { id: 4, borrowStatusName: 'เกินกำหนด' },
-        // ];
-    },
-
-    /**
-     * ดึงตำแหน่งทั้งหมดสำหรับ dropdown
-     * Backend: GET /borrow/employeeRole/dropdown
-     */
-    getRoles: async (): Promise<{ id: number; roleName: string }[]> => {
-        const res = await fetch(`${API_URL}/borrow/employeeRole/dropdown`);
-        
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch roles');
-        } else {
             const data = await res.json();
-            // แปลงเป็น array of strings สำหรับ dropdown
             return Array.isArray(data) ? data : [];
         }
     },
@@ -101,15 +89,69 @@ export const borrow_history = {
     },
 
     /**
-     *  คืนอุปกรณ์ทีละชิ้น
+     * ดึงสถานะอุปกรณ์ทั้งหมด
+     * Backend: GET /equipment_status/status
      */
-    returnSingle: async (borrowEquipmentId: number): Promise<void> => {
-        const res = await fetch(`${API_URL}/borrow-equipment/${borrowEquipmentId}/return`, {
-            method: 'POST',
+    getEquipmentStatuses: async (): Promise<{ id: number; equipmentStatusName: string }[]> => {
+        const res = await fetch(`${API_URL}/equipment_status/status`);
+        
+        if (res.status === 204) {
+            return [];
+        } else if (!res.ok) {
+            throw new Error('Failed to fetch equipment statuses');
+        } else {
+            const data = await res.json();
+            return Array.isArray(data) ? data : [];
+        }
+    },
+
+    /**
+     * ดึงรายละเอียดการยืมพร้อมอุปกรณ์ทั้งหมด
+     * Backend: GET /borrow/select?borrowId={id}
+     * Note: Backend ส่ง flat array (หลาย record สำหรับ borrow เดียวกัน)
+     */
+    select: async (borrowId: number): Promise<BorrowView[]> => {
+        const res = await fetch(`${API_URL}/borrow/select?borrowId=${borrowId}`);
+
+        if (res.status === 204 || res.status === 404) {
+            throw new Error('Borrow not found');
+        } else if (!res.ok) {
+            throw new Error('Failed to fetch borrow details');
+        } else {
+            return res.json();
+        }
+    },
+
+    /**
+     * คืนอุปกรณ์ทีละชิ้น พร้อมอัพเดทสถานะ
+     * Backend: PATCH /borrow/return
+     * Request body: { borrowerEquipmentId, equipmentId, statusId, returnDate }
+     */
+    returnSingle: async (
+        borrowerEquipmentId: number,
+        equipmentId: number,
+        statusId: number,
+        returnDate?: string
+    ): Promise<void> => {
+        // ใช้วันปัจจุบันถ้าไม่ระบุ returnDate
+        const today = returnDate || new Date().toISOString().split('T')[0];
+
+        const body = {
+            borrowerEquipmentId: borrowerEquipmentId,
+            equipmentId: equipmentId,
+            statusId: statusId,
+            returnDate: today,
+        };
+
+        const res = await fetch(`${API_URL}/borrow/return`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
         });
 
         if (!res.ok) {
-            throw new Error('Failed to return equipment');
+            const errorText = await res.text();
+            throw new Error(`Failed to return equipment: ${errorText}`);
         } else {
             return;
         }

@@ -420,16 +420,11 @@ export default function BorrowPage() {
                                                     <Search className="h-5 w-5" />
                                                 </button>
                                             </div>
-                                            {item.searchValue.trim() && item.equipmentId === 0 && (
-                                                <div className="mt-2">
-                                                    <p className="text-sm text-red-600 font-semibold">⚠️ ไม่พบอุปกรณ์ที่ค้นหา</p>
-                                                    <p className="text-xs text-gray-500 mt-1">
-                                                        อาจเป็นเพราะ: อุปกรณ์ถูกยืมไปแล้ว (Borrowed) / อุปกรณ์เสียหาย (Damaged) / อุปกรณ์สูญหาย (Lost) / หรือไม่มีในระบบ
-                                                    </p>
-                                                </div>
-                                            )}
                                             {item.equipmentId > 0 && (
                                                 <p className="mt-2 text-sm text-green-600 font-semibold">✅ พบอุปกรณ์ - ข้อมูลจะถูกเติมอัตโนมัติ</p>
+                                            )}
+                                            {item.searchError && (
+                                                <p className="mt-2 text-sm text-red-600 font-semibold">❌ {item.searchError}</p>
                                             )}
                                         </div>
 

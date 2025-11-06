@@ -11,6 +11,7 @@ export interface BorrowItem {
     brand: string;
     model: string;
     notes?: string;
+    searchError?: string; // ข้อความ error เมื่อค้นหาไม่เจอ
 }
 
 export interface BorrowPageData {
@@ -117,7 +118,7 @@ export function useBorrow() {
     // Backend endpoint: GET /employee/select_employee?employeeId={id}
     useEffect(() => {
         const fetchEmployee = async () => {
-            if (employeeId && employeeId > 0) {
+            if (employeeId > 0) {
                 setEmployeeLoading(true);
                 try {
                     const employeeData = await api.employee.selectEmployee(employeeId);
@@ -214,27 +215,13 @@ export function useBorrow() {
                         equipmentName: '',
                         brand: '',
                         model: '',
-                        notes: newItems[itemIndex].notes
-                    };
-                    return newItems;
-                });
-            } else if (data.length === 1) {
-                // เจออุปกรณ์เดียว - auto-fill
-                const equipment = data[0];
-                setBorrowItems(prev => {
-                    const newItems = [...prev];
-                    newItems[itemIndex] = {
-                        searchValue: searchValue,
-                        equipmentId: equipment.id,
-                        equipmentName: equipment.equipmentName || '',
-                        brand: equipment.brand || '',
-                        model: equipment.model || '',
-                        notes: newItems[itemIndex].notes
+                        notes: newItems[itemIndex].notes,
+                        searchError: 'ไม่พบอุปกรณ์ที่ตรงกับ License Key หรือ Serial Number นี้'
                     };
                     return newItems;
                 });
             } else {
-                // เจอหลายตัว - ใช้ตัวแรก
+                // เจออุปกรณ์ - auto-fill
                 const equipment = data[0];
                 setBorrowItems(prev => {
                     const newItems = [...prev];
@@ -244,7 +231,8 @@ export function useBorrow() {
                         equipmentName: equipment.equipmentName || '',
                         brand: equipment.brand || '',
                         model: equipment.model || '',
-                        notes: newItems[itemIndex].notes
+                        notes: newItems[itemIndex].notes,
+                        searchError: undefined // ลบ error เมื่อเจอ
                     };
                     return newItems;
                 });
@@ -259,7 +247,8 @@ export function useBorrow() {
                     equipmentName: '',
                     brand: '',
                     model: '',
-                    notes: newItems[itemIndex].notes
+                    notes: newItems[itemIndex].notes,
+                    searchError: 'เกิดข้อผิดพลาดในการค้นหา กรุณาลองอีกครั้ง'
                 };
                 return newItems;
             });
@@ -291,7 +280,9 @@ export function useBorrow() {
             const newItems = [...prev];
             newItems[index] = {
                 ...newItems[index],
-                [field]: value
+                [field]: value,
+                // ลบ error เมื่อผู้ใช้แก้ไข searchValue
+                ...(field === 'searchValue' ? { searchError: undefined } : {})
             };
             return newItems;
         });
