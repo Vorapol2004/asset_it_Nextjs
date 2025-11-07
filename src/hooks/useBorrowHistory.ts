@@ -284,17 +284,8 @@ export function useBorrowHistory() {
                     employeeName: firstRecord.employeeName || `${firstRecord.firstName || ''} ${firstRecord.lastName || ''}`.trim(),
                     items: items,
                     referenceDoc: firstRecord.referenceDoc || undefined,
+                    approverName: firstRecord.approverName || undefined,
                 };
-            }
-            
-            // เพิ่ม approverName ถ้ามี (ตรวจสอบหลาย field names ที่เป็นไปได้)
-            // Note: backend อาจส่งมาเป็น approverName, approver_name, หรือ approver
-            if (firstRecord.approverName) {
-                groupedData.approverName = firstRecord.approverName;
-            } else if ((firstRecord as unknown as { approver_name?: string }).approver_name) {
-                groupedData.approverName = (firstRecord as unknown as { approver_name: string }).approver_name;
-            } else if ((firstRecord as unknown as { approver?: string }).approver) {
-                groupedData.approverName = (firstRecord as unknown as { approver: string }).approver;
             }
             
             setSelected(groupedData);
