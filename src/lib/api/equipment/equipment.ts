@@ -93,6 +93,32 @@ export const equipment = {
         }
     },
 
+    /**
+     * อัปเดตอุปกรณ์
+     * Backend: PUT /equipment/edit
+     * Request body: { equipmentId, equipmentName, equipmentTypeId, brand, model, serialNumber, licenseKey, equipmentStatusId }
+     */
+    update: async (id: number, data: Partial<EquipmentView>): Promise<EquipmentView> => {
+        // สร้าง request body โดยเพิ่ม equipmentId
+        const requestBody = {
+            equipmentId: id,
+            ...data,
+        };
+
+        const res = await fetch(`${API_URL}/equipment/edit`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({ message: 'Failed to update equipment' }));
+            throw new Error(errorData.message || `Failed to update equipment: ${res.status} ${res.statusText}`);
+        } else {
+            return res.json();
+        }
+    },
+
     async delete(id: number) {
         const res = await fetch(`${API_URL}/equipment/${id}`, {
             method: 'DELETE',

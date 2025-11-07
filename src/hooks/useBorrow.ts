@@ -328,17 +328,6 @@ export function useBorrow() {
                 return;
             }
 
-            // สร้าง borrow data ตามรูปแบบที่ backend ต้องการ
-            // Backend endpoint: POST /borrow/create
-            // Request format:
-            // {
-            //   "employeeId": Integer,
-            //   "referenceDoc": String (optional, nullable),
-            //   "borrowDate": "YYYY-MM-DD" (LocalDate),
-            //   "dueDate": "YYYY-MM-DD" (LocalDate),
-            //   "equipmentIds": [Integer, Integer, ...],
-            //   "approverName": String (optional, nullable)
-            // }
             const borrowData: BorrowCreateData = {
                 employeeId: employeeId,
                 referenceDoc: referenceDoc.trim() || null,
@@ -349,8 +338,6 @@ export function useBorrow() {
                     .filter(item => item.equipmentId && item.equipmentId > 0)
                     .map(item => item.equipmentId)
             };
-
-            // ส่งข้อมูลไปยัง backend
             await api.borrow.create(borrowData);
 
             alert('บันทึกการยืมเรียบร้อยแล้ว!');

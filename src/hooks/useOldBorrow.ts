@@ -96,10 +96,8 @@ export function useOldBorrow() {
         try {
             setLoading(true);
             
-            // ลบ employee จาก backend
             await api.employee.delete(employee.id);
 
-            // ลบออกจาก state
             setEmployees(prev => prev.filter(emp => emp.id !== employee.id));
             setFilteredBorrowers(prev => prev.filter(emp => emp.id !== employee.id));
 

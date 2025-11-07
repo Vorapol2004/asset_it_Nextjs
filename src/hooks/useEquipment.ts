@@ -17,6 +17,12 @@ export function useEquipment() {
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentView | null>(null);
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [errorDetail, setErrorDetail] = useState<string | null>(null);
+    
+    // State สำหรับ Edit Modal
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingEquipment, setEditingEquipment] = useState<EquipmentView | null>(null);
+    const [loadingEdit, setLoadingEdit] = useState(false);
+    const [errorEdit, setErrorEdit] = useState<string | null>(null);
 
     // ✅ Dropdown data สำหรับ equipment
     const [statuses, setStatuses] = useState<{ id: number; equipmentStatusName: string }[]>([]);
@@ -157,17 +163,20 @@ export function useEquipment() {
     };
 
     // ✅ ลบอุปกรณ์
-    const deleteEquipment = async (id: number) => {
+    const deleteEquipment = async (id: number): Promise<void> => {
         const confirmDelete = window.confirm('ต้องการลบอุปกรณ์นี้หรือไม่?');
-        if (!confirmDelete) return false;
+        if (!confirmDelete) return;
         try {
             await equipment.delete(id);
             alert('ลบอุปกรณ์สำเร็จ');
             await fetchEquipments();
-            return true;
-        } catch (err: any) {
-            alert(err.message || 'เกิดข้อผิดพลาดในการลบอุปกรณ์');
-            return false;
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                alert(`ไม่สามารถลบอุปกรณ์ได้: ${err.message}`);
+            } else {
+                alert('ไม่สามารถลบอุปกรณ์ได้');
+            }
+            throw err;
         }
     };
 
@@ -177,6 +186,53 @@ export function useEquipment() {
         setShowModal(false);
         setSelectedEquipment(null);
         setErrorDetail(null);
+    };
+
+    // ✅ เปิด Edit Modal
+    const openEditModal = async (id: number) => {
+        setShowEditModal(true);
+        setLoadingEdit(true);
+        setErrorEdit(null);
+        try {
+            const data = await equipment.getById(id);
+            setEditingEquipment(data);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setErrorEdit(`เกิดข้อผิดพลาด: ${err.message}`);
+            } else {
+                setErrorEdit('ไม่สามารถดึงข้อมูลอุปกรณ์ได้');
+            }
+        } finally {
+            setLoadingEdit(false);
+        }
+    };
+
+    // ✅ ปิด Edit Modal
+    const closeEditModal = () => {
+        setShowEditModal(false);
+        setEditingEquipment(null);
+        setErrorEdit(null);
+    };
+
+    // ✅ อัปเดตอุปกรณ์
+    const updateEquipment = async (id: number, data: Partial<EquipmentView>) => {
+        setLoadingEdit(true);
+        setErrorEdit(null);
+        try {
+            await equipment.update(id, data);
+            await fetchEquipments(); // Refresh ข้อมูล
+            closeEditModal();
+            alert('อัปเดตอุปกรณ์สำเร็จ!');
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setErrorEdit(`เกิดข้อผิดพลาด: ${err.message}`);
+            } else {
+                setErrorEdit('ไม่สามารถอัปเดตอุปกรณ์ได้');
+            }
+            throw err;
+        } finally {
+            setLoadingEdit(false);
+        }
     };
 
     return {
@@ -196,5 +252,13 @@ export function useEquipment() {
         closeDetailModal,
         retryFetchDetail,
         deleteEquipment,
+        // Edit Modal
+        showEditModal,
+        editingEquipment,
+        loadingEdit,
+        errorEdit,
+        openEditModal,
+        closeEditModal,
+        updateEquipment,
     };
 }

@@ -52,7 +52,7 @@ export default function HomePage() {
             </div>
 
             {/* Main Content - ปุ่มหลักทั้ง 4 ตัว */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="mt-25 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 
                     {/* ปุ่มอุปกรณ์ */}
@@ -117,29 +117,6 @@ export default function HomePage() {
                         <p className="text-gray-600 text-center text-sm">
                             ดูประวัติการยืม-คืนอุปกรณ์ทั้งหมด
                         </p>
-                    </div>
-                </div>
-
-                {/* Stats Section */}
-                <div className="mt-16">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">สถิติภาพรวม</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div className="bg-white rounded-xl shadow-md p-6 text-center border-t-4 border-indigo-500">
-                            <div className="text-4xl font-bold text-indigo-600 mb-2">0</div>
-                            <div className="text-gray-600 font-medium">อุปกรณ์ทั้งหมด</div>
-                        </div>
-                        <div className="bg-white rounded-xl shadow-md p-6 text-center border-t-4 border-green-500">
-                            <div className="text-4xl font-bold text-green-600 mb-2">0</div>
-                            <div className="text-gray-600 font-medium">พร้อมใช้งาน</div>
-                        </div>
-                        <div className="bg-white rounded-xl shadow-md p-6 text-center border-t-4 border-blue-500">
-                            <div className="text-4xl font-bold text-blue-600 mb-2">0</div>
-                            <div className="text-gray-600 font-medium">กำลังยืมออกไป</div>
-                        </div>
-                        <div className="bg-white rounded-xl shadow-md p-6 text-center border-t-4 border-purple-500">
-                            <div className="text-4xl font-bold text-purple-600 mb-2">0</div>
-                            <div className="text-gray-600 font-medium">การยืมวันนี้</div>
-                        </div>
                     </div>
                 </div>
             </div>

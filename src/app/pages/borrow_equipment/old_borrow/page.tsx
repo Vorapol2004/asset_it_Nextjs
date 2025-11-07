@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import {
-    Search, ArrowLeft, User, Calendar, Package,
-    History, ChevronRight, Mail, Phone, Building2, Briefcase, Trash2
+    Search, ArrowLeft, User,
+    History, ChevronRight, Mail, Phone, Briefcase
 } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 import { useOldBorrow } from '@/hooks/useOldBorrow';
@@ -17,7 +17,6 @@ export default function OldBorrowPage() {
         loading,
         setSearchTerm,
         handleSelectBorrower,
-        handleDeleteBorrower,
     } = useOldBorrow();
 
     return (
@@ -102,12 +101,12 @@ export default function OldBorrowPage() {
                                 return (
                                 <div
                                     key={uniqueKey}
-                                    className="p-6 hover:bg-purple-50 transition-all duration-200 group"
+                                    className="p-6 hover:bg-purple-50 transition-all duration-200 cursor-pointer "
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-start gap-4">
-                                                <div className="bg-purple-100 rounded-xl p-3 group-hover:bg-purple-200 transition-colors">
+                                                <div className="bg-purple-100 rounded-xl p-3 ">
                                                     <User className="h-6 w-6 text-purple-600" />
                                                 </div>
 
@@ -156,10 +155,10 @@ export default function OldBorrowPage() {
                                                     {/* แสดงข้อมูลแผนก */}
                                                     {employee.departmentName && (
                                                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                                                            <p className="text-xs font-semibold text-blue-800 mb-2">📍 ข้อมูลแผนก:</p>
+                                                            <p className="text-xs font-semibold text-blue-800 mb-2"> หน่วยงาน </p>
                                                             <div className="flex items-center gap-1.5 text-xs">
                                                                 <Briefcase className="h-3 w-3 text-blue-600" />
-                                                                <span className="text-gray-700">{employee.departmentName}</span>
+                                                                <span className="text-gray-700">{employee.departmentName} ตึก: {employee.buildingName} ชั้น: {employee.floorName} ห้อง: {employee.roomName} </span>
                                                             </div>
                                                         </div>
                                                     )}
@@ -170,20 +169,8 @@ export default function OldBorrowPage() {
                                         <div className="ml-4 flex items-center gap-3">
                                             <button
                                                 type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteBorrower(employee);
-                                                }}
-                                                className="bg-red-600 text-white px-4 py-3 rounded-xl font-semibold flex items-center gap-2 hover:bg-red-700 transition-all shadow-md hover:shadow-lg"
-                                                title="ลบข้อมูลพนักงาน"
-                                            >
-                                                <Trash2 className="h-5 w-5" />
-                                                <span className="hidden sm:inline">ลบ</span>
-                                            </button>
-                                            <button
-                                                type="button"
                                                 onClick={() => handleSelectBorrower(employee)}
-                                                className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 hover:bg-purple-700 transition-all shadow-md hover:shadow-lg group-hover:px-7"
+                                                className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 hover:bg-purple-700 transition-all shadow-md hover:shadow-lg group-hover:px-7 cursor-pointer"
                                             >
                                                 เลือก
                                                 <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -196,17 +183,6 @@ export default function OldBorrowPage() {
                         </div>
                     )}
                 </div>
-
-                {/* Info */}
-                {filteredBorrowers.length > 0 && (
-                    <div className="mt-6 text-center">
-                        <div className="inline-block bg-blue-50 rounded-xl px-6 py-3 border border-blue-200">
-                            <p className="text-blue-800 text-sm font-medium">
-                                💡 <span className="font-semibold">คำแนะนำ:</span> คลิกเลือกผู้ยืมเพื่อกรอกข้อมูลอัตโนมัติจากครั้งล่าสุด (ยกเว้นวันที่และอุปกรณ์)
-                            </p>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

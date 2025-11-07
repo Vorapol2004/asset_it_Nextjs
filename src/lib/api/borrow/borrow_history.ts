@@ -125,22 +125,17 @@ export const borrow_history = {
     /**
      * คืนอุปกรณ์ทีละชิ้น พร้อมอัพเดทสถานะ
      * Backend: PATCH /borrow/return
-     * Request body: { borrowerEquipmentId, equipmentId, statusId, returnDate }
+     * Request body: { borrowerEquipmentId, statusId, returnDate }
      */
     returnSingle: async (
         borrowerEquipmentId: number,
-        equipmentId: number,
         statusId: number,
         returnDate?: string
     ): Promise<void> => {
-        // ใช้วันปัจจุบันถ้าไม่ระบุ returnDate
-        const today = returnDate || new Date().toISOString().split('T')[0];
-
         const body = {
             borrowerEquipmentId: borrowerEquipmentId,
-            equipmentId: equipmentId,
             statusId: statusId,
-            returnDate: today,
+            returnDate: returnDate || new Date().toISOString().split('T')[0],
         };
 
         const res = await fetch(`${API_URL}/borrow/return`, {
@@ -151,6 +146,7 @@ export const borrow_history = {
 
         if (!res.ok) {
             const errorText = await res.text();
+            console.error('❌ Error response:', errorText);
             throw new Error(`Failed to return equipment: ${errorText}`);
         } else {
             return;

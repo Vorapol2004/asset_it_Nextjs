@@ -145,7 +145,7 @@ export interface ReturnResponseData {
 }
 
 export interface BorrowView {
-    roleName: "พนักงาน" | "อาจารย์" | "ส่วนกลาง";
+    roleName: string | null; // "พนักงาน" | "อาจารย์" | "ส่วนกลาง" | null
     equipmentTypeName: string;
     equipmentId: number;
     employeeName: string;
@@ -164,8 +164,14 @@ export interface BorrowView {
     serialNumber?: string;
     returnDate?: string;
     dueDate?: string;
-    referenceDoc?: string;
+    referenceDoc?: string | null;
     items: BorrowEquipmentView[];
+    // Additional fields from backend
+    borrowEquipmentId?: number; // สำหรับ flat array response
+    borrowEquipmentCount?: number | null;
+    phone?: string;
+    departmentName?: string;
+    approverName?: string | null;
 }
 
 export interface BorrowEquipmentView {
@@ -239,6 +245,9 @@ export interface Employee {
 export interface EmployeeView extends Employee {
     roleName?: string;
     departmentName?: string;
+    buildingName?: string;
+    floorName?: string;
+    roomName?: string;
 }
 
 export interface Role {
