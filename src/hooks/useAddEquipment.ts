@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import {lot} from "@/lib/api/lot/lot";
 import { api } from '@/lib/api';
 import { API_URL } from '@/lib/config';
+import { ROUTES } from '@/constants/routes';
 // ==================== Types ====================
 
 export interface EquipmentItem {
@@ -28,7 +29,7 @@ export function useAddEquipment() {
 
     // Loading & Error
     const [loading, setLoading] = useState(false);
-    const [error] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
     // ✅ Dropdown data สำหรับ add_equipment
@@ -159,9 +160,6 @@ export function useAddEquipment() {
         return null;
     };
 
-    
-    //เตรียมข้อมูลสำหรับส่ง Backend
-    
     const prepareSubmitData = () => {
         return {
             lotName: lotName.trim(),
@@ -184,70 +182,44 @@ export function useAddEquipment() {
         };
     };
 
-    
-    // บันทึกข้อมูลอุปกรณ์
-    
     const submitEquipment = async () => {
+        // Clear previous errors
+        setError(null);
+        setSuccess(false);
+
         // Validate
         const validationError = validateData();
         if (validationError) {
+            setError(validationError);
             return false;
         }
 
         setLoading(true);
-        setSuccess(false);
 
         try {
             // เตรียมข้อมูล
             const lotData = prepareSubmitData();
-            console.log('🚀 Sending data to API:', lotData);
             const result = await lot.create(lotData);
-            console.log('✅ API Response:', result);
             setSuccess(true);
 
             // Redirect หลัง 1.5 วินาที
             setTimeout(() => {
-                router.push('/pages/equipment');
+                router.push(ROUTES.EQUIPMENT);
             }, 1500);
 
             return true;
 
         } catch (err: any) {
             console.error('❌ Error adding equipment:', err);
+            const errorMessage = err?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
+            setError(errorMessage);
             return false;
         } finally {
             setLoading(false);
         }
     };
 
-
-    //รีเซ็ตฟอร์ม
-
-    const resetForm = () => {
-        setLotName('');
-        setAcademicYear('');
-        setPurchaseDate('');
-        setExpireDate('');
-        setReferenceDoc('');
-        setLotDescription('');
-        setLotTypeId(lotTypes[0]?.id || 0);
-        setItems([
-            {
-                id: '1',
-                equipmentName: '',
-                brand: '',
-                model: '',
-                serialNumber: '',
-                licenseKey: '',
-                type: 'hardware',
-                description: ''
-            }
-        ]);
-        setSuccess(false);
-    };
-
     // ยกเลิกและกลับหน้าเดิม
-
     const cancel = () => {
         if (loading) return;
 
@@ -260,8 +232,6 @@ export function useAddEquipment() {
 
         router.back();
     };
-
-    // ==================== Return ====================
 
     return {
         // State
@@ -297,7 +267,7 @@ export function useAddEquipment() {
         removeItem,
         updateItem,
         submitEquipment,
-        resetForm,
         cancel,
+        setError,
     };
 }

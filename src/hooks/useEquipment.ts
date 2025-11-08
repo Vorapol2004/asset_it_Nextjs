@@ -24,15 +24,15 @@ export function useEquipment() {
     const [loadingEdit, setLoadingEdit] = useState(false);
     const [errorEdit, setErrorEdit] = useState<string | null>(null);
 
-    // ✅ Dropdown data สำหรับ equipment
+    // Dropdown data สำหรับ equipment
     const [statuses, setStatuses] = useState<{ id: number; equipmentStatusName: string }[]>([]);
     const [equipmentTypes, setEquipmentTypes] = useState<{ id: number; equipmentTypeName: string }[]>([]);
 
-    // ดึงข้อมูล dropdown เมื่อ โหลดหน้าอุปกรณ์ 
+    // ดึงข้อมูล dropdown เมื่อโหลด 
     useEffect(() => {
         const loadDropdownData = async () => {
             try {
-                // ดึง Equipment Types
+                
                 const typesRes = await fetch(`${API_URL}/equipment_type/type`);
                 const typesData = await typesRes.json();
                 if (Array.isArray(typesData)) {
@@ -41,7 +41,7 @@ export function useEquipment() {
                     setEquipmentTypes([]);
                 }
 
-                // ดึง Equipment Statuses
+                
                 const statusesRes = await fetch(`${API_URL}/equipment_status/status`);
                 const statusesData = await statusesRes.json();
                 if (Array.isArray(statusesData)) {
@@ -59,7 +59,7 @@ export function useEquipment() {
         loadDropdownData();
     }, []);
 
-    // ✅ เรียงลำดับอุปกรณ์ให้ล่าสุดอยู่ข้างบนสุด
+    
     const sortEquipmentsByNewest = (data: EquipmentView[]): EquipmentView[] => {
         return [...data].sort((a, b) => {
             // ใช้ createdAt ถ้ามี
@@ -72,7 +72,6 @@ export function useEquipment() {
         });
     };
 
-    // ✅ ดึงข้อมูลอุปกรณ์ทั้งหมด
     const fetchEquipments = async () => {
         setLoading(true);
         setError(null);
@@ -87,10 +86,7 @@ export function useEquipment() {
         }
     };
 
-    /**
-     * กรองอุปกรณ์ตาม type และ status
-     * Note: ถ้าต้องการค้นหา keyword ต้องเรียก searchEquipment() แยก
-     */
+
     const applyFilters = async (filters: FilterParams) => {
         setLoading(true);
         setError(null);
@@ -121,9 +117,7 @@ export function useEquipment() {
         }
     };
 
-    /**
-     * ค้นหาอุปกรณ์ด้วย keyword (เรียก API ตรงๆ)
-     */
+
     const searchEquipment = async (keyword: string) => {
         if (!keyword.trim()) {
             await fetchEquipments();
@@ -143,7 +137,6 @@ export function useEquipment() {
         }
     };
 
-    // ✅ ดึงรายละเอียดอุปกรณ์แต่ละชิ้น
     const fetchEquipmentDetail = async (id: number, showModalOnOpen = false) => {
         if (showModalOnOpen) setShowModal(true);
         setLoadingDetail(true);
@@ -162,7 +155,6 @@ export function useEquipment() {
         }
     };
 
-    // ✅ ลบอุปกรณ์
     const deleteEquipment = async (id: number): Promise<void> => {
         const confirmDelete = window.confirm('ต้องการลบอุปกรณ์นี้หรือไม่?');
         if (!confirmDelete) return;
@@ -188,7 +180,6 @@ export function useEquipment() {
         setErrorDetail(null);
     };
 
-    // ✅ เปิด Edit Modal
     const openEditModal = async (id: number) => {
         setShowEditModal(true);
         setLoadingEdit(true);
@@ -207,14 +198,12 @@ export function useEquipment() {
         }
     };
 
-    // ✅ ปิด Edit Modal
     const closeEditModal = () => {
         setShowEditModal(false);
         setEditingEquipment(null);
         setErrorEdit(null);
     };
 
-    // ✅ อัปเดตอุปกรณ์
     const updateEquipment = async (id: number, data: Partial<EquipmentView>) => {
         setLoadingEdit(true);
         setErrorEdit(null);

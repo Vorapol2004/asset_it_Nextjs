@@ -45,6 +45,7 @@ export default function AddEquipmentPage() {
         updateItem,
         submitEquipment,
         cancel,
+        setError,
     } = useAddEquipment();
 
     // ✅ Submit ฟอร์ม
@@ -58,13 +59,11 @@ export default function AddEquipmentPage() {
             <Navbar />
 
             <div className="max-w-6xl mx-auto px-4 py-8">
-                {/* Header */}
                 <div className="mb-8 bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-600">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">เพิ่มอุปกรณ์</h1>
                     <p className="text-gray-600">เพิ่มข้อมูล Lot อุปกรณ์ที่มหาวิทยาลัยจัดซื้อ/เช่า/ยืม</p>
                 </div>
 
-                {/* ✅ Success Alert */}
                 {success && (
                     <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg flex items-start animate-fade-in">
                         <CheckCircle className="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
@@ -77,7 +76,6 @@ export default function AddEquipmentPage() {
                     </div>
                 )}
 
-                {/* ✅ Error Alert */}
                 {error && (
                     <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex items-start animate-fade-in">
                         <AlertCircle className="h-6 w-6 text-red-500 mr-3 flex-shrink-0 mt-0.5" />
@@ -86,7 +84,7 @@ export default function AddEquipmentPage() {
                             <p className="text-red-700 text-sm mt-1">{error}</p>
                         </div>
                         <button
-                            onClick={() =>(null)}
+                            onClick={() => setError(null)}
                             className="text-red-400 hover:text-red-600 ml-4"
                         >
                             <X className="h-5 w-5" />
@@ -193,7 +191,7 @@ export default function AddEquipmentPage() {
                                     disabled={loading}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">สำหรับ License หรือสัญญาเช่า</p>
+                                <p className="text-xs text-gray-500 mt-1">สำหรับ License หรือ สัญญาเช่า</p>
                             </div>
 
                             {/* Reference Doc */}

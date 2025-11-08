@@ -6,10 +6,7 @@ export interface Role {
 }
 
 export const role = {
-    /**
-     * ดึงตำแหน่งทั้งหมด (Roles)
-     * Backend: GET /role/filter
-     */
+    
     filter: async (): Promise<Role[]> => {
         const res = await fetch(`${API_URL}/role/filter`);
 

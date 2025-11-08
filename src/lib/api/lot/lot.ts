@@ -2,10 +2,7 @@ import { API_URL } from '@/lib/config';
 import {LotRequest} from "@/types/type";
 
 export const lot = {
-    /**
-     * ดึงประเภท Lot ทั้งหมด
-     * Backend: GET /lot_type/type
-     */
+    
     async getTypes() {
         const res = await fetch(`${API_URL}/lot_type/type`);
         if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลประเภท Lot ได้');
@@ -27,11 +24,7 @@ export const lot = {
     },
 
 
-    // async getAll() {
-    //     const res = await fetch(`${API_URL}/lot`);
-    //     if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูล Lot ได้');
-    //     return await res.json();
-    // },
+    
 
 };
 

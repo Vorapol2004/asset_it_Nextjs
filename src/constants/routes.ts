@@ -10,8 +10,8 @@ export const ROUTES = {
     BORROW_EQUIPMENT: '/pages/borrow_equipment',
     BORROW_HISTORY: '/pages/borrow_history',
     EQUIPMENT: '/pages/equipment',
-    OLD_EQUIPMENT: '/pages/borrow_equipment/old_borrow',
-    NEW_EQUIPMENT: '/pages/borrow_equipment/new_borrow',
+    OLD_BORROW: '/pages/borrow_equipment/old_borrow',
+    NEW_BORROW: '/pages/borrow_equipment/new_borrow',
     BORROW: '/pages/borrow_equipment/borrow',
     SETTINGS_MASTER_DATA: '/setting/master-data',
 

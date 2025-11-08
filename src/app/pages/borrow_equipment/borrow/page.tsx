@@ -75,7 +75,7 @@ export default function BorrowPage() {
                             {isLocked && (
                                 <div className="flex items-center gap-2 bg-purple-50 text-purple-700 px-4 py-2 rounded-lg border border-purple-200">
                                     <Lock className="h-4 w-4" />
-                                    <span className="text-sm font-medium">ข้อมูลล็อคแล้ว - ไม่สามารถแก้ไขได้</span>
+                                    <span className="text-sm font-medium">ไม่สามารถแก้ไขได้</span>
                                 </div>
                             )}
                         </div>
@@ -84,6 +84,7 @@ export default function BorrowPage() {
                                 <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div>
                                 <p className="mt-2 text-gray-600 text-sm">กำลังโหลดข้อมูลผู้ยืม...</p>
                             </div>
+                            
                         ) : employee ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -187,7 +188,7 @@ export default function BorrowPage() {
                             {isLocked && (
                                 <div className="flex items-center gap-2 bg-purple-50 text-purple-700 px-4 py-2 rounded-lg border border-purple-200">
                                     <Lock className="h-4 w-4" />
-                                    <span className="text-sm font-medium">ข้อมูลล็อคแล้ว - ไม่สามารถแก้ไขได้</span>
+                                    <span className="text-sm font-medium">ไม่สามารถแก้ไขได้</span>
                                 </div>
                             )}
                         </div>

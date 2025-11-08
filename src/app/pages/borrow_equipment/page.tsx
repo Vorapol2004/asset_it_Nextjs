@@ -14,6 +14,7 @@ import {
     ClipboardList,
     Search,
 } from 'lucide-react';
+import {ROUTES} from "@/constants/routes";
 
 export default function BorrowEquipmentLandingPage() {
     const router = useRouter();
@@ -36,11 +37,10 @@ export default function BorrowEquipmentLandingPage() {
                     </p>
                 </div>
 
-                {/* Cards */}
                 <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-6">
-                    {/* New Borrow Card */}
+                    {/* ผู้ยืมใหม่ */}
                     <div
-                        onClick={() => router.push('/pages/borrow_equipment/new_borrow')}
+                        onClick={() => router.push(ROUTES.NEW_BORROW)}
                         className="group cursor-pointer"
                     >
                         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-blue-500 transform hover:-translate-y-1 h-full">
@@ -94,9 +94,9 @@ export default function BorrowEquipmentLandingPage() {
                         </div>
                     </div>
 
-                    {/* History Card */}
+                    {/* ผู้ยืมเก่า */}
                     <div
-                        onClick={() => router.push('/pages/borrow_equipment/old_borrow')}
+                        onClick={() => router.push(ROUTES.OLD_BORROW)}
                         className="group cursor-pointer"
                     >
                         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-purple-500 transform hover:-translate-y-1 h-full">

@@ -29,9 +29,7 @@ export const equipment = {
         return data[0]; // Backend ส่งมาเป็น Array
     },
 
-    /**
-     * ✅ ค้นหาด้วย keyword
-     */
+    
     search: async (keyword: string): Promise<EquipmentView[]> => {
         const res = await fetch(
             `${API_URL}/equipment/search?keyword=${encodeURIComponent(keyword)}`
@@ -46,12 +44,7 @@ export const equipment = {
         }
     },
 
-    /**
-     * กรองอุปกรณ์ตาม type และ status
-     * Backend: GET /equipment/filter?equipmentStatus={id}&equipmentType={id}
-     * Note: Backend รองรับแค่ filter type/status เท่านั้น
-     * ถ้าต้องการ keyword ต้องเรียก search() แยก
-     */
+    
     filter: async (params: {
         typeId?: number;
         statusId?: number;
@@ -72,10 +65,7 @@ export const equipment = {
         return res.json();
     },
 
-    /**
-     * ดึงอุปกรณ์ตามประเภทอุปกรณ์
-     * Backend: GET /equipment/select_equipment_type?equipmentId={id}
-     */
+    
     getByType: async (equipmentTypeId?: number): Promise<EquipmentView[]> => {
         let url = `${API_URL}/equipment/select_equipment_type`;
         if (equipmentTypeId) {
@@ -93,11 +83,7 @@ export const equipment = {
         }
     },
 
-    /**
-     * อัปเดตอุปกรณ์
-     * Backend: PUT /equipment/edit
-     * Request body: { equipmentId, equipmentName, equipmentTypeId, brand, model, serialNumber, licenseKey, equipmentStatusId }
-     */
+    
     update: async (id: number, data: Partial<EquipmentView>): Promise<EquipmentView> => {
         // สร้าง request body โดยเพิ่ม equipmentId
         const requestBody = {
@@ -118,6 +104,7 @@ export const equipment = {
             return res.json();
         }
     },
+    
 
     async delete(id: number) {
         const res = await fetch(`${API_URL}/equipment/${id}`, {
