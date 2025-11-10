@@ -83,44 +83,44 @@ const Navbar = memo(function Navbar() {
                             ))}
                         </div>
 
-                        {/* User Menu */}
-                        <div className="relative ml-3">
-                            <button
-                                onClick={toggleUserMenu}
-                                className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
-                            >
-                                <User className="h-4 w-4 mr-1" />
-                                <span className="hidden lg:inline">
-                                    {loading ? 'Loading...' : user?.username || 'Account'}
-                                </span>
-                            </button>
+                        {/*/!* User Menu *!/*/}
+                        {/*<div className="relative ml-3">*/}
+                        {/*    <button*/}
+                        {/*        onClick={toggleUserMenu}*/}
+                        {/*        className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"*/}
+                        {/*    >*/}
+                        {/*        <User className="h-4 w-4 mr-1" />*/}
+                        {/*        <span className="hidden lg:inline">*/}
+                        {/*            {loading ? 'Loading...' : user?.username || 'Account'}*/}
+                        {/*        </span>*/}
+                        {/*    </button>*/}
 
-                            {isUserMenuOpen && (
-                                <>
-                                    <div
-                                        className="fixed inset-0 z-10"
-                                        onClick={toggleUserMenu}
-                                    />
+                        {/*    {isUserMenuOpen && (*/}
+                        {/*        <>*/}
+                        {/*            <div*/}
+                        {/*                className="fixed inset-0 z-10"*/}
+                        {/*                onClick={toggleUserMenu}*/}
+                        {/*            />*/}
 
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
-                                        {user && (
-                                            <div className="px-4 py-2 border-b border-gray-200">
-                                                <p className="text-sm font-semibold text-gray-900">{user.username}</p>
-                                                <p className="text-xs text-gray-500">ID: {user.id}</p>
-                                            </div>
-                                        )}
+                        {/*            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">*/}
+                        {/*                {user && (*/}
+                        {/*                    <div className="px-4 py-2 border-b border-gray-200">*/}
+                        {/*                        <p className="text-sm font-semibold text-gray-900">{user.username}</p>*/}
+                        {/*                        <p className="text-xs text-gray-500">ID: {user.id}</p>*/}
+                        {/*                    </div>*/}
+                        {/*                )}*/}
 
-                                        <button
-                                            onClick={handleLogout}
-                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-                                        >
-                                            <LogOut className="h-4 w-4 mr-2" />
-                                            Logout
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                        {/*                <button*/}
+                        {/*                    onClick={handleLogout}*/}
+                        {/*                    className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"*/}
+                        {/*                >*/}
+                        {/*                    <LogOut className="h-4 w-4 mr-2" />*/}
+                        {/*                    Logout*/}
+                        {/*                </button>*/}
+                        {/*            </div>*/}
+                        {/*        </>*/}
+                        {/*    )}*/}
+                        {/*</div>*/}
                     </div>
 
                     {/* Mobile Menu Button */}

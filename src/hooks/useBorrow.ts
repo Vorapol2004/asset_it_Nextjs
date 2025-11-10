@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { BorrowCreateData, BorrowItemData, EquipmentView, EmployeeView, Building, Floor, Room, Department } from '@/types/type';
+import { BorrowCreateData, EmployeeView } from '@/types/type';
 import { ROUTES } from '@/constants/routes';
 
 export interface BorrowItem {
@@ -30,13 +30,6 @@ export function useBorrow() {
     const [employeeLoading, setEmployeeLoading] = useState(false);
     const [isLocked] = useState(true); // ข้อมูลผู้ยืมล็อคไว้ไม่ให้แก้ไข
     const hasCheckedStorage = useRef(false); // Flag เพื่อป้องกันการ redirect ซ้ำ
-    
-    // Location data
-    const [building, setBuilding] = useState<Building | null>(null);
-    const [floor, setFloor] = useState<Floor | null>(null);
-    const [room, setRoom] = useState<Room | null>(null);
-    const [department, setDepartment] = useState<Department | null>(null);
-    const [locationLoading, setLocationLoading] = useState(false);
     
     const [borrowItems, setBorrowItems] = useState<BorrowItem[]>([
         {
@@ -69,11 +62,9 @@ export function useBorrow() {
             //String to Object
             const data: BorrowPageData = JSON.parse(borrowDataStr);
             
-            // ตรวจสอบว่า employeeId ถูกต้อง
+            //ฝากข้อมูลไว้ใน state employeeId
             if (data.employeeId && data.employeeId > 0) {
                 setEmployeeId(data.employeeId);
-                // ลบข้อมูลออกจาก sessionStorage หลังจากโหลดแล้ว
-                sessionStorage.removeItem('borrowData');
             } else {
                 alert('ไม่พบข้อมูลผู้ยืม กรุณาเริ่มใหม่');
                 sessionStorage.removeItem('borrowData');
@@ -87,7 +78,7 @@ export function useBorrow() {
         }
     }, [router]); // ทำงานแค่ครั้งเดียวเมื่อ component mount
 
-    // ดึงข้อมูล employee เมื่อ employeeId มีค่า
+    // ใช้ EmployeeId ดึงข้อมูล Employee
     useEffect(() => {
         const fetchEmployee = async () => {
             if (employeeId > 0) {
@@ -95,6 +86,8 @@ export function useBorrow() {
                 try {
                     const employeeData = await api.employee.selectEmployee(employeeId);
                     setEmployee(employeeData);
+                    // ลบข้อมูลออกจาก sessionStorage หลังจากดึงข้อมูล employee สำเร็จแล้ว
+                    sessionStorage.removeItem('borrowData');
                 } catch (error) {
                     console.error('Error fetching employee:', error);
                     alert('ไม่สามารถดึงข้อมูลพนักงานได้ กรุณาลองอีกครั้ง');
@@ -109,46 +102,6 @@ export function useBorrow() {
         fetchEmployee();
     }, [employeeId, router]);
 
-    // ดึงข้อมูล location จาก employee (ถ้า employee มี departmentId)
-    useEffect(() => {
-        const fetchLocationData = async () => {
-            if (employee && employee.departmentId) {
-                setLocationLoading(true);
-                try {
-                    const departments = await api.department.getAll();
-                    const departmentData = departments.find(d => d.id === employee.departmentId);
-                    setDepartment(departmentData || null);
-
-                    if (departmentData) {
-                        const buildings = await api.building.filter(departmentData.id);
-                        if (buildings.length > 0) {
-                            const buildingData = buildings[0];
-                            setBuilding(buildingData);
-
-                            const floors = await api.floor.getByBuilding(buildingData.id);
-                            if (floors.length > 0) {
-                                const floorData = floors[0];
-                                setFloor(floorData);
-
-                                const rooms = await api.room.getByFloor(floorData.id);
-                                if (rooms.length > 0) {
-                                    setRoom(rooms[0]);
-                                }
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error fetching location data:', error);
-                } finally {
-                    setLocationLoading(false);
-                }
-            }
-        };
-
-        fetchLocationData();
-    }, [employee]);
-
-  
     const searchEquipment = async (itemIndex: number, searchValue: string) => {
         // ถ้า searchValue ว่าง → ล้างข้อมูลอุปกรณ์ทั้งหมด (ยกเว้น notes)
         if (!searchValue.trim()) {
@@ -234,6 +187,7 @@ export function useBorrow() {
         ]);
     };
 
+    //ถ้าอุปกรณ์มีมากกว่า 1 ชิ้นจะอนุญาติให้ลบได้
     const removeBorrowItem = (index: number) => {
         if (borrowItems.length > 1) {
             setBorrowItems(borrowItems.filter((_, i) => i !== index));
@@ -336,11 +290,6 @@ export function useBorrow() {
         employee,
         employeeLoading,
         isLocked,
-        building,
-        floor,
-        room,
-        department,
-        locationLoading,
         setBorrowDate,
         setDueDate,
         setReferenceDoc,

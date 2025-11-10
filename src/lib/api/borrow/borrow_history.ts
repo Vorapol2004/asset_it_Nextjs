@@ -3,10 +3,7 @@ import { BorrowView, BorrowStatus } from "@/types/type";
 import {API_URL} from "@/lib/config";
 
 export const borrow_history = {
-    /**
-     * กรองข้อมูลการยืมตาม status และ role
-     * Backend: GET /borrow/filter?borrowStatusId={id}&roleId={id}
-     */
+
     filterByStatus: async (statusId?: number, roleId?: number): Promise<BorrowView[]> => {
         const params = new URLSearchParams();
         if (statusId && statusId > 0) {
@@ -39,9 +36,7 @@ export const borrow_history = {
         }
     },
 
-    /**
-     *  ค้นหาข้อมูลการยืมด้วย keyword
-     */
+
     search: async (keyword: string): Promise<BorrowView[]> => {
         const res = await fetch(`${API_URL}/borrow/search?keyword=${encodeURIComponent(keyword)}`);
 
@@ -54,10 +49,7 @@ export const borrow_history = {
         }
     },
 
-    /**
-     * ดึงสถานะการยืมทั้งหมด
-     * Backend: GET /borrow_status/status
-     */
+
     getStatuses: async (): Promise<BorrowStatus[]> => {
         const res = await fetch(`${API_URL}/borrow_status/status`);
         
@@ -71,10 +63,7 @@ export const borrow_history = {
         }
     },
 
-    /**
-     * ดึงประเภทอุปกรณ์ทั้งหมดสำหรับ dropdown
-     * Backend: GET /equipment_type/type
-     */
+
     getEquipmentTypes: async (): Promise<{ id: number; equipmentTypeName: string }[]> => {
         const res = await fetch(`${API_URL}/equipment_type/type`);
         
@@ -88,10 +77,7 @@ export const borrow_history = {
         }
     },
 
-    /**
-     * ดึงสถานะอุปกรณ์ทั้งหมด
-     * Backend: GET /equipment_status/status
-     */
+
     getEquipmentStatuses: async (): Promise<{ id: number; equipmentStatusName: string }[]> => {
         const res = await fetch(`${API_URL}/equipment_status/status`);
         
@@ -105,11 +91,7 @@ export const borrow_history = {
         }
     },
 
-    /**
-     * ดึงรายละเอียดการยืมพร้อมอุปกรณ์ทั้งหมด
-     * Backend: GET /borrow/select?borrowId={id}
-     * Note: Backend ส่ง flat array (หลาย record สำหรับ borrow เดียวกัน)
-     */
+
     select: async (borrowId: number): Promise<BorrowView[]> => {
         const res = await fetch(`${API_URL}/borrow/select?borrowId=${borrowId}`);
 
@@ -122,11 +104,7 @@ export const borrow_history = {
         }
     },
 
-    /**
-     * คืนอุปกรณ์ทีละชิ้น พร้อมอัพเดทสถานะ
-     * Backend: PATCH /borrow/return
-     * Request body: { borrowerEquipmentId, statusId, returnDate }
-     */
+
     returnSingle: async (
         borrowerEquipmentId: number,
         statusId: number,

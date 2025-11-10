@@ -250,8 +250,8 @@ export default function EquipmentPage() {
                                 <table className="w-full">
                                     <thead className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white">
                                     <tr>
-                                        <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider ">ชื่ออุปกรณ์</th>
-                                        <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider ">ยี่ห้อ/รุ่น</th>
+                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider ">ชื่ออุปกรณ์</th>
+                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider ">ยี่ห้อ/รุ่น</th>
                                         <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">LOT</th>
                                         <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">ปีการศึกษา</th>
                                         <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">ประเภท</th>
@@ -341,7 +341,7 @@ export default function EquipmentPage() {
                 </div>
             </div>
 
-            {/* ✅ Modal ใช้ State และ Functions จาก Hook */}
+            {/* Modal ใช้ State และ Functions จาก Hook */}
             {showModal && (
                 <EquipmentDetailModal
                     equipment={selectedEquipment}
@@ -352,7 +352,7 @@ export default function EquipmentPage() {
                 />
             )}
 
-            {/* ✅ Edit Modal */}
+            {/* Edit Modal */}
             {showEditModal && editingEquipment && (
                 <EditEquipmentModal
                     equipment={editingEquipment}
@@ -372,4 +372,5 @@ export default function EquipmentPage() {
             )}
         </div>
     );
+
 }

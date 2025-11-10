@@ -75,8 +75,8 @@ export function EditEquipmentModal({
             return;
         }
 
-        setSaving(true);// ← บอกว่าระบบกำลังบันทึก
         try {
+            setSaving(true);
             await onSave({
                 equipmentName: formData.equipmentName.trim(),
                 brand: formData.brand.trim() || undefined,
@@ -87,9 +87,9 @@ export function EditEquipmentModal({
                 equipmentStatusId: formData.equipmentStatusId,
             });
         } catch (err) {
-            // Error จะถูกจัดการใน onSave แล้ว
+
         } finally {
-            setSaving(false); // ตั้งค่าเป็น false ไม่ว่าจะสำเร็จหรือล้มเหลว
+            setSaving(false); // reset state
         }
     };
 
@@ -100,12 +100,12 @@ export function EditEquipmentModal({
         
         if (!confirmDelete) return;
 
-        setDeleting(true);
         try {
+            setDeleting(true);
             await onDelete(equipment.id);
-            // onDelete จะจัดการ close modal และ refresh ข้อมูลเอง
+            
         } catch (err) {
-            // Error จะถูกจัดการใน onDelete แล้ว
+
         } finally {
             setDeleting(false);
         }

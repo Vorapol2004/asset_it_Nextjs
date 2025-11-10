@@ -7,7 +7,7 @@ import { ROUTES } from '@/constants/routes';
 export function useOldBorrow() {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
-    const [employees, setEmployees] = useState<EmployeeView[]>([]); // เก็บข้อมูล employee ทั้งหมดเมื่อโหลด
+    const [employees, setEmployees] = useState<EmployeeView[]>([]); 
     const [filteredBorrowers, setFilteredBorrowers] = useState<EmployeeView[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -15,14 +15,12 @@ export function useOldBorrow() {
         fetchPreviousBorrowers();
     }, []);
 
-    // Search employees using API with debounce
     useEffect(() => {
         const searchEmployees = async () => {
             if (searchTerm.trim() === '') {
                 // ถ้า search ว่าง ให้ใช้ข้อมูลที่มีอยู่แล้ว (ไม่ต้องเรียก API ซ้ำ)
                 setFilteredBorrowers(employees);
             } else {
-                // ใช้ API search
                 setLoading(true);
                 try {
                     const searchResults = await api.employee.search(searchTerm.trim());
@@ -61,8 +59,8 @@ export function useOldBorrow() {
 
 
     const handleSelectBorrower = async (employee: EmployeeView) => {
-        // ใช้ employeeId ตรงๆ ตามที่ backend ส่งมา
-        const employeeId = (employee as any).employeeId;
+        
+        const employeeId = employee.id || employee.employeeId;
         
         if (!employeeId || employeeId === 0) {
             alert('ไม่พบ ID ของพนักงาน');
@@ -72,21 +70,16 @@ export function useOldBorrow() {
         // เก็บ employeeId ไปหน้า borrow
         sessionStorage.setItem('borrowData', JSON.stringify({ employeeId }));
         
-        // ไปหน้า borrow
         router.push(ROUTES.BORROW);
     };
 
-    /**
-     * ลบ employee
-     * @param employee - Employee ที่ต้องการลบ
-     */
+    
     const handleDeleteBorrower = async (employee: EmployeeView) => {
-        // ยืนยันการลบ
         const confirmed = window.confirm(
             `คุณต้องการลบข้อมูลพนักงาน ${employee.firstName} ${employee.lastName} ใช่หรือไม่?\n\n` +
             `ข้อมูลที่จะถูกลบ:\n` +
             `- อีเมล: ${employee.email}\n` +
-            `⚠️ การกระทำนี้ไม่สามารถยกเลิกได้`
+            `การกระทำนี้ไม่สามารถยกเลิกได้`
         );
 
         if (!confirmed) {

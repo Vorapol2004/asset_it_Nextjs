@@ -3,9 +3,7 @@ import {Employee, EmployeeView} from "@/types/type";
 import {API_URL} from "@/lib/config";
 
 export const employee = {
-    /**
-     *  ดึงพนักงานทั้งหมด
-     */
+    
     getAll: async (): Promise<EmployeeView[]> => {
         const res = await fetch(`${API_URL}/employee/all`);
 
@@ -18,9 +16,7 @@ export const employee = {
         }
     },
 
-    /**
-     *  ดึงพนักงานตาม ID
-     */
+    
     getById: async (id: number): Promise<EmployeeView> => {
         const res = await fetch(`${API_URL}/employee/${id}`);
 
@@ -31,10 +27,7 @@ export const employee = {
         }
     },
 
-    /**
-     *  เลือกพนักงาน (สำหรับหน้า borrow)
-     *  Backend endpoint: GET /employee/select_employee?employeeId={id}
-     */
+   
     selectEmployee: async (employeeId: number): Promise<EmployeeView> => {
         const res = await fetch(`${API_URL}/employee/select_employee?employeeId=${employeeId}`);
 
@@ -46,9 +39,7 @@ export const employee = {
         }
     },
 
-    /**
-     *  ดึงพนักงานตาม Role
-     */
+    
     getByRole: async (roleId: number): Promise<EmployeeView[]> => {
         const res = await fetch(`${API_URL}/employee/role/${roleId}`);
 
@@ -61,9 +52,7 @@ export const employee = {
         }
     },
 
-    /**
-     *  ดึงพนักงานตาม Department
-     */
+    
     getByDepartment: async (departmentId: number): Promise<EmployeeView[]> => {
         const res = await fetch(`${API_URL}/employee/dep/${departmentId}`);
 
@@ -87,18 +76,11 @@ export const employee = {
             const errorData = await res.json().catch(() => ({ message: 'Failed to create employee' }));
             throw new Error(errorData.message || `Failed to create employee: ${res.status} ${res.statusText}`);
         } else {
-            const response = await res.json();
-            // Normalize response: ถ้า backend ส่ง employeeId แทน id ให้แปลงเป็น id
-            if (response.employeeId && !response.id) {
-                response.id = response.employeeId;
-            }
-            return response;
+            return res.json();
         }
     },
 
-    /**
-     *  อัปเดตพนักงาน
-     */
+    
     update: async (id: number, data: Partial<Employee>): Promise<Employee> => {
         const res = await fetch(`${API_URL}/employee/${id}`, {
             method: 'PUT',
@@ -113,9 +95,7 @@ export const employee = {
         }
     },
 
-    /**
-     *  ลบพนักงาน
-     */
+   
     delete: async (id: number): Promise<void> => {
         const res = await fetch(`${API_URL}/employee/${id}`, { method: 'DELETE' });
 
@@ -126,9 +106,7 @@ export const employee = {
         }
     },
 
-    /**
-     *  ค้นหาพนักงานด้วย keyword
-     */
+    
     search: async (keyword: string): Promise<EmployeeView[]> => {
         const res = await fetch(`${API_URL}/employee/search?keyword=${encodeURIComponent(keyword)}`);
 
@@ -141,10 +119,7 @@ export const employee = {
         }
     },
 
-    /**
-     *  ดึงพนักงานตาม Department และ Role
-     *  Backend: GET /employee/dep/{idDep}/role/{idRole}
-     */
+    
     getByDepartmentAndRole: async (departmentId: number, roleId: number): Promise<EmployeeView[]> => {
         const res = await fetch(`${API_URL}/employee/dep/${departmentId}/role/${roleId}`);
 

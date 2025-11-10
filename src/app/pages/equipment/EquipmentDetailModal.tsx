@@ -44,7 +44,6 @@ export function EquipmentDetailModal({
                 <div className="relative bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-300">
 
                     {(() => {
-                        // ✅ กำลังโหลด
                         if (loading) {
                             return (
                                 <div className="flex flex-col items-center py-20">
@@ -54,7 +53,6 @@ export function EquipmentDetailModal({
                             );
                         }
 
-                        // ✅ เกิด Error
                         if (error) {
                             return (
                                 <div className="flex flex-col items-center py-20 px-6">
@@ -79,12 +77,10 @@ export function EquipmentDetailModal({
                             );
                         }
 
-                        // ✅ ไม่มีข้อมูล
                         if (!equipment) {
                             return null;
                         }
 
-                        // ✅ แสดงข้อมูล
                         return (
                             <>
                                 {/* Header */}

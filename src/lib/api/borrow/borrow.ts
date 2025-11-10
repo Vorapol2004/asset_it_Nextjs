@@ -25,30 +25,6 @@ export const borrow = {
         }
     },
 
-    getByStatus: async (statusId: number): Promise<BorrowView[]> => {
-        const res = await fetch(`${API_URL}/borrow/filter/Status/${statusId}`);
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to filter borrows by status');
-        } else {
-            return res.json();
-        }
-    },
-
-    /**
-     *  สร้างการยืมใหม่
-     *  Backend endpoint: POST /borrow/create
-     *  Request body format:
-     *  {
-     *    "employeeId": Integer,
-     *    "referenceDoc": String (optional, nullable),
-     *    "borrowDate": "YYYY-MM-DD" (LocalDate),
-     *    "dueDate": "YYYY-MM-DD" (LocalDate),
-     *    "equipmentIds": [Integer, Integer, ...]
-     *  }
-     */
     create: async (data: BorrowCreateData): Promise<BorrowCreateResponse> => {
         const res = await fetch(`${API_URL}/borrow/create`, {
             method: 'POST',
@@ -64,11 +40,7 @@ export const borrow = {
         }
     },
 
-    /**
-     * ดึงอุปกรณ์ที่กำลังถูกยืมอยู่ (dropdown)
-     * Backend: GET /borrow/equipmentBorrow/dropDown
-     * Note: อาจจะต้องใช้ endpoint อื่นสำหรับอุปกรณ์ที่พร้อมให้ยืม
-     */
+
     getAvailableEquipment: async (): Promise<EquipmentView[]> => {
         // TODO: ตรวจสอบ endpoint ที่ถูกต้องสำหรับอุปกรณ์ที่พร้อมให้ยืม
         // ตอนนี้ใช้ equipmentBorrow/dropDown ซึ่งดึงอุปกรณ์ที่กำลังถูกยืม
@@ -83,9 +55,7 @@ export const borrow = {
         }
     },
 
-    /**
-     *  ดึงรายการที่ยัง active (ยังไม่คืน)
-     */
+
     getActive: async (): Promise<BorrowView[]> => {
         const res = await fetch(`${API_URL}/borrow/active`);
 
@@ -98,9 +68,7 @@ export const borrow = {
         }
     },
 
-    /**
-     *  ดึงรายการที่เกินกำหนด
-     */
+
     getOverdue: async (): Promise<BorrowView[]> => {
         const res = await fetch(`${API_URL}/borrow/overdue`);
 
@@ -113,9 +81,7 @@ export const borrow = {
         }
     },
 
-    /**
-     *  ดึงสถานะการยืมทั้งหมด
-     */
+
     getBorrowStatuses: async (): Promise<BorrowStatus[]> => {
         const res = await fetch(`${API_URL}/borrow/statuses`);
 
@@ -129,10 +95,6 @@ export const borrow = {
     },
 
 
-    /**
-     *  ดึงประเภทอุปกรณ์ทั้งหมด
-     *  Backend: GET /equipment_type/type
-     */
     getEquipmentTypes: async (): Promise<{ id: number; equipmentTypeName: string }[]> => {
         const res = await fetch(`${API_URL}/equipment_type/type`);
 
@@ -145,10 +107,7 @@ export const borrow = {
         }
     },
 
-    /**
-     *  ดึงอุปกรณ์ตามประเภทอุปกรณ์
-     *  Backend: GET /equipment/select_equipment_type?equipmentId={id}
-     */
+
     getEquipmentByType: async (equipmentTypeId: number): Promise<EquipmentView[]> => {
         const res = await fetch(`${API_URL}/equipment/select_equipment_type?equipmentId=${equipmentTypeId}`);
 
@@ -161,11 +120,6 @@ export const borrow = {
         }
     },
 
-    /**
-     *  ค้นหาอุปกรณ์ด้วย licensekey หรือ serialnumber
-     *  Backend: GET /equipment/identifier?keyword={value}
-     *  Note: Backend จะค้นหาและส่งกลับเฉพาะอุปกรณ์ที่ยังไม่ได้ยืมมา (status = 1)
-     */
     searchEquipment: async (searchValue: string): Promise<EquipmentView[]> => {
         const res = await fetch(`${API_URL}/equipment/identifier?keyword=${encodeURIComponent(searchValue)}`);
 

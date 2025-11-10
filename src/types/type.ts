@@ -248,6 +248,7 @@ export interface EmployeeView extends Employee {
     buildingName?: string;
     floorName?: string;
     roomName?: string;
+    employeeId?: number;
 }
 
 export interface Role {

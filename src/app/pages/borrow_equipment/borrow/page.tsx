@@ -21,11 +21,6 @@ export default function BorrowPage() {
         employee,
         employeeLoading,
         isLocked,
-        building,
-        floor,
-        room,
-        department,
-        locationLoading,
         setBorrowDate,
         setDueDate,
         setReferenceDoc,
@@ -178,7 +173,6 @@ export default function BorrowPage() {
                         )}
                     </div>
 
-                    {/* สถานที่และหน่วยงาน */}
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
                         <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-blue-100">
                             <h2 className="text-xl font-semibold text-gray-900 flex items-center">
@@ -192,15 +186,9 @@ export default function BorrowPage() {
                                 </div>
                             )}
                         </div>
-                        {locationLoading ? (
-                            <div className="text-center py-4">
-                                <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div>
-                                <p className="mt-2 text-gray-600 text-sm">กำลังโหลดข้อมูลสถานที่...</p>
-                            </div>
-                        ) : (
+                        {employee ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {/* แผนก */}
-                                {department && (
+                                {employee.departmentName && (
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-800 mb-2">
                                             แผนก
@@ -209,7 +197,7 @@ export default function BorrowPage() {
                                             <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                             <input
                                                 type="text"
-                                                value={department.departmentName}
+                                                value={employee.departmentName}
                                                 readOnly
                                                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium bg-gray-50 cursor-not-allowed"
                                             />
@@ -217,8 +205,7 @@ export default function BorrowPage() {
                                     </div>
                                 )}
 
-                                {/* ตึก */}
-                                {building && (
+                                {employee.buildingName && (
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-800 mb-2">
                                             ตึก
@@ -227,7 +214,7 @@ export default function BorrowPage() {
                                             <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                             <input
                                                 type="text"
-                                                value={building.buildingName}
+                                                value={employee.buildingName}
                                                 readOnly
                                                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium bg-gray-50 cursor-not-allowed"
                                             />
@@ -235,8 +222,7 @@ export default function BorrowPage() {
                                     </div>
                                 )}
 
-                                {/* ชั้น */}
-                                {floor && (
+                                {employee.floorName && (
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-800 mb-2">
                                             ชั้น
@@ -245,7 +231,7 @@ export default function BorrowPage() {
                                             <Layers className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                             <input
                                                 type="text"
-                                                value={floor.floorName}
+                                                value={employee.floorName}
                                                 readOnly
                                                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium bg-gray-50 cursor-not-allowed"
                                             />
@@ -253,8 +239,7 @@ export default function BorrowPage() {
                                     </div>
                                 )}
 
-                                {/* ห้อง */}
-                                {room && (
+                                {employee.roomName && (
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-800 mb-2">
                                             ห้อง
@@ -263,7 +248,7 @@ export default function BorrowPage() {
                                             <DoorOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                             <input
                                                 type="text"
-                                                value={room.roomName}
+                                                value={employee.roomName}
                                                 readOnly
                                                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium bg-gray-50 cursor-not-allowed"
                                             />
@@ -271,15 +256,13 @@ export default function BorrowPage() {
                                     </div>
                                 )}
                             </div>
-                        )}
-                        {!locationLoading && !building && !floor && !room && (
+                        ) : (
                             <div className="text-center py-4 text-gray-500">
                                 ไม่พบข้อมูลสถานที่
                             </div>
                         )}
                     </div>
 
-                    {/* วันที่ */}
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
                         <h2 className="text-xl font-semibold text-gray-900 mb-4 pb-3 border-b-2 border-blue-100 flex items-center">
                             <Calendar className="h-6 w-6 mr-2 text-blue-600" />
@@ -352,7 +335,6 @@ export default function BorrowPage() {
                         </div>
                     </div>
 
-                    {/* รายการอุปกรณ์ */}
                     <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
                         <div className="flex justify-between items-center mb-4 pb-3 border-b-2 border-blue-100">
                             <h2 className="text-xl font-semibold text-gray-900 flex items-center">

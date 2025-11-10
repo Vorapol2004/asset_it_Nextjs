@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { EquipmentView } from '@/types/type';
 import { equipment } from '@/lib/api/equipment/equipment';
-import { API_URL } from '@/lib/config';
 
 interface FilterParams {
     typeId?: number;
@@ -28,27 +27,14 @@ export function useEquipment() {
     const [statuses, setStatuses] = useState<{ id: number; equipmentStatusName: string }[]>([]);
     const [equipmentTypes, setEquipmentTypes] = useState<{ id: number; equipmentTypeName: string }[]>([]);
 
-    // ดึงข้อมูล dropdown เมื่อโหลด 
     useEffect(() => {
         const loadDropdownData = async () => {
             try {
+                const typesData = await equipment.getTypes();
+                setEquipmentTypes(typesData);
                 
-                const typesRes = await fetch(`${API_URL}/equipment_type/type`);
-                const typesData = await typesRes.json();
-                if (Array.isArray(typesData)) {
-                    setEquipmentTypes(typesData);
-                } else {
-                    setEquipmentTypes([]);
-                }
-
-                
-                const statusesRes = await fetch(`${API_URL}/equipment_status/status`);
-                const statusesData = await statusesRes.json();
-                if (Array.isArray(statusesData)) {
-                    setStatuses(statusesData);
-                } else {
-                    setStatuses([]);
-                }
+                const statusesData = await equipment.getStatuses();
+                setStatuses(statusesData);
             } catch (err) {
                 console.error('Error loading dropdown data:', err);
                 setEquipmentTypes([]);
@@ -59,26 +45,12 @@ export function useEquipment() {
         loadDropdownData();
     }, []);
 
-    
-    const sortEquipmentsByNewest = (data: EquipmentView[]): EquipmentView[] => {
-        return [...data].sort((a, b) => {
-            // ใช้ createdAt ถ้ามี
-            if (a.createdAt && b.createdAt) {
-                const dateA = new Date(a.createdAt).getTime();
-                const dateB = new Date(b.createdAt).getTime();
-                return dateB - dateA; // ใหม่ → เก่า โดยจะทำการจับคู่ข้อมูลทีละ 2 ตัว” มาเปรียบเทียบซ้ำ ๆ ไปเรื่อย ๆ
-            }
-            return b.id - a.id;
-        });
-    };
-
     const fetchEquipments = async () => {
         setLoading(true);
         setError(null);
         try {
             const data = await equipment.getAll();
-            const sortedData = sortEquipmentsByNewest(data);
-            setEquipments(sortedData);
+            setEquipments(data);
         } catch {
             setError('ไม่สามารถดึงข้อมูลอุปกรณ์ได้');
         } finally {
@@ -94,8 +66,7 @@ export function useEquipment() {
             // ถ้ามี keyword → เรียก search
             if (filters.keyword && filters.keyword.trim()) {
                 const data = await equipment.search(filters.keyword);
-                const sortedData = sortEquipmentsByNewest(data);
-                setEquipments(sortedData);
+                setEquipments(data);
             }
             // ถ้ามี type หรือ status → เรียก filter
             else if (filters.typeId || filters.statusId) {
@@ -103,10 +74,8 @@ export function useEquipment() {
                     typeId: filters.typeId,
                     statusId: filters.statusId,
                 });
-                const sortedData = sortEquipmentsByNewest(data);
-                setEquipments(sortedData);
+                setEquipments(data);
             }
-            // ไม่มี filter → เรียกทั้งหมด
             else {
                 await fetchEquipments();
             }
@@ -123,18 +92,7 @@ export function useEquipment() {
             await fetchEquipments();
             return;
         }
-
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await equipment.search(keyword);
-            const sortedData = sortEquipmentsByNewest(data);
-            setEquipments(sortedData);
-        } catch {
-            setError('เกิดข้อผิดพลาดในการค้นหา');
-        } finally {
-            setLoading(false);
-        }
+        await applyFilters({ keyword });
     };
 
     const fetchEquipmentDetail = async (id: number, showModalOnOpen = false) => {

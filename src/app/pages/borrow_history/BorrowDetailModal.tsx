@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import {
     RefreshCw,
-    X,
     Cpu,
     Key,
     Undo2,
@@ -17,7 +16,7 @@ import {
     CheckCircle,
     ChevronDown,
 } from 'lucide-react';
-// Import type from hook (same as useBorrowHistory)
+
 type GroupedBorrow = Omit<import('@/types/type').BorrowView, 'items'> & {
     items: import('@/types/type').BorrowEquipmentView[];
     borrowEquipmentCount?: number | null;

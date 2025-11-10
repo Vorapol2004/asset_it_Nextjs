@@ -18,7 +18,6 @@ import {
 import { useAddEquipment } from '@/hooks/useAddEquipment';
 
 export default function AddEquipmentPage() {
-    // ✅ ฟอร์มและการบันทึก รวม dropdown data
     const {
         loading,
         error,

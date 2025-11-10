@@ -177,7 +177,7 @@ export function useNewBorrow() {
             const employeeData: Partial<Employee> & { roomId?: number } = {
                 firstName: borrowerFirstName.trim(),
                 lastName: borrowerLastName.trim(),
-                email: borrowerEmail.trim() || undefined,
+                email: borrowerEmail.trim(),
                 phone: borrowerPhone.trim(),
                 description: null,
                 roleId: selectedRole.id,

@@ -111,7 +111,6 @@ export default function OldBorrowPage() {
                                                 </div>
 
                                                 <div className="flex-1">
-                                                    {/* ชื่อ-นามสกุล */}
                                                     {(employee.firstName || employee.lastName) ? (
                                                         <h3 className="text-xl font-bold text-gray-900 mb-2">
                                                             {employee.firstName || ''} {employee.lastName || ''}
@@ -123,7 +122,6 @@ export default function OldBorrowPage() {
                                                     )}
 
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                                                        {/* อีเมล */}
                                                         {employee.email && (
                                                             <div className="flex items-center gap-2 text-sm text-gray-700">
                                                                 <div className="bg-blue-100 p-1.5 rounded-lg">
@@ -132,7 +130,6 @@ export default function OldBorrowPage() {
                                                                 <span className="font-medium">{employee.email}</span>
                                                             </div>
                                                         )}
-                                                        {/* เบอร์โทร */}
                                                         {employee.phone && (
                                                             <div className="flex items-center gap-2 text-sm text-gray-700">
                                                                 <div className="bg-green-100 p-1.5 rounded-lg">
@@ -141,7 +138,6 @@ export default function OldBorrowPage() {
                                                                 <span className="font-medium">{employee.phone}</span>
                                                             </div>
                                                         )}
-                                                        {/* ตำแหน่ง */}
                                                         {employee.roleName && (
                                                             <div className="flex items-center gap-2 text-sm text-gray-700">
                                                                 <div className="bg-purple-100 p-1.5 rounded-lg">
@@ -152,7 +148,6 @@ export default function OldBorrowPage() {
                                                         )}
                                                     </div>
 
-                                                    {/* แสดงข้อมูลแผนก */}
                                                     {employee.departmentName && (
                                                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
                                                             <p className="text-xs font-semibold text-blue-800 mb-2"> หน่วยงาน </p>

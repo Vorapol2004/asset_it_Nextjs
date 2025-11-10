@@ -65,25 +65,7 @@ export const equipment = {
         return res.json();
     },
 
-    
-    getByType: async (equipmentTypeId?: number): Promise<EquipmentView[]> => {
-        let url = `${API_URL}/equipment/select_equipment_type`;
-        if (equipmentTypeId) {
-            url += `?equipmentId=${equipmentTypeId}`;
-        }
-        
-        const res = await fetch(url);
-        
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch equipment by type');
-        } else {
-            return res.json();
-        }
-    },
 
-    
     update: async (id: number, data: Partial<EquipmentView>): Promise<EquipmentView> => {
         // สร้าง request body โดยเพิ่ม equipmentId
         const requestBody = {
@@ -104,7 +86,7 @@ export const equipment = {
             return res.json();
         }
     },
-    
+
 
     async delete(id: number) {
         const res = await fetch(`${API_URL}/equipment/${id}`, {
@@ -112,5 +94,33 @@ export const equipment = {
         });
         if (!res.ok) throw new Error('ไม่สามารถลบอุปกรณ์ได้');
         return await res.text();
+    },
+
+    
+    getTypes: async (): Promise<{ id: number; equipmentTypeName: string }[]> => {
+        const res = await fetch(`${API_URL}/equipment_type/type`);
+        
+        if (res.status === 204) {
+            return [];
+        } else if (!res.ok) {
+            throw new Error('Failed to fetch equipment types');
+        } else {
+            const data = await res.json();
+            return Array.isArray(data) ? data : [];
+        }
+    },
+
+    
+    getStatuses: async (): Promise<{ id: number; equipmentStatusName: string }[]> => {
+        const res = await fetch(`${API_URL}/equipment_status/status`);
+        
+        if (res.status === 204) {
+            return [];
+        } else if (!res.ok) {
+            throw new Error('Failed to fetch equipment statuses');
+        } else {
+            const data = await res.json();
+            return Array.isArray(data) ? data : [];
+        }
     },
 }

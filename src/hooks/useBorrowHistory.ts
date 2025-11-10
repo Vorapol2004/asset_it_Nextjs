@@ -30,25 +30,20 @@ export function useBorrowHistory() {
     const [equipmentStatuses, setEquipmentStatuses] = useState<{ id: number; equipmentStatusName: string }[]>([]);
     
     // Filter equipment statuses สำหรับการคืน (แสดงแค่ available, lost, damaged)
-    // ใช้ trim() และ toLowerCase() เพื่อให้รองรับทั้งตัวพิมพ์เล็ก-ใหญ่ และช่องว่าง
     const returnEquipmentStatuses = equipmentStatuses.filter(status => {
         const statusName = (status.equipmentStatusName || '').trim().toLowerCase();
         return statusName === 'available' || statusName === 'lost' || statusName === 'damaged';
     });
     
-    // Debug: ตรวจสอบสถานะที่ filter ได้
+    //ตรวจสอบสถานะที่ filter ได้
     useEffect(() => {
         if (equipmentStatuses.length > 0) {
-            console.log('🔍 Equipment Statuses ทั้งหมด:', equipmentStatuses);
-            console.log('✅ Filtered Return Statuses:', returnEquipmentStatuses);
+            console.log('Equipment Statuses ทั้งหมด:', equipmentStatuses);
+            console.log('Filtered Return Statuses:', returnEquipmentStatuses);
         }
     }, [equipmentStatuses]);
 
-    /**
-     * ใช้ข้อมูลจาก backend โดยตรง
-     * Backend ส่ง grouped format มาแล้ว (1 record ต่อ 1 borrow พร้อม items array)
-     * หรือ flat array (หลาย record สำหรับ borrow เดียวกัน) - ต้อง group
-     */
+
     const groupedRecords: GroupedBorrow[] = (() => {
         // ตรวจสอบว่า backend ส่ง grouped format มาแล้วหรือไม่ (มี items array)
         const firstRecord = records[0];
@@ -121,7 +116,7 @@ export function useBorrowHistory() {
     })();
 
 
-    // โหลดข้อมูลสำหรับ dropdowns
+    //dropdowns
     useEffect(() => {
         const loadFilterOptions = async () => {
             try {
@@ -143,19 +138,7 @@ export function useBorrowHistory() {
         loadFilterOptions();
     }, []);
 
-    /**
-     * กรองข้อมูลการยืม (เรียก API ตรงๆ ตาม backend)
-     * 
-     * Priority:
-     * 1. ถ้ามี keyword → เรียก search
-     * 2. ถ้ามี status หรือ role → เรียก filter (รองรับ filter หลายตัวพร้อมกัน)
-     * 3. ไม่มี filter → เรียก getAll
-     * 
-     * Note: Backend รองรับ:
-     * - search (keyword)
-     * - filter (borrowStatusId, roleId) - รองรับ filter หลายตัวพร้อมกัน
-     * - getAll (ทั้งหมด)
-     */
+    
     const applyFilters = async () => {
         setLoading(true);
         setError(null);
@@ -176,14 +159,13 @@ export function useBorrowHistory() {
                 
                 data = await api.borrow_history.filterByStatus(statusId, roleId);
             }
-            // ไม่มี filter → เรียกทั้งหมด
             else {
                 data = await api.borrow.getAll();
             }
 
             setRecords(data);
         } catch (err) {
-            console.error('❌ กรองข้อมูลล้มเหลว:', err);
+            console.error('กรองข้อมูลล้มเหลว:', err);
             setError('ไม่สามารถกรองข้อมูลได้');
             setRecords([]);
         } finally {
@@ -191,7 +173,6 @@ export function useBorrowHistory() {
         }
     };
 
-    // ล้างฟิลเตอร์ทั้งหมด
     const handleClearFilters = () => {
         setSearchTerm('');
         setSelectedStatus('all');
@@ -199,7 +180,6 @@ export function useBorrowHistory() {
         setSelectedType('all');
     };
 
-    // คืนอุปกรณ์ทีละชิ้น พร้อมอัพเดทสถานะ
     const returnEquipmentItem = async (
         borrowEquipmentId: number,
         statusId: number
@@ -215,9 +195,9 @@ export function useBorrowHistory() {
                 await loadBorrowDetails(selected.id);
             }
             
-            alert('คืนอุปกรณ์สำเร็จ! ✅');
+            alert('คืนอุปกรณ์สำเร็จ!');
         } catch (err) {
-            console.error('❌ คืนอุปกรณ์ล้มเหลว:', err);
+            console.error('คืนอุปกรณ์ล้มเหลว:', err);
             alert('ไม่สามารถคืนอุปกรณ์ได้ กรุณาลองใหม่อีกครั้ง');
         }
     };
@@ -225,7 +205,6 @@ export function useBorrowHistory() {
     // โหลดข้อมูลครั้งแรก
     useEffect(() => {
         applyFilters();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // เรียก API ทันทีเมื่อ filter อื่นๆ เปลี่ยน (ยกเว้น searchTerm)
