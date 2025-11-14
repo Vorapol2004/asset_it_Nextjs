@@ -1,10 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import {
     Package, Plus, Trash2, Save, Calendar, FileText,
-    ArrowLeft, Search, User, Mail, Phone, Briefcase, Building2, DoorOpen, Layers, Lock, UserCheck
+    ArrowLeft, Search, User, Mail, Phone, Briefcase, Building2, DoorOpen, Layers, Lock, UserCheck, ChevronUp
 } from 'lucide-react';
 import { useBorrow } from '@/hooks/useBorrow';
 import { ROUTES } from '@/constants/routes';
@@ -31,6 +32,29 @@ export default function BorrowPage() {
         searchEquipment,
         handleSubmit,
     } = useBorrow();
+
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    // Scroll to Top 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        });
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -505,6 +529,17 @@ export default function BorrowPage() {
                     </div>
                 </form>
             </div>
+
+            {/* Scroll to Top Button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 z-50 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group"
+                    aria-label="Scroll to top"
+                >
+                    <ChevronUp className="h-6 w-6 group-hover:animate-bounce" />
+                </button>
+            )}
         </div>
     );
 }

@@ -1,85 +1,61 @@
-// 'use client';
-//
-// import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-// import { api } from '@/lib/api';
-//
-// interface User {
-//     id: number;
-//     username: string;
-// }
-//
-// interface AuthContextType {
-//     user: User | null;
-//     loading: boolean;
-//     login: (username: string, password: string) => Promise<void>;
-//     logout: () => Promise<void>;
-//     isAuthenticated: boolean;
-// }
-//
-// const AuthContext = createContext<AuthContextType | undefined>(undefined);
-//
-// export function AuthProvider({ children }: { children: ReactNode }) {
-//     const [user, setUser] = useState<User | null>(null);
-//     const [loading, setLoading] = useState(true);
-//
-//     useEffect(() => {
-//         const checkAuth = async () => {
-//             const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-//
-//             if (token) {
-//                 try {
-//                     const data = await api.getCurrentUser();
-//                     // แก้ตรงนี้ - เช็คว่ามี user ก่อน
-//                     if (data?.user) {
-//                         setUser(data.user as User);
-//                     }
-//                 } catch (error) {
-//                     console.error('Auth check failed:', error);
-//                     if (typeof window !== 'undefined') {
-//                         localStorage.removeItem('token');
-//                     }
-//                     setUser(null);
-//                 }
-//             }
-//
-//             setLoading(false);
-//         };
-//
-//         checkAuth();
-//     }, []);
-//
-//     const login = async (username: string, password: string) => {
-//         const data = await api.login(username, password);
-//         // แก้ตรงนี้ - เช็คว่ามี user ก่อน
-//         if (data?.user) {
-//             setUser(data.user as User);
-//         }
-//     };
-//
-//     const logout = async () => {
-//         await api.logout();
-//         setUser(null);
-//     };
-//
-//     return (
-//         <AuthContext.Provider
-//             value={{
-//                 user,
-//                 loading,
-//                 login,
-//                 logout,
-//                 isAuthenticated: !!user
-//             }}
-//         >
-//             {children}
-//         </AuthContext.Provider>
-//     );
-// }
-//
-// export function useAuth() {
-//     const context = useContext(AuthContext);
-//     if (context === undefined) {
-//         throw new Error('useAuth must be used within AuthProvider');
-//     }
-//     return context;
-// }
+'use client';
+
+import { createContext, useContext, ReactNode } from 'react';
+import { useAuth as useAuthHook } from '@/hooks/useAuth';
+
+interface User {
+    id: number;
+    username: string;
+}
+
+interface AuthContextType {
+    user: User | null;
+    loading: boolean;
+    login: (username: string, password: string) => Promise<void>;
+    logout: () => Promise<void>;
+    isAuthenticated: boolean;
+    refreshUser: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/**
+ * AuthProvider - Context Provider สำหรับ Authentication
+ * 
+ * หน้าที่:
+ * - ใช้ useAuth hook เพื่อจัดการ authentication state
+ * - ให้ components อื่นๆ เข้าถึง auth state ได้ผ่าน context
+ */
+export function AuthProvider({ children }: { children: ReactNode }) {
+    const auth = useAuthHook();
+
+    return (
+        <AuthContext.Provider
+            value={{
+                user: auth.user,
+                loading: auth.loading,
+                login: auth.login,
+                logout: auth.logout,
+                isAuthenticated: auth.isAuthenticated,
+                refreshUser: auth.refreshUser,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
+}
+
+/**
+ * useAuthContext - Hook สำหรับเข้าถึง Auth Context
+ * 
+ * ใช้ใน components ที่ต้องการเข้าถึง authentication state
+ * 
+ * หมายเหตุ: ถ้าต้องการใช้ hook โดยตรง (ไม่ผ่าน context) ให้ใช้ useAuth จาก @/hooks/useAuth แทน
+ */
+export function useAuthContext() {
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error('useAuthContext must be used within AuthProvider');
+    }
+    return context;
+}

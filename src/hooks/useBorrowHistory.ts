@@ -45,7 +45,7 @@ export function useBorrowHistory() {
 
 
     const groupedRecords: GroupedBorrow[] = (() => {
-        // ตรวจสอบว่า backend ส่ง grouped format มาแล้วหรือไม่ (มี items array)
+        // ตรวจสอบว่าเป็น grouped หรือ flat
         const firstRecord = records[0];
         if (firstRecord && Array.isArray(firstRecord.items)) {
             // Backend ส่ง grouped format มาแล้ว → ใช้โดยตรง
@@ -86,6 +86,7 @@ export function useBorrowHistory() {
                     const items: BorrowEquipmentView[] = [];
                     
                     if (record.equipmentId) {
+                        //เพิ่มอุปกรณ์ใหม่เข้าในกลุ่ม
                         items.push({
                             // ใช้ id เป็น borrowEquipmentId (ตามที่ backend ส่งมา)
                             borrowEquipmentId: record.borrowEquipmentId || record.id || 0,

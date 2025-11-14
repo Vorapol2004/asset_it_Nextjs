@@ -59,7 +59,7 @@ export function useBorrow() {
         }
 
         try {
-            //String to Object
+            //String to Object เก็บไว้ในตัวแปร data
             const data: BorrowPageData = JSON.parse(borrowDataStr);
             
             //ฝากข้อมูลไว้ใน state employeeId
@@ -142,7 +142,8 @@ export function useBorrow() {
                 // เจออุปกรณ์ - auto-fill
                 const equipment = data[0];
                 setBorrowItems(prev => {
-                    const newItems = [...prev];
+                    const newItems = [...prev];//เหมือนกับการทำสำเนาใหม่
+                    //แก้เฉพาะตัวที่ต้องการ
                     newItems[itemIndex] = {
                         searchValue: searchValue,
                         equipmentId: equipment.id,
@@ -191,6 +192,7 @@ export function useBorrow() {
     const removeBorrowItem = (index: number) => {
         if (borrowItems.length > 1) {
             setBorrowItems(borrowItems.filter((_, i) => i !== index));
+            //สร้าง array ใหม่ที่ตัด element ตำแหน่ง index ทิ้ง
         }
     };
 

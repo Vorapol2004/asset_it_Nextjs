@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Navbar from '@/component/Navbar/Navbar';
 import {
     Package,
@@ -13,7 +14,8 @@ import {
     Key,
     CheckCircle,
     AlertCircle,
-    X
+    X,
+    ChevronUp
 } from 'lucide-react';
 import { useAddEquipment } from '@/hooks/useAddEquipment';
 
@@ -51,6 +53,29 @@ export default function AddEquipmentPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         await submitEquipment();
+    };
+
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    // Scroll to Top 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        });
     };
 
     return (
@@ -408,6 +433,17 @@ export default function AddEquipmentPage() {
                     </div>
                 </form>
             </div>
+
+            {/* Scroll to Top Button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 z-50 p-4 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group"
+                    aria-label="Scroll to top"
+                >
+                    <ChevronUp className="h-6 w-6 group-hover:animate-bounce" />
+                </button>
+            )}
         </div>
     );
 }

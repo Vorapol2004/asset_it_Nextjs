@@ -26,21 +26,8 @@ export default function RegisterForm() {
         setLoading(true);
 
         try {
-            const res = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: formData.username,
-                    password: formData.password,
-                }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || 'Registration failed');
-            }
-
+            const { api } = await import('@/lib/api');
+            await api.register(formData.username, formData.password);
             router.push('/login');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');

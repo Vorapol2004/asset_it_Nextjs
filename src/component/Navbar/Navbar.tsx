@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Utcclogo from '../img/Utcclogo.png';
 import { Package, Menu, X, Home, History, PlusCircle, LogOut, User, Laptop, Settings } from 'lucide-react';
 import Link from 'next/link';
-import { useUser } from '@/hooks/useUser';
+import { useAuthContext } from '@/app/context/AuthContext';
 import { ROUTES, NAV_ITEMS } from '@/constants/routes';
 
 const Navbar = memo(function Navbar() {
     const router = useRouter();
-    const { user, loading } = useUser();
+    const { user, loading, logout, isAuthenticated } = useAuthContext();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
@@ -29,13 +29,36 @@ const Navbar = memo(function Navbar() {
 
     const handleLogout = useCallback(async () => {
         try {
-            await api.logout();
-            router.push(ROUTES.HOME_LANDING);
+            await logout();
+            setIsUserMenuOpen(false);
+            setIsMenuOpen(false);
+            router.push(ROUTES.HOME_LANDING || '/');
         } catch (error) {
             console.error('Logout failed:', error);
-            router.push(ROUTES.HOME_LANDING);
+            // แม้จะ error ก็ redirect ไปหน้า home
+            router.push(ROUTES.HOME_LANDING || '/');
         }
-    }, [router]);
+    }, [logout, router]);
+
+    // ปิด user menu เมื่อคลิกข้างนอก
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (isUserMenuOpen) {
+                const target = event.target as HTMLElement;
+                if (!target.closest('.user-menu-container')) {
+                    setIsUserMenuOpen(false);
+                }
+            }
+        };
+
+        if (isUserMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isUserMenuOpen]);
 
     // Icon mapping
     const getIcon = (iconName: string) => {
@@ -83,44 +106,55 @@ const Navbar = memo(function Navbar() {
                             ))}
                         </div>
 
-                        {/*/!* User Menu *!/*/}
-                        {/*<div className="relative ml-3">*/}
-                        {/*    <button*/}
-                        {/*        onClick={toggleUserMenu}*/}
-                        {/*        className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"*/}
-                        {/*    >*/}
-                        {/*        <User className="h-4 w-4 mr-1" />*/}
-                        {/*        <span className="hidden lg:inline">*/}
-                        {/*            {loading ? 'Loading...' : user?.username || 'Account'}*/}
-                        {/*        </span>*/}
-                        {/*    </button>*/}
+                        {/* User Menu - แสดงเมื่อ authenticated */}
+                        {isAuthenticated ? (
+                            <div className="relative ml-3 user-menu-container">
+                                <button
+                                    onClick={toggleUserMenu}
+                                    className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                                >
+                                    <User className="h-4 w-4 mr-1" />
+                                    <span className="hidden lg:inline">
+                                        {loading ? 'Loading...' : user?.username || 'Account'}
+                                    </span>
+                                </button>
 
-                        {/*    {isUserMenuOpen && (*/}
-                        {/*        <>*/}
-                        {/*            <div*/}
-                        {/*                className="fixed inset-0 z-10"*/}
-                        {/*                onClick={toggleUserMenu}*/}
-                        {/*            />*/}
+                                {isUserMenuOpen && (
+                                    <>
+                                        <div
+                                            className="fixed inset-0 z-10"
+                                            onClick={toggleUserMenu}
+                                        />
 
-                        {/*            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">*/}
-                        {/*                {user && (*/}
-                        {/*                    <div className="px-4 py-2 border-b border-gray-200">*/}
-                        {/*                        <p className="text-sm font-semibold text-gray-900">{user.username}</p>*/}
-                        {/*                        <p className="text-xs text-gray-500">ID: {user.id}</p>*/}
-                        {/*                    </div>*/}
-                        {/*                )}*/}
+                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                                            {user && (
+                                                <div className="px-4 py-2 border-b border-gray-200">
+                                                    <p className="text-sm font-semibold text-gray-900">{user.username}</p>
+                                                    <p className="text-xs text-gray-500">ID: {user.id}</p>
+                                                </div>
+                                            )}
 
-                        {/*                <button*/}
-                        {/*                    onClick={handleLogout}*/}
-                        {/*                    className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"*/}
-                        {/*                >*/}
-                        {/*                    <LogOut className="h-4 w-4 mr-2" />*/}
-                        {/*                    Logout*/}
-                        {/*                </button>*/}
-                        {/*            </div>*/}
-                        {/*        </>*/}
-                        {/*    )}*/}
-                        {/*</div>*/}
+                                            <button
+                                                onClick={handleLogout}
+                                                className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                                            >
+                                                <LogOut className="h-4 w-4 mr-2" />
+                                                Logout
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        ) : (
+                            // แสดงปุ่ม Login ถ้ายังไม่ได้ login
+                            <Link
+                                href={ROUTES.LOGIN}
+                                className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ml-3"
+                            >
+                                <User className="h-4 w-4 mr-1" />
+                                <span className="hidden lg:inline">Login</span>
+                            </Link>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -138,7 +172,7 @@ const Navbar = memo(function Navbar() {
                 {isMenuOpen && (
                     <div className="md:hidden">
                         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-blue-700">
-                            {user && (
+                            {isAuthenticated && user && (
                                 <div className="px-3 py-2 text-blue-100 text-sm border-b border-blue-600 mb-2">
                                     <p className="font-semibold">{user.username}</p>
                                     <p className="text-xs">ID: {user.id}</p>
@@ -157,13 +191,15 @@ const Navbar = memo(function Navbar() {
                                 </Link>
                             ))}
 
-                            <button
-                                onClick={handleLogout}
-                                className="flex items-center text-blue-200 hover:text-white w-full px-3 py-2 rounded-md text-base font-medium cursor-pointer"
-                            >
-                                <LogOut className="h-4 w-4 mr-2" />
-                                Logout
-                            </button>
+                            {isAuthenticated && (
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center text-blue-200 hover:text-white w-full px-3 py-2 rounded-md text-base font-medium cursor-pointer"
+                                >
+                                    <LogOut className="h-4 w-4 mr-2" />
+                                    Logout
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}

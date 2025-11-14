@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/component/Navbar/Navbar';
 import {
     RefreshCw, Package, Search, X, ChevronDown, Eye,
-    Edit
+    Edit, ChevronUp
 } from 'lucide-react';
 import { useEquipment } from '@/hooks/useEquipment';
 import { EquipmentDetailModal } from './EquipmentDetailModal';
@@ -40,6 +40,7 @@ export default function EquipmentPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [selectedType, setSelectedType] = useState<string>('all');
+    const [showScrollTop, setShowScrollTop] = useState(false);
 
     const handleApplyFilters = async () => {
         // ถ้ามี keyword → เรียก search
@@ -79,6 +80,27 @@ export default function EquipmentPage() {
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedStatus, selectedType]);
+
+    // Scroll to Top 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        });
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -369,6 +391,17 @@ export default function EquipmentPage() {
                         closeEditModal();
                     }}
                 />
+            )}
+
+            {/* Scroll to Top Button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 z-50 p-4 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group"
+                    aria-label="Scroll to top"
+                >
+                    <ChevronUp className="h-6 w-6 group-hover:animate-bounce" />
+                </button>
             )}
         </div>
     );

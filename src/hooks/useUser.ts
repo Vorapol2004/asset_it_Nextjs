@@ -1,37 +1,45 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { auth } from '@/lib/api/auth/auth';
+import { tokenServices } from '@/service/tokenServices';
+import type { AuthResponse } from '@/types/auth';
+
 interface User {
     id: number;
     username: string;
 }
 
+/**
+ * useUser Hook - Hook สำหรับดึงข้อมูล user
+ * 
+ * ใช้เมื่อต้องการแค่ข้อมูล user โดยไม่ต้องใช้ auth context
+ */
 export function useUser() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUser = async () => {
-            const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-
-            if (!token) {
+            if (!tokenServices.hasToken()) {
                 setLoading(false);
                 return;
             }
 
             try {
-                const response = await api.getCurrentUser();
+                const response: AuthResponse = await auth.getCurrentUser();
 
-                // แก้ตรงนี้ - เช็คว่ามี user หรือไม่
                 if (response?.user) {
-                    setUser(response.user as User);
+                    setUser({
+                        id: response.user.id,
+                        username: response.user.username,
+                    });
                 }
             } catch (error) {
                 console.error('Failed to fetch user:', error);
                 // ถ้า error ให้ลบ token ออก
-                if (typeof window !== 'undefined') {
-                    localStorage.removeItem('token');
-                }
+                tokenServices.removeToken();
+                setUser(null);
             } finally {
                 setLoading(false);
             }

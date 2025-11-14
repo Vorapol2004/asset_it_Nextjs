@@ -10,6 +10,7 @@ import { department } from './location/department';
 import { room } from './location/room';
 import { floor } from './location/floor';
 import { role } from './role/role';
+import { auth } from './auth/auth';
 
 export const api = {
     lot,
@@ -24,4 +25,10 @@ export const api = {
     room,
     floor,
     role,
+    auth,
+    // สำหรับ backward compatibility
+    login: auth.login,
+    register: auth.register,
+    logout: auth.logout,
+    getCurrentUser: auth.getCurrentUser,
 };

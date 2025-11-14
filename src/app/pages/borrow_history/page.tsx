@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/component/Navbar/Navbar';
 import {
     RefreshCw,
@@ -22,6 +22,7 @@ import {
     Briefcase,
     Building2,
     UserCheck,
+    ChevronUp,
 } from 'lucide-react';
 import { useBorrowHistory } from '@/hooks/useBorrowHistory';
 import { BorrowDetailModal } from './BorrowDetailModal';
@@ -63,6 +64,28 @@ export default function BorrowHistoryPage() {
 
     // State สำหรับเลือกสถานะอุปกรณ์ก่อนคืน (ใช้ combination key: "borrowId-equipmentId")
     const [selectedReturnStatus, setSelectedReturnStatus] = useState<Record<string, number>>({});
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    // Scroll to Top 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        });
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -72,7 +95,7 @@ export default function BorrowHistoryPage() {
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-green-600 flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">ประวัติการยืมอุปกรณ์</h1>
-                        <p className="text-gray-600">ทั้งหมด {groupedRecords.length} ธุรกรรม ({groupedRecords.reduce((sum, g) => sum + g.items.length, 0)} รายการอุปกรณ์)</p>
+                        <p className="text-gray-600">ทั้งหมด {groupedRecords.length} ธุรกรรม</p>
                     </div>
                     <button
                         onClick={() => {
@@ -295,6 +318,17 @@ export default function BorrowHistoryPage() {
                     onClose={() => setSelected(null)}
                     onReturnEquipment={returnEquipmentItem}
                 />
+            )}
+
+            {/* Scroll to Top Button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 z-50 p-4 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group"
+                    aria-label="Scroll to top"
+                >
+                    <ChevronUp className="h-6 w-6 group-hover:animate-bounce" />
+                </button>
             )}
         </div>
     );
