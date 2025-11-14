@@ -122,6 +122,116 @@ export function useNewBorrow() {
         }
     };
 
+    // Functions สำหรับเพิ่ม/แก้ไข Department, Building, Floor, Room
+    const createDepartment = async (data: { departmentName: string; description?: string }) => {
+        const newDept = await api.department.create(data);
+        await fetchDepartments(); // Refresh list
+        return newDept;
+    };
+
+    const updateDepartment = async (id: number, data: { departmentName?: string; description?: string; isActive?: boolean }) => {
+        const updated = await api.department.update(id, data);
+        await fetchDepartments(); // Refresh list
+        return updated;
+    };
+
+    const createBuilding = async (data: { buildingName: string; departmentId: number }) => {
+        const newBuilding = await api.building.create(data);
+        await fetchBuildings(); // Refresh list
+        // Auto-select building ที่เพิ่มใหม่
+        if (newBuilding.id) {
+            setSelectedBuilding(newBuilding.id);
+        }
+        return newBuilding;
+    };
+
+    const updateBuilding = async (id: number, data: { buildingName?: string; departmentId?: number; isActive?: boolean }) => {
+        const updated = await api.building.update(id, data);
+        await fetchBuildings(); // Refresh list
+        return updated;
+    };
+
+    const createFloor = async (data: { floorName: string; buildingId: number }) => {
+        const newFloor = await api.floor.create(data);
+        await fetchFloors(); // Refresh list
+        // Auto-select floor ที่เพิ่มใหม่
+        if (newFloor.id) {
+            setSelectedFloor(newFloor.id);
+        }
+        return newFloor;
+    };
+
+    const updateFloor = async (id: number, data: { floorName?: string; buildingId?: number; isActive?: boolean }) => {
+        const updated = await api.floor.update(id, data);
+        await fetchFloors(); // Refresh list
+        return updated;
+    };
+
+    const createRoom = async (data: { roomName: string; floorId: number }) => {
+        const newRoom = await api.room.create(data);
+        await fetchRooms(); // Refresh list
+        // Auto-select room ที่เพิ่มใหม่
+        if (newRoom.id) {
+            setSelectedRoom(newRoom.id);
+        }
+        return newRoom;
+    };
+
+    const updateRoom = async (id: number, data: { roomName?: string; floorId?: number; isActive?: boolean }) => {
+        const updated = await api.room.update(id, data);
+        await fetchRooms(); // Refresh list
+        return updated;
+    };
+
+    // Delete functions
+    const deleteDepartment = async (id: number) => {
+        await api.department.delete(id);
+        await fetchDepartments(); // Refresh list
+        // ถ้าลบแผนกที่เลือกอยู่ ให้ reset
+        if (selectedDepartment === id) {
+            setSelectedDepartment(0);
+            setBuildings([]);
+            setSelectedBuilding(0);
+            setFloors([]);
+            setSelectedFloor(0);
+            setRooms([]);
+            setSelectedRoom(0);
+        }
+    };
+
+    const deleteBuilding = async (id: number) => {
+        await api.building.delete(id);
+        await fetchBuildings(); // Refresh list
+        // ถ้าลบตึกที่เลือกอยู่ ให้ reset
+        if (selectedBuilding === id) {
+            setSelectedBuilding(0);
+            setFloors([]);
+            setSelectedFloor(0);
+            setRooms([]);
+            setSelectedRoom(0);
+        }
+    };
+
+    const deleteFloor = async (id: number) => {
+        await api.floor.delete(id);
+        await fetchFloors(); // Refresh list
+        // ถ้าลบชั้นที่เลือกอยู่ ให้ reset
+        if (selectedFloor === id) {
+            setSelectedFloor(0);
+            setRooms([]);
+            setSelectedRoom(0);
+        }
+    };
+
+    const deleteRoom = async (id: number) => {
+        await api.room.delete(id);
+        await fetchRooms(); // Refresh list
+        // ถ้าลบห้องที่เลือกอยู่ ให้ reset
+        if (selectedRoom === id) {
+            setSelectedRoom(0);
+        }
+    };
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -249,6 +359,24 @@ export function useNewBorrow() {
 
         // Methods
         handleSubmit,
+
+        // CRUD Methods
+        createDepartment,
+        updateDepartment,
+        deleteDepartment,
+        createBuilding,
+        updateBuilding,
+        deleteBuilding,
+        createFloor,
+        updateFloor,
+        deleteFloor,
+        createRoom,
+        updateRoom,
+        deleteRoom,
+        fetchDepartments,
+        fetchBuildings,
+        fetchFloors,
+        fetchRooms,
     };
 }
 

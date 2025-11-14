@@ -9,5 +9,44 @@ export const building = {
         else if (!res.ok) throw new Error('Failed to filter buildings');
         else return res.json();
     },
+
+    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
+    create: async (data: { buildingName: string; departmentId: number }): Promise<Building> => {
+        const res = await fetch(`${API_URL}/building`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ message: 'Failed to create building' }));
+            throw new Error(error.message || 'Failed to create building');
+        }
+        return res.json();
+    },
+
+    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
+    update: async (id: number, data: { buildingName?: string; departmentId?: number; isActive?: boolean }): Promise<Building> => {
+        const res = await fetch(`${API_URL}/building/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ message: 'Failed to update building' }));
+            throw new Error(error.message || 'Failed to update building');
+        }
+        return res.json();
+    },
+
+    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
+    delete: async (id: number): Promise<void> => {
+        const res = await fetch(`${API_URL}/building/${id}`, {
+            method: 'DELETE',
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ message: 'Failed to delete building' }));
+            throw new Error(error.message || 'Failed to delete building');
+        }
+    },
 }
 

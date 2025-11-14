@@ -324,7 +324,7 @@ export default function BorrowHistoryPage() {
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}
-                    className="fixed bottom-8 right-8 z-50 p-4 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group"
+                    className="fixed bottom-8 right-8 z-50 p-4 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group cursor-pointer"
                     aria-label="Scroll to top"
                 >
                     <ChevronUp className="h-6 w-6 group-hover:animate-bounce" />
