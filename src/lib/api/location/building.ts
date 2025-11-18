@@ -10,9 +10,8 @@ export const building = {
         else return res.json();
     },
 
-    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
     create: async (data: { buildingName: string; departmentId: number }): Promise<Building> => {
-        const res = await fetch(`${API_URL}/building`, {
+        const res = await fetch(`${API_URL}/building/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -24,8 +23,7 @@ export const building = {
         return res.json();
     },
 
-    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
-    update: async (id: number, data: { buildingName?: string; departmentId?: number; isActive?: boolean }): Promise<Building> => {
+    update: async (id: number, data: { buildingName?: string; departmentId?: number }): Promise<Building> => {
         const res = await fetch(`${API_URL}/building/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -38,9 +36,8 @@ export const building = {
         return res.json();
     },
 
-    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
     delete: async (id: number): Promise<void> => {
-        const res = await fetch(`${API_URL}/building/${id}`, {
+        const res = await fetch(`${API_URL}/building/delete/${id}`, {
             method: 'DELETE',
         });
         if (!res.ok) {

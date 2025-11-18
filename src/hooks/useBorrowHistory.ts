@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { BorrowView, BorrowStatus, BorrowEquipmentView } from '@/types/type';
+import { BorrowView, BorrowStatus, BorrowEquipmentView, Department } from '@/types/type';
 
 type GroupedBorrow = Omit<BorrowView, 'items'> & {
     items: BorrowEquipmentView[];
@@ -22,12 +22,14 @@ export function useBorrowHistory() {
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [selectedRole, setSelectedRole] = useState<string>('all');
     const [selectedType, setSelectedType] = useState<string>('all');
+    const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
 
     // Options for dropdowns
     const [statuses, setStatuses] = useState<BorrowStatus[]>([]);
     const [roles, setRoles] = useState<{ id: number; roleName: string }[]>([]);
     const [equipmentTypes, setEquipmentTypes] = useState<{ id: number; equipmentTypeName: string }[]>([]);
     const [equipmentStatuses, setEquipmentStatuses] = useState<{ id: number; equipmentStatusName: string }[]>([]);
+    const [departments, setDepartments] = useState<Department[]>([]);
     
     // Filter equipment statuses สำหรับการคืน (แสดงแค่ available, lost, damaged)
     const returnEquipmentStatuses = equipmentStatuses.filter(status => {
@@ -121,16 +123,18 @@ export function useBorrowHistory() {
     useEffect(() => {
         const loadFilterOptions = async () => {
             try {
-                const [statusesData, rolesData, typesData, equipmentStatusesData] = await Promise.all([
+                const [statusesData, rolesData, typesData, equipmentStatusesData, departmentsData] = await Promise.all([
                     api.borrow_history.getStatuses(),
                     api.role.filter(), 
                     api.borrow_history.getEquipmentTypes(),
                     api.borrow_history.getEquipmentStatuses(),
+                    api.department.getAll(),
                 ]);
                 setStatuses(statusesData);
                 setRoles(rolesData);
                 setEquipmentTypes(typesData);
                 setEquipmentStatuses(equipmentStatusesData);
+                setDepartments(departmentsData);
             } catch (err) {
                 console.error('Error loading filter options:', err);
             }
@@ -151,14 +155,15 @@ export function useBorrowHistory() {
             if (searchTerm.trim()) {
                 data = await api.borrow.search(searchTerm.trim());
             }
-            // ถ้ามี status หรือ role → เรียก filter (รองรับ filter หลายตัวพร้อมกัน)
-            else if (selectedStatus !== 'all' || selectedRole !== 'all') {
+            // ถ้ามี status, role หรือ department → เรียก filter (รองรับ filter หลายตัวพร้อมกัน)
+            else if (selectedStatus !== 'all' || selectedRole !== 'all' || selectedDepartment !== 'all') {
                 const statusId = selectedStatus !== 'all' ? Number(selectedStatus) : undefined;
                 const roleId = selectedRole !== 'all' 
                     ? roles.find(r => r.roleName === selectedRole)?.id 
                     : undefined;
+                const departmentId = selectedDepartment !== 'all' ? Number(selectedDepartment) : undefined;
                 
-                data = await api.borrow_history.filterByStatus(statusId, roleId);
+                data = await api.borrow_history.filterByStatus(statusId, roleId, departmentId);
             }
             else {
                 data = await api.borrow.getAll();
@@ -179,6 +184,7 @@ export function useBorrowHistory() {
         setSelectedStatus('all');
         setSelectedRole('all');
         setSelectedType('all');
+        setSelectedDepartment('all');
     };
 
     const returnEquipmentItem = async (
@@ -211,7 +217,7 @@ export function useBorrowHistory() {
     // เรียก API ทันทีเมื่อ filter อื่นๆ เปลี่ยน (ยกเว้น searchTerm)
     useEffect(() => {
         applyFilters();
-    }, [selectedStatus, selectedRole, selectedType]);
+    }, [selectedStatus, selectedRole, selectedType, selectedDepartment]);
 
     // ฟังก์ชันสำหรับดึงรายละเอียดการยืมจาก backend
     const loadBorrowDetails = async (borrowId: number) => {
@@ -288,6 +294,7 @@ export function useBorrowHistory() {
         equipmentTypes,
         equipmentStatuses,
         returnEquipmentStatuses,
+        departments,
         STATUS_MAP,
         
         // Filter states
@@ -295,6 +302,7 @@ export function useBorrowHistory() {
         selectedStatus,
         selectedRole,
         selectedType,
+        selectedDepartment,
         loading,
         selectedLoading,
         error,
@@ -304,6 +312,7 @@ export function useBorrowHistory() {
         setSelectedStatus,
         setSelectedRole,
         setSelectedType,
+        setSelectedDepartment,
         setSelected,
 
         // Methods

@@ -319,10 +319,18 @@ export default function BorrowPage() {
                                         type="date"
                                         value={dueDate}
                                         onChange={(e) => setDueDate(e.target.value)}
+                                        min={borrowDate ? (() => {
+                                            const date = new Date(borrowDate);
+                                            date.setDate(date.getDate() + 1);
+                                            return date.toISOString().split('T')[0];
+                                        })() : ''}
                                         className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500"
                                         required
                                     />
                                 </div>
+                                {borrowDate && dueDate && new Date(dueDate) <= new Date(borrowDate) && (
+                                    <p className="text-xs text-red-600 mt-1">วันที่คืนต้องหลังวันที่ยืม</p>
+                                )}
                             </div>
 
                             <div>
@@ -534,7 +542,7 @@ export default function BorrowPage() {
             {showScrollTop && (
                 <button
                     onClick={scrollToTop}
-                    className="fixed bottom-8 right-8 z-50 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group"
+                    className="fixed bottom-8 right-8 z-50 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group cursor-pointer"
                     aria-label="Scroll to top"
                 >
                     <ChevronUp className="h-6 w-6 group-hover:animate-bounce" />

@@ -48,10 +48,12 @@ export const equipment = {
     filter: async (params: {
         typeId?: number;
         statusId?: number;
+        departmentId?: number;
     }): Promise<EquipmentView[]> => {
         const queryParams = new URLSearchParams();
         if (params.statusId) queryParams.append("equipmentStatus", String(params.statusId));
         if (params.typeId) queryParams.append("equipmentType", String(params.typeId));
+        if (params.departmentId) queryParams.append("departmentId", String(params.departmentId));
         
         const url = `${API_URL}/equipment/filter?${queryParams.toString()}`;
         const res = await fetch(url);

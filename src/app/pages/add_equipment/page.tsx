@@ -212,10 +212,18 @@ export default function AddEquipmentPage() {
                                     type="date"
                                     value={expireDate}
                                     onChange={(e) => setExpireDate(e.target.value)}
+                                    min={purchaseDate ? (() => {
+                                        const date = new Date(purchaseDate);
+                                        date.setDate(date.getDate() + 1);
+                                        return date.toISOString().split('T')[0];
+                                    })() : ''}
                                     disabled={loading}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">สำหรับ License หรือ สัญญาเช่า</p>
+                                {purchaseDate && expireDate && new Date(expireDate) <= new Date(purchaseDate) && (
+                                    <p className="text-xs text-red-600 mt-1">วันหมดอายุต้องหลังวันที่จัดซื้อ/เช่า</p>
+                                )}
                             </div>
 
                             {/* Reference Doc */}

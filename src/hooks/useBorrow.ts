@@ -42,6 +42,17 @@ export function useBorrow() {
         }
     ]);
 
+    // ตรวจสอบว่า dueDate ต้องหลัง borrowDate
+    useEffect(() => {
+        if (borrowDate && dueDate) {
+            const borrow = new Date(borrowDate);
+            const due = new Date(dueDate);
+            if (due <= borrow) {
+                setDueDate(''); // Reset dueDate ถ้าน้อยกว่าหรือเท่ากับ borrowDate
+            }
+        }
+    }, [borrowDate, dueDate]);
+
     // โหลดข้อมูลจาก sessionStorage ตอนโหลดหน้าเสร็จ
     useEffect(() => {
         // ถ้าเช็คแล้ว ให้ skip (ป้องกันการเช็คซ้ำใน React Strict Mode)

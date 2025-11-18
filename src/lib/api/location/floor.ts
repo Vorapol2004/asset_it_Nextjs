@@ -10,9 +10,8 @@ export const floor = {
         else return res.json();
     },
 
-    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
     create: async (data: { floorName: string; buildingId: number }): Promise<Floor> => {
-        const res = await fetch(`${API_URL}/floor`, {
+        const res = await fetch(`${API_URL}/floor/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -24,8 +23,7 @@ export const floor = {
         return res.json();
     },
 
-    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
-    update: async (id: number, data: { floorName?: string; buildingId?: number; isActive?: boolean }): Promise<Floor> => {
+    update: async (id: number, data: { floorName?: string; buildingId?: number }): Promise<Floor> => {
         const res = await fetch(`${API_URL}/floor/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -38,9 +36,8 @@ export const floor = {
         return res.json();
     },
 
-    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
     delete: async (id: number): Promise<void> => {
-        const res = await fetch(`${API_URL}/floor/${id}`, {
+        const res = await fetch(`${API_URL}/floor/delete/${id}`, {
             method: 'DELETE',
         });
         if (!res.ok) {

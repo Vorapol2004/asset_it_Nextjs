@@ -14,6 +14,7 @@ export const ROUTES = {
     NEW_BORROW: '/pages/borrow_equipment/new_borrow',
     BORROW: '/pages/borrow_equipment/borrow',
     SETTINGS_MASTER_DATA: '/setting/master-data',
+    LOCATION_MANAGEMENT: '/pages/location_management',
 
 } as const;
 
@@ -48,8 +49,11 @@ export const NAV_ITEMS = [
         path: ROUTES.BORROW_HISTORY,
         icon: 'History',
     },
-
-
+    {
+        label: 'จัดการสถานที่',
+        path: ROUTES.LOCATION_MANAGEMENT,
+        icon: 'Settings',
+    },
 
 ] as const;
 //ใช้ประกาศตัวแปรสำหรับแต่ละ Path และเอาไปเรียกใช้ในหน้านั้นๆ เช่นตอนนี้เอาไปใช้ในหน้า Navbar

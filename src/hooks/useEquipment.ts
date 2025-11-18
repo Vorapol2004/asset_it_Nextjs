@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { EquipmentView } from '@/types/type';
+import { EquipmentView, Department } from '@/types/type';
 import { equipment } from '@/lib/api/equipment/equipment';
+import { api } from '@/lib/api';
 
 interface FilterParams {
     typeId?: number;
     statusId?: number;
+    departmentId?: number;
     keyword?: string;
 }
 
@@ -26,19 +28,24 @@ export function useEquipment() {
     // Dropdown data สำหรับ equipment
     const [statuses, setStatuses] = useState<{ id: number; equipmentStatusName: string }[]>([]);
     const [equipmentTypes, setEquipmentTypes] = useState<{ id: number; equipmentTypeName: string }[]>([]);
+    const [departments, setDepartments] = useState<Department[]>([]);
 
     useEffect(() => {
         const loadDropdownData = async () => {
             try {
-                const typesData = await equipment.getTypes();
+                const [typesData, statusesData, departmentsData] = await Promise.all([
+                    equipment.getTypes(),
+                    equipment.getStatuses(),
+                    api.department.getAll(),
+                ]);
                 setEquipmentTypes(typesData);
-                
-                const statusesData = await equipment.getStatuses();
                 setStatuses(statusesData);
+                setDepartments(departmentsData);
             } catch (err) {
                 console.error('Error loading dropdown data:', err);
                 setEquipmentTypes([]);
                 setStatuses([]);
+                setDepartments([]);
             }
         };
 
@@ -68,11 +75,12 @@ export function useEquipment() {
                 const data = await equipment.search(filters.keyword);
                 setEquipments(data);
             }
-            // ถ้ามี type หรือ status → เรียก filter
-            else if (filters.typeId || filters.statusId) {
+            // ถ้ามี type, status หรือ department → เรียก filter
+            else if (filters.typeId || filters.statusId || filters.departmentId) {
                 const data = await equipment.filter({
                     typeId: filters.typeId,
                     statusId: filters.statusId,
+                    departmentId: filters.departmentId,
                 });
                 setEquipments(data);
             }
@@ -192,6 +200,7 @@ export function useEquipment() {
         errorDetail,
         statuses,
         types: equipmentTypes,
+        departments,
         searchEquipment,
         fetchEquipments,
         applyFilters,

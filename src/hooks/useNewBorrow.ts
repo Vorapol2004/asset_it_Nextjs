@@ -123,13 +123,13 @@ export function useNewBorrow() {
     };
 
     // Functions สำหรับเพิ่ม/แก้ไข Department, Building, Floor, Room
-    const createDepartment = async (data: { departmentName: string; description?: string }) => {
+    const createDepartment = async (data: { departmentName: string }) => {
         const newDept = await api.department.create(data);
         await fetchDepartments(); // Refresh list
         return newDept;
     };
 
-    const updateDepartment = async (id: number, data: { departmentName?: string; description?: string; isActive?: boolean }) => {
+    const updateDepartment = async (id: number, data: { departmentName?: string }) => {
         const updated = await api.department.update(id, data);
         await fetchDepartments(); // Refresh list
         return updated;
@@ -145,7 +145,7 @@ export function useNewBorrow() {
         return newBuilding;
     };
 
-    const updateBuilding = async (id: number, data: { buildingName?: string; departmentId?: number; isActive?: boolean }) => {
+    const updateBuilding = async (id: number, data: { buildingName?: string; departmentId?: number }) => {
         const updated = await api.building.update(id, data);
         await fetchBuildings(); // Refresh list
         return updated;
@@ -161,7 +161,7 @@ export function useNewBorrow() {
         return newFloor;
     };
 
-    const updateFloor = async (id: number, data: { floorName?: string; buildingId?: number; isActive?: boolean }) => {
+    const updateFloor = async (id: number, data: { floorName?: string; buildingId?: number }) => {
         const updated = await api.floor.update(id, data);
         await fetchFloors(); // Refresh list
         return updated;
@@ -177,7 +177,7 @@ export function useNewBorrow() {
         return newRoom;
     };
 
-    const updateRoom = async (id: number, data: { roomName?: string; floorId?: number; isActive?: boolean }) => {
+    const updateRoom = async (id: number, data: { roomName?: string; floorId?: number }) => {
         const updated = await api.room.update(id, data);
         await fetchRooms(); // Refresh list
         return updated;

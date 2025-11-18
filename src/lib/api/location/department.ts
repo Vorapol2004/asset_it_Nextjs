@@ -14,9 +14,8 @@ export const department = {
         }
     },
 
-    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
-    create: async (data: { departmentName: string; description?: string }): Promise<Department> => {
-        const res = await fetch(`${API_URL}/department`, {
+    create: async (data: { departmentName: string }): Promise<Department> => {
+        const res = await fetch(`${API_URL}/department/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -28,8 +27,7 @@ export const department = {
         return res.json();
     },
 
-    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
-    update: async (id: number, data: { departmentName?: string; description?: string; isActive?: boolean }): Promise<Department> => {
+    update: async (id: number, data: { departmentName?: string }): Promise<Department> => {
         const res = await fetch(`${API_URL}/department/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -42,9 +40,8 @@ export const department = {
         return res.json();
     },
 
-    // TODO: แก้ไข path ให้ตรงกับหลังบ้าน
     delete: async (id: number): Promise<void> => {
-        const res = await fetch(`${API_URL}/department/${id}`, {
+        const res = await fetch(`${API_URL}/department/delete/${id}`, {
             method: 'DELETE',
         });
         if (!res.ok) {

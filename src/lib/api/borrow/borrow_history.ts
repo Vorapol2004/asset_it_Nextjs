@@ -4,13 +4,16 @@ import {API_URL} from "@/lib/config";
 
 export const borrow_history = {
 
-    filterByStatus: async (statusId?: number, roleId?: number): Promise<BorrowView[]> => {
+    filterByStatus: async (statusId?: number, roleId?: number, departmentId?: number): Promise<BorrowView[]> => {
         const params = new URLSearchParams();
         if (statusId && statusId > 0) {
             params.append('borrowStatusId', statusId.toString());
         }
         if (roleId && roleId > 0) {
             params.append('roleId', roleId.toString());
+        }
+        if (departmentId && departmentId > 0) {
+            params.append('departmentId', departmentId.toString());
         }
 
         // ถ้าไม่มี parameter เลย ให้เรียก getAll แทน

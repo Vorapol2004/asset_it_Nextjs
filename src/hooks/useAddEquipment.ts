@@ -82,6 +82,17 @@ export function useAddEquipment() {
         }
     }, [lotTypes, lotTypeId]);
 
+    // ตรวจสอบว่า expireDate ต้องหลัง purchaseDate
+    useEffect(() => {
+        if (purchaseDate && expireDate) {
+            const purchase = new Date(purchaseDate);
+            const expire = new Date(expireDate);
+            if (expire <= purchase) {
+                setExpireDate(''); // Reset expireDate ถ้าน้อยกว่าหรือเท่ากับ purchaseDate
+            }
+        }
+    }, [purchaseDate, expireDate]);
+
 
     // Equipment Items เป็นตัวแรกตอน fetch หน้ามาเพราะถ้าเราไม่มีค่าตรงนี้ก็จะไม่มีให้กรอกลายละเอียดอุปกรณ์
     const [items, setItems] = useState<EquipmentItem[]>([

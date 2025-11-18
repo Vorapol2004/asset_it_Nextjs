@@ -5,34 +5,14 @@ import Navbar from '@/component/Navbar/Navbar';
 import {
     RefreshCw,
     Search,
-    Clock,
-    CheckCircle,
-    AlertCircle,
     Package,
     Eye,
     X,
-    Cpu,
-    Key,
-    Undo2,
-    Calendar,
     ChevronDown,
-    User,
-    Mail,
-    Phone,
-    Briefcase,
-    Building2,
-    UserCheck,
     ChevronUp,
 } from 'lucide-react';
 import { useBorrowHistory } from '@/hooks/useBorrowHistory';
 import { BorrowDetailModal } from './BorrowDetailModal';
-
-const STATUS_ICONS: Record<number, React.ElementType> = {
-    1: Clock,
-    2: CheckCircle,
-    3: Package,
-    4: AlertCircle,
-};
 
 export default function BorrowHistoryPage() {
     const {
@@ -43,11 +23,13 @@ export default function BorrowHistoryPage() {
         equipmentTypes,
         equipmentStatuses,
         returnEquipmentStatuses,
+        departments,
         STATUS_MAP,
         searchTerm,
         selectedStatus,
         selectedRole,
         selectedType,
+        selectedDepartment,
         loading,
         selectedLoading,
         error,
@@ -55,6 +37,7 @@ export default function BorrowHistoryPage() {
         setSelectedStatus,
         setSelectedRole,
         setSelectedType,
+        setSelectedDepartment,
         setSelected,
         applyFilters,
         handleClearFilters,
@@ -162,7 +145,7 @@ export default function BorrowHistoryPage() {
                     </div>
 
                     {/* Filters Grid */}
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         {/* สถานะการยืม */}
                         <div>
                             <label className="block text-sm font-semibold mb-2 text-gray-700">
@@ -207,6 +190,33 @@ export default function BorrowHistoryPage() {
                                         roles.map((role) => (
                                             <option key={role.id} value={role.roleName}>
                                                 {role.roleName}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option value="all" disabled>กำลังโหลด...</option>
+                                    )}
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                            </div>
+                        </div>
+
+                        {/* แผนก */}
+                        <div>
+                            <label className="block text-sm font-semibold mb-2 text-gray-700">
+                                แผนก
+                            </label>
+                            <div className="relative">
+                                <select
+                                    value={selectedDepartment}
+                                    onChange={(e) => setSelectedDepartment(e.target.value)}
+                                    disabled={loading}
+                                    className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-lg outline-none text-gray-700 font-medium bg-white focus:border-green-500 disabled:opacity-50 disabled:bg-gray-50 appearance-none cursor-pointer transition-colors"
+                                >
+                                    <option value="all">ทุกแผนก</option>
+                                    {departments && departments.length > 0 ? (
+                                        departments.map((d) => (
+                                            <option key={d.id} value={d.id}>
+                                                {d.departmentName}
                                             </option>
                                         ))
                                     ) : (

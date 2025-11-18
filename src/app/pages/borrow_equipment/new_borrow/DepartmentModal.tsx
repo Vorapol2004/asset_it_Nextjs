@@ -8,7 +8,7 @@ interface DepartmentModalProps {
     isOpen: boolean;
     department?: Department | null; // null = เพิ่มใหม่, มีค่า = แก้ไข
     onClose: () => void;
-    onSave: (data: { departmentName: string; description?: string }) => Promise<void>;
+    onSave: (data: { departmentName: string }) => Promise<void>;
     onDelete?: (id: number) => Promise<void>;
 }
 
@@ -20,7 +20,6 @@ export function DepartmentModal({
     onDelete,
 }: DepartmentModalProps) {
     const [departmentName, setDepartmentName] = useState('');
-    const [description, setDescription] = useState('');
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -31,10 +30,8 @@ export function DepartmentModal({
         if (isOpen) {
             if (department) {
                 setDepartmentName(department.departmentName || '');
-                setDescription(department.description || '');
             } else {
                 setDepartmentName('');
-                setDescription('');
             }
             setError(null);
         }
@@ -63,7 +60,6 @@ export function DepartmentModal({
             setSaving(true);
             await onSave({
                 departmentName: departmentName.trim(),
-                description: description.trim() || undefined,
             });
             onClose();
         } catch (err: any) {
@@ -111,7 +107,7 @@ export function DepartmentModal({
                     </div>
                     <button
                         onClick={onClose}
-                        disabled={saving}
+                        disabled={saving || deleting}
                         className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
                     >
                         <X className="h-5 w-5" />
@@ -136,25 +132,11 @@ export function DepartmentModal({
                                 type="text"
                                 value={departmentName}
                                 onChange={(e) => setDepartmentName(e.target.value)}
-                                disabled={saving}
+                                disabled={saving || deleting}
                                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                 placeholder="เช่น แผนก IT, แผนกการเงิน"
                                 required
                                 autoFocus
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-800 mb-2">
-                                คำอธิบาย
-                            </label>
-                            <textarea
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                disabled={saving}
-                                rows={3}
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
-                                placeholder="คำอธิบายเพิ่มเติม (ถ้ามี)"
                             />
                         </div>
                     </div>
