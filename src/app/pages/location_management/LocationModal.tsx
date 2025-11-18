@@ -7,6 +7,19 @@ import { Department, Building, Floor, Room } from '@/types/type';
 type LocationType = 'department' | 'building' | 'floor' | 'room';
 type ModalMode = 'create' | 'edit';
 
+type CreateDepartmentData = { departmentName: string };
+type CreateBuildingData = { buildingName: string; departmentId: number };
+type CreateFloorData = { floorName: string; buildingId: number };
+type CreateRoomData = { roomName: string; floorId: number };
+
+type UpdateDepartmentData = { departmentName?: string };
+type UpdateBuildingData = { buildingName?: string; departmentId?: number };
+type UpdateFloorData = { floorName?: string; buildingId?: number };
+type UpdateRoomData = { roomName?: string; floorId?: number };
+
+type CreateData = CreateDepartmentData | CreateBuildingData | CreateFloorData | CreateRoomData;
+type UpdateData = UpdateDepartmentData | UpdateBuildingData | UpdateFloorData | UpdateRoomData;
+
 interface LocationModalProps {
     type: LocationType;
     mode: ModalMode;
@@ -18,8 +31,8 @@ interface LocationModalProps {
     selectedBuilding: number;
     selectedFloor: number;
     onClose: () => void;
-    onCreate: (data: any) => Promise<void>;
-    onUpdate: (id: number, data: any) => Promise<void>;
+    onCreate: (data: CreateData) => Promise<void>;
+    onUpdate: (id: number, data: UpdateData) => Promise<void>;
 }
 
 export function LocationModal({
@@ -99,7 +112,7 @@ export function LocationModal({
         setLoading(true);
         try {
             if (mode === 'create') {
-                let data: any = {};
+                let data: CreateData;
                 if (type === 'department') {
                     data = { departmentName: name.trim() };
                 } else if (type === 'building') {
@@ -108,11 +121,13 @@ export function LocationModal({
                     data = { floorName: name.trim(), buildingId };
                 } else if (type === 'room') {
                     data = { roomName: name.trim(), floorId };
+                } else {
+                    throw new Error('Invalid location type');
                 }
                 await onCreate(data);
             } else {
                 if (!item) return;
-                let data: any = {};
+                let data: UpdateData;
                 if (type === 'department') {
                     data = { departmentName: name.trim() };
                 } else if (type === 'building') {
@@ -121,11 +136,14 @@ export function LocationModal({
                     data = { floorName: name.trim(), buildingId };
                 } else if (type === 'room') {
                     data = { roomName: name.trim(), floorId };
+                } else {
+                    throw new Error('Invalid location type');
                 }
                 await onUpdate(item.id, data);
             }
-        } catch (err: any) {
-            setError(err.message || 'เกิดข้อผิดพลาด');
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('เกิดข้อผิดพลาด');
+            setError(error.message);
         } finally {
             setLoading(false);
         }

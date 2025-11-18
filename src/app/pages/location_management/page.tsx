@@ -416,7 +416,7 @@ export default function LocationManagementPage() {
                     selectedBuilding={selectedBuilding}
                     selectedFloor={selectedFloor}
                     onClose={closeModal}
-                    onCreate={async (data: any) => {
+                    onCreate={async (data) => {
                         switch (activeTab) {
                             case 'department':
                                 await createDepartment(data as { departmentName: string });
@@ -432,7 +432,7 @@ export default function LocationManagementPage() {
                                 break;
                         }
                     }}
-                    onUpdate={async (id: number, data: any) => {
+                    onUpdate={async (id: number, data) => {
                         switch (activeTab) {
                             case 'department':
                                 await updateDepartment(id, data as { departmentName?: string });

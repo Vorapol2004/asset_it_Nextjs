@@ -139,9 +139,10 @@ export function useLocationManagement() {
             await api.department.create(data);
             await loadData();
             closeModal();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถเพิ่มแผนกได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถเพิ่มแผนกได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -154,9 +155,10 @@ export function useLocationManagement() {
             await api.building.create(data);
             await loadData();
             closeModal();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถเพิ่มตึกได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถเพิ่มตึกได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -169,9 +171,10 @@ export function useLocationManagement() {
             await api.floor.create(data);
             await loadData();
             closeModal();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถเพิ่มชั้นได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถเพิ่มชั้นได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -184,9 +187,10 @@ export function useLocationManagement() {
             await api.room.create(data);
             await loadData();
             closeModal();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถเพิ่มห้องได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถเพิ่มห้องได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -200,9 +204,10 @@ export function useLocationManagement() {
             await api.department.update(id, data);
             await loadData();
             closeModal();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถแก้ไขแผนกได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถแก้ไขแผนกได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -215,9 +220,10 @@ export function useLocationManagement() {
             await api.building.update(id, data);
             await loadData();
             closeModal();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถแก้ไขตึกได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถแก้ไขตึกได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -230,9 +236,10 @@ export function useLocationManagement() {
             await api.floor.update(id, data);
             await loadData();
             closeModal();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถแก้ไขชั้นได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถแก้ไขชั้นได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -245,9 +252,10 @@ export function useLocationManagement() {
             await api.room.update(id, data);
             await loadData();
             closeModal();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถแก้ไขห้องได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถแก้ไขห้องได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -261,9 +269,10 @@ export function useLocationManagement() {
         try {
             await api.department.delete(id);
             await loadData();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถลบแผนกได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถลบแผนกได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -276,9 +285,10 @@ export function useLocationManagement() {
         try {
             await api.building.delete(id);
             await loadData();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถลบตึกได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถลบตึกได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -291,9 +301,10 @@ export function useLocationManagement() {
         try {
             await api.floor.delete(id);
             await loadData();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถลบชั้นได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถลบชั้นได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -306,9 +317,10 @@ export function useLocationManagement() {
         try {
             await api.room.delete(id);
             await loadData();
-        } catch (err: any) {
-            setError(err.message || 'ไม่สามารถลบห้องได้');
-            throw err;
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('ไม่สามารถลบห้องได้');
+            setError(error.message);
+            throw error;
         } finally {
             setLoading(false);
         }
