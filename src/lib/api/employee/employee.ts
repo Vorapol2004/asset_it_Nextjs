@@ -20,7 +20,8 @@ export const employee = {
         const res = await apiClient(`/employee/${id}`);
 
         if (!res.ok) {
-            throw new Error('Failed to fetch employee');
+            const errorData = await res.json().catch(() => ({ message: 'Failed to fetch employee' }));
+            throw new Error(errorData.message || 'Failed to fetch employee');
         } else {
             return res.json();
         }

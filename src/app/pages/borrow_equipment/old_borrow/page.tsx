@@ -5,10 +5,11 @@ import Navbar from '@/component/Navbar/Navbar';
 import RouteProtection from '@/component/auth/RouteProtection';
 import {
     Search, ArrowLeft, User,
-    History, ChevronRight, Mail, Phone, Briefcase
+    History, ChevronRight, Mail, Phone, Briefcase, Edit
 } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 import { useOldBorrow } from '@/hooks/useOldBorrow';
+import EditEmployeeModal from './EditEmployeeModal';
 
 export default function OldBorrowPage() {
     const router = useRouter();
@@ -18,6 +19,19 @@ export default function OldBorrowPage() {
         loading,
         setSearchTerm,
         handleSelectBorrower,
+        // Edit functionality
+        isEditModalOpen,
+        editingEmployee,
+        editFormData,
+        setEditFormData,
+        departments,
+        roles,
+        buildings,
+        floors,
+        rooms,
+        handleEditBorrower,
+        handleUpdateEmployee,
+        handleCloseEditModal,
     } = useOldBorrow();
 
     return (
@@ -166,6 +180,17 @@ export default function OldBorrowPage() {
                                         <div className="ml-4 flex items-center gap-3">
                                             <button
                                                 type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEditBorrower(employee);
+                                                }}
+                                                className="bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-md hover:shadow-lg cursor-pointer"
+                                            >
+                                                <Edit className="h-5 w-5" />
+                                                แก้ไข
+                                            </button>
+                                            <button
+                                                type="button"
                                                 onClick={() => handleSelectBorrower(employee)}
                                                 className="bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 hover:bg-purple-700 transition-all shadow-md hover:shadow-lg group-hover:px-7 cursor-pointer"
                                             >
@@ -181,6 +206,22 @@ export default function OldBorrowPage() {
                     )}
                 </div>
             </div>
+
+            {/* Edit Modal */}
+            <EditEmployeeModal
+                isOpen={isEditModalOpen}
+                editingEmployee={editingEmployee}
+                editFormData={editFormData}
+                loading={loading}
+                departments={departments}
+                roles={roles}
+                buildings={buildings}
+                floors={floors}
+                rooms={rooms}
+                onFormDataChange={setEditFormData}
+                onUpdate={handleUpdateEmployee}
+                onClose={handleCloseEditModal}
+            />
         </div>
         </RouteProtection>
     );
