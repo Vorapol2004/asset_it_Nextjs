@@ -8,10 +8,11 @@ import { Package, Menu, X, Home, History, PlusCircle, LogOut, User, Laptop, Sett
 import Link from 'next/link';
 import { useAuthContext } from '@/app/context/AuthContext';
 import { ROUTES, NAV_ITEMS } from '@/constants/routes';
+import { Users } from 'lucide-react';
 
 const Navbar = memo(function Navbar() {
     const router = useRouter();
-    const { user, loading, logout, isAuthenticated } = useAuthContext();
+    const { user, loading, logout, isAuthenticated, isAdmin } = useAuthContext();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
@@ -69,6 +70,7 @@ const Navbar = memo(function Navbar() {
             History: <History className="h-4 w-4 mr-1" />,
             Laptop: <Laptop className="h-4 w-4 mr-1" />,
             Settings: <Settings className="h-4 w-4 mr-1" />,
+            Users: <Users className="h-4 w-4 mr-1" />,
         };
         return icons[iconName] || null;
     };
@@ -104,6 +106,16 @@ const Navbar = memo(function Navbar() {
                                     {item.label}
                                 </Link>
                             ))}
+                            {/* แสดง User Management สำหรับ Admin เท่านั้น */}
+                            {isAdmin && (
+                                <Link
+                                    href={ROUTES.USER_MANAGEMENT}
+                                    className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                                >
+                                    <Users className="h-4 w-4 mr-1" />
+                                    จัดการ Users
+                                </Link>
+                            )}
                         </div>
 
                         {/* User Menu - แสดงเมื่อ authenticated */}
@@ -115,7 +127,7 @@ const Navbar = memo(function Navbar() {
                                 >
                                     <User className="h-4 w-4 mr-1" />
                                     <span className="hidden lg:inline">
-                                        {loading ? 'Loading...' : user?.username || 'Account'}
+                                        {loading ? 'Loading...' : user?.email || 'Account'}
                                     </span>
                                 </button>
 
@@ -129,7 +141,7 @@ const Navbar = memo(function Navbar() {
                                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
                                             {user && (
                                                 <div className="px-4 py-2 border-b border-gray-200">
-                                                    <p className="text-sm font-semibold text-gray-900">{user.username}</p>
+                                                    <p className="text-sm font-semibold text-gray-900">{user.email}</p>
                                                     <p className="text-xs text-gray-500">ID: {user.id}</p>
                                                 </div>
                                             )}
@@ -174,7 +186,7 @@ const Navbar = memo(function Navbar() {
                         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-blue-700">
                             {isAuthenticated && user && (
                                 <div className="px-3 py-2 text-blue-100 text-sm border-b border-blue-600 mb-2">
-                                    <p className="font-semibold">{user.username}</p>
+                                    <p className="font-semibold">{user.email}</p>
                                     <p className="text-xs">ID: {user.id}</p>
                                 </div>
                             )}
@@ -190,6 +202,17 @@ const Navbar = memo(function Navbar() {
                                     <span className="ml-1">{item.label}</span>
                                 </Link>
                             ))}
+                            {/* แสดง User Management สำหรับ Admin เท่านั้น */}
+                            {isAdmin && (
+                                <Link
+                                    href={ROUTES.USER_MANAGEMENT}
+                                    className="flex items-center text-blue-200 hover:text-white block px-3 py-2 rounded-md text-base font-medium cursor-pointer"
+                                    onClick={closeMenu}
+                                >
+                                    <Users className="h-4 w-4 mr-2" />
+                                    <span className="ml-1">จัดการ Users</span>
+                                </Link>
+                            )}
 
                             {isAuthenticated && (
                                 <button

@@ -15,11 +15,11 @@ import type { LoginInput, RegisterInput, AuthResponse } from '@/types/auth';
 export const auth = {
     /**
      * Login - เข้าสู่ระบบ
-     * @param data - username และ password
+     * @param email - email และ password
      * @returns AuthResponse พร้อม token และ user data
      */
-    async login(username: string, password: string): Promise<AuthResponse> {
-        const data: LoginInput = { username, password };
+    async login(email: string, password: string): Promise<AuthResponse> {
+        const data: LoginInput = { email, password };
         
         const res = await apiClient('/auth/login', {
             method: 'POST',
@@ -45,12 +45,12 @@ export const auth = {
     },
 
     /**
-     * Register - สมัครสมาชิก
-     * @param data - username และ password
+     * Register - สร้าง user ใหม่ (สำหรับ admin)
+     * @param email - email และ password
      * @returns AuthResponse
      */
-    async register(username: string, password: string): Promise<AuthResponse> {
-        const data: RegisterInput = { username, password };
+    async register(email: string, password: string): Promise<AuthResponse> {
+        const data: RegisterInput = { email, password };
         
         const res = await apiClient('/auth/register', {
             method: 'POST',

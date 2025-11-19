@@ -3,12 +3,13 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { LogIn, User, Lock, AlertCircle } from 'lucide-react';
+import { ROUTES } from '@/constants/routes';
+import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 
 export default function LoginForm() {
     const router = useRouter();
     const [formData, setFormData] = useState({
-        username: '',
+        email: '',
         password: '',
     });
     const [error, setError] = useState('');
@@ -20,9 +21,15 @@ export default function LoginForm() {
         setLoading(true);
 
         try {
-            const data = await api.login(formData.username, formData.password);
+            const data = await api.login(formData.email, formData.password);
             console.log('Login successful:', data);
-            router.push('/pages/home');
+            
+            // Redirect ตาม role
+            if (data.user?.role === 'admin') {
+                router.push(ROUTES.USER_MANAGEMENT);
+            } else {
+                router.push(ROUTES.HOME);
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Login failed');
         } finally {
@@ -54,23 +61,23 @@ export default function LoginForm() {
 
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-                        {/* Username Input */}
+                        {/* Email Input */}
                         <div>
-                            <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
-                                Username
+                            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                                Email
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <User className="h-5 w-5 text-gray-400" />
+                                    <Mail className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
-                                    type="text"
-                                    id="username"
-                                    value={formData.username}
-                                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                    type="email"
+                                    id="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     className="w-full pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400 text-sm sm:text-base"
                                     required
-                                    placeholder="Enter your username"
+                                    placeholder="Enter your email"
                                 />
                             </div>
                         </div>
@@ -119,18 +126,6 @@ export default function LoginForm() {
                         </button>
                     </form>
 
-                    {/* Link to Register */}
-                    <div className="mt-5 text-center">
-                        <p className="text-gray-600 text-sm sm:text-base">
-                            Don&apos;t have an account?{' '}
-                            <a
-                                href="/register"
-                                className="text-blue-600 hover:text-blue-700 font-semibold hover:underline cursor-pointer"
-                            >
-                                Register here
-                            </a>
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>

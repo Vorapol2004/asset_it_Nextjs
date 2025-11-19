@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { LogIn, UserPlus, Package } from 'lucide-react';
+import { LogIn, Package, History } from 'lucide-react';
 import Utcclogo from "@/component/img/Utcclogo.png";
 import React from "react";
 import Footer from "@/component/Footer/Footer";
@@ -24,22 +24,6 @@ export default function LandingPage() {
                         <span className="text-2xl font-bold text-gray-900">
                             ระบบยืมอุปกรณ์
                         </span>
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="flex gap-3">
-                        <button
-                            onClick={() => router.push('/login')}
-                            className="text-gray-700 hover:text-gray-900 px-4 py-2 rounded-md hover:bg-gray-100 text-base font-medium transition-colors cursor-pointer"
-                        >
-                            Login
-                        </button>
-                        <button
-                            onClick={() => router.push('/register')}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium transition-colors cursor-pointer"
-                        >
-                            Register
-                        </button>
                     </div>
                 </div>
             </nav>
@@ -74,13 +58,6 @@ export default function LandingPage() {
                         <LogIn className="h-6 w-6 mr-2" />
                         Login
                     </button>
-                    <button
-                        onClick={() => router.push('/register')}
-                        className="bg-white hover:bg-gray-50 text-gray-900 font-medium px-8 py-3 rounded-md border border-gray-300 text-lg transition-all transform hover:scale-105 flex items-center justify-center cursor-pointer"
-                    >
-                        <UserPlus className="h-6 w-6 mr-2" />
-                        Register
-                    </button>
                 </div>
 
                 {/* Features */}
@@ -111,7 +88,7 @@ export default function LandingPage() {
 
                     <div className="bg-white p-6 rounded-lg shadow text-center hover:shadow-md transition-shadow">
                         <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <UserPlus className="h-6 w-6 text-purple-600" />
+                            <History className="h-6 w-6 text-purple-600" />
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">
                             ติดตามประวัติ

@@ -3,18 +3,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { auth } from '@/lib/api/auth/auth';
 import { tokenServices } from '@/service/tokenServices';
-import type { AuthResponse } from '@/types/auth';
+import type { AuthResponse, UserRole } from '@/types/auth';
 
 interface User {
     id: number;
-    username: string;
+    email: string;
+    role: UserRole;
 }
 
 interface UseAuthReturn {
     user: User | null;
     loading: boolean;
     isAuthenticated: boolean;
-    login: (username: string, password: string) => Promise<void>;
+    isAdmin: boolean;
+    login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
 }
@@ -48,7 +50,8 @@ export function useAuth(): UseAuthReturn {
             if (response.user) {
                 setUser({
                     id: response.user.id,
-                    username: response.user.username,
+                    email: response.user.email,
+                    role: response.user.role,
                 });
             }
         } catch (error) {
@@ -71,15 +74,16 @@ export function useAuth(): UseAuthReturn {
     /**
      * Login
      */
-    const login = useCallback(async (username: string, password: string) => {
+    const login = useCallback(async (email: string, password: string) => {
         setLoading(true);
         try {
-            const response: AuthResponse = await auth.login(username, password);
+            const response: AuthResponse = await auth.login(email, password);
             
             if (response.user) {
                 setUser({
                     id: response.user.id,
-                    username: response.user.username,
+                    email: response.user.email,
+                    role: response.user.role,
                 });
             } else {
                 throw new Error('Login failed: No user data received');
@@ -119,6 +123,7 @@ export function useAuth(): UseAuthReturn {
         user,
         loading,
         isAuthenticated: !!user,
+        isAdmin: user?.role === 'admin',
         login,
         logout,
         refreshUser,

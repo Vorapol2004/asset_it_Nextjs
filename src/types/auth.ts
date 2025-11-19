@@ -1,23 +1,28 @@
 // ไฟล์นี้กำหนด Types ทั้งหมดที่เกี่ยวกับ Authentication
 // ใช้เพื่อให้ TypeScript ตรวจสอบ type ของข้อมูลได้
 
+// Role types
+export type UserRole = 'admin' | 'user';
+
 // ข้อมูล User ที่เก็บใน Database
 export interface User {
     id: number;
-    username: string;        // เปลี่ยนจาก email เป็น username
+    email: string;            // Email สำหรับ login
     password: string;        // Password ที่ Hash แล้ว
+    role: UserRole;          // Role ของ user (admin หรือ user)
     createdAt: Date;
 }
 
-// ข้อมูลที่ใช้สำหรับสมัครสมาชิก
+// ข้อมูลที่ใช้สำหรับสมัครสมาชิก (สำหรับ admin สร้าง user)
 export interface RegisterInput {
-    username: string;        // Username สำหรับ login
+    email: string;           // Email สำหรับ login
     password: string;        // Password ที่ user กรอก
+    role?: UserRole;         // Role (ถ้าไม่ระบุจะเป็น 'user')
 }
 
 // ข้อมูลที่ใช้สำหรับ Login
 export interface LoginInput {
-    username: string;        // Username สำหรับ login
+    email: string;           // Email สำหรับ login
     password: string;        // Password ที่ user กรอก
 }
 
@@ -32,7 +37,8 @@ export interface AuthResponse {
 // ข้อมูลที่เก็บใน JWT Token
 export interface JWTPayload {
     userId: number;          // ID ของ User
-    username: string;        // Username ของ User
+    email: string;           // Email ของ User
+    role: UserRole;          // Role ของ User
 }
 
 //กำหนด structure ของข้อมูลทั้งหมด

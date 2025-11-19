@@ -11,6 +11,7 @@ import { room } from './location/room';
 import { floor } from './location/floor';
 import { role } from './role/role';
 import { auth } from './auth/auth';
+import { userApi } from './user/user';
 
 export const api = {
     lot,
@@ -26,6 +27,7 @@ export const api = {
     floor,
     role,
     auth,
+    user: userApi,
     // สำหรับ backward compatibility
     login: auth.login,
     register: auth.register,

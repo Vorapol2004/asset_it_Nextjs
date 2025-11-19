@@ -5,9 +5,12 @@ import { auth } from '@/lib/api/auth/auth';
 import { tokenServices } from '@/service/tokenServices';
 import type { AuthResponse } from '@/types/auth';
 
+import type { UserRole } from '@/types/auth';
+
 interface User {
     id: number;
-    username: string;
+    email: string;
+    role: UserRole;
 }
 
 /**
@@ -32,7 +35,8 @@ export function useUser() {
                 if (response?.user) {
                     setUser({
                         id: response.user.id,
-                        username: response.user.username,
+                        email: response.user.email,
+                        role: response.user.role,
                     });
                 }
             } catch (error) {

@@ -3,17 +3,21 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { useAuth as useAuthHook } from '@/hooks/useAuth';
 
+import type { UserRole } from '@/types/auth';
+
 interface User {
     id: number;
-    username: string;
+    email: string;
+    role: UserRole;
 }
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
-    login: (username: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     isAuthenticated: boolean;
+    isAdmin: boolean;
     refreshUser: () => Promise<void>;
 }
 
@@ -37,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 login: auth.login,
                 logout: auth.logout,
                 isAuthenticated: auth.isAuthenticated,
+                isAdmin: auth.isAdmin,
                 refreshUser: auth.refreshUser,
             }}
         >

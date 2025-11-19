@@ -15,6 +15,7 @@ export const ROUTES = {
     BORROW: '/pages/borrow_equipment/borrow',
     SETTINGS_MASTER_DATA: '/setting/master-data',
     LOCATION_MANAGEMENT: '/pages/location_management',
+    USER_MANAGEMENT: '/pages/user-management',
 
 } as const;
 
