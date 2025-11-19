@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { X, Mail, Lock, Shield, AlertCircle, User } from 'lucide-react';
+import { X, Mail, Lock, Shield, AlertCircle, User, Eye, EyeOff } from 'lucide-react';
 import type { UserWithoutPassword, CreateUserInput, UpdateUserInput } from '@/lib/api/user/user';
 
 interface UserModalProps {
@@ -27,6 +27,9 @@ export function UserModal({
         confirmPassword: '',
         role: 'ROLE_USER' as string, // ใช้ ROLE_USER โดยตรง
     });
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const isCreating = !editingUser;
 
@@ -159,14 +162,21 @@ export function UserModal({
                                 <Lock className="h-5 w-5 text-gray-400" />
                             </div>
                             <input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 id="password"
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-600"
+                                className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-600"
                                 required={isCreating}
                                 placeholder={isCreating ? "Enter password" : "Enter new password (optional)"}
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                            >
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
                         </div>
                     </div>
 
@@ -181,14 +191,21 @@ export function UserModal({
                                     <Lock className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
-                                    type="password"
+                                    type={showConfirmPassword ? "text" : "password"}
                                     id="confirmPassword"
                                     value={formData.confirmPassword}
                                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-600"
+                                    className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-600"
                                     required={isCreating || !!formData.password}
                                     placeholder="Confirm password"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                                >
+                                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </button>
                             </div>
                             {formData.password && formData.password !== formData.confirmPassword && (
                                 <p className="mt-1 text-sm text-red-600">Passwords do not match</p>
@@ -209,7 +226,7 @@ export function UserModal({
                                 id="role"
                                 value={formData.role}
                                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
                                 required
                             >
                                 <option value="ROLE_USER">User</option>

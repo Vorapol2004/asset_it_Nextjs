@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { LogIn, Package, History } from 'lucide-react';
-import Utcclogo from "@/component/img/Utcclogo.png";
+import Image from 'next/image';
+import LogoUtcc from "@/component/img/Utcclogo.png";
 import React from "react";
 import Footer from "@/component/Footer/Footer";
 
@@ -16,11 +17,15 @@ export default function LandingPage() {
                 <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
                     {/* Logo + Text */}
                     <div className="flex items-center">
-                        <img
-                            src={Utcclogo.src}
-                            alt="UTCC Logo"
-                            className="h-10 w-10 mr-3 object-contain"
-                        />
+                        <div className="relative h-10 w-10 mr-3 flex-shrink-0">
+                            <Image
+                                src={LogoUtcc}
+                                alt="UTCC Logo"
+                                fill
+                                className="object-contain"
+                                priority
+                            />
+                        </div>
                         <span className="text-2xl font-bold text-gray-900">
                             ระบบยืมอุปกรณ์
                         </span>
@@ -32,11 +37,13 @@ export default function LandingPage() {
             <main className="flex-1 flex flex-col justify-center items-center px-4">
                 {/* Logo */}
                 <div className="flex justify-center mb-8">
-                    <div className="p-2 rounded-full">
-                        <img
-                            src={Utcclogo.src}
+                    <div className="relative h-24 w-24">
+                        <Image
+                            src={LogoUtcc}
                             alt="UTCC Logo"
-                            className="h-24 w-24 object-contain"
+                            fill
+                            className="object-contain"
+                            priority
                         />
                     </div>
                 </div>

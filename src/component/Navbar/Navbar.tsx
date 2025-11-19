@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback, memo, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import Utcclogo from '../img/Utcclogo.png';
 import { Package, Menu, X, Home, History, PlusCircle, LogOut, User, Laptop, Settings } from 'lucide-react';
 import Link from 'next/link';
@@ -11,7 +10,6 @@ import { ROUTES, NAV_ITEMS } from '@/constants/routes';
 import { Users } from 'lucide-react';
 
 const Navbar = memo(function Navbar() {
-    const router = useRouter();
     const { user, loading, logout, isAuthenticated, isAdmin } = useAuthContext();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -33,13 +31,15 @@ const Navbar = memo(function Navbar() {
             await logout();
             setIsUserMenuOpen(false);
             setIsMenuOpen(false);
-            router.push(ROUTES.HOME_LANDING || '/');
+            // ใช้ window.location.href เพื่อ redirect โดยตรงไปหน้า landing page
+            // ไม่ผ่าน RouteProtection ที่อาจจะ redirect ไป login
+            window.location.href = ROUTES.HOME_LANDING || '/';
         } catch (error) {
             console.error('Logout failed:', error);
-            // แม้จะ error ก็ redirect ไปหน้า home
-            router.push(ROUTES.HOME_LANDING || '/');
+            // แม้จะ error ก็ redirect ไปหน้า landing page
+            window.location.href = ROUTES.HOME_LANDING || '/';
         }
-    }, [logout, router]);
+    }, [logout]);
 
     // ปิด user menu เมื่อคลิกข้างนอก
     useEffect(() => {
@@ -77,14 +77,14 @@ const Navbar = memo(function Navbar() {
 
     return (
         <nav className="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+            <div className="max-w-7xl mx-auto px-1 sm:px-2 lg:px-3 xl:px-4">
                 <div className="flex justify-between items-center h-14 sm:h-16">
                     {/* Logo */}
                     <Link href={ROUTES.HOME} className="flex items-center cursor-pointer min-w-0 flex-shrink-0">
-                        <div className="relative h-7 w-7 sm:h-8 sm:w-8 mr-1.5 sm:mr-2 flex-shrink-0">
+                        <div className="relative h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 mr-2 sm:mr-2.5 flex-shrink-0">
                             <Image
                                 src={Utcclogo}
-                                alt="Logo"
+                                alt="UTCC Logo"
                                 fill
                                 className="object-contain"
                                 priority
