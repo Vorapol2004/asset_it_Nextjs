@@ -1,10 +1,10 @@
 import {EquipmentView} from "@/types/type";
+import { apiClient } from "@/service/apiClient";
 
-import {API_URL} from "@/lib/config";
 export const equipment = {
     //ดึงอุปกรณ์ทั้งหมด
     getAll: async (): Promise<EquipmentView[]> => {
-        const res = await fetch(`${API_URL}/equipment/all`);
+        const res = await apiClient('/equipment/all');
 
         if (res.status === 204) {
             return [];
@@ -17,7 +17,7 @@ export const equipment = {
 
     //เลือกดูอุปกรณ์ทีละตัว
     getById: async (id: number): Promise<EquipmentView> => {
-        const res = await fetch(`${API_URL}/equipment/select/${id}`);
+        const res = await apiClient(`/equipment/select/${id}`);
 
         if (res.status === 204) {
             throw new Error('Equipment not found');
@@ -31,8 +31,8 @@ export const equipment = {
 
     
     search: async (keyword: string): Promise<EquipmentView[]> => {
-        const res = await fetch(
-            `${API_URL}/equipment/search?keyword=${encodeURIComponent(keyword)}`
+        const res = await apiClient(
+            `/equipment/search?keyword=${encodeURIComponent(keyword)}`
         );
 
         if (res.status === 204) {
@@ -55,8 +55,7 @@ export const equipment = {
         if (params.typeId) queryParams.append("equipmentType", String(params.typeId));
         if (params.departmentId) queryParams.append("departmentId", String(params.departmentId));
         
-        const url = `${API_URL}/equipment/filter?${queryParams.toString()}`;
-        const res = await fetch(url);
+        const res = await apiClient(`/equipment/filter?${queryParams.toString()}`);
         
         if (res.status === 204) {
             return [];
@@ -75,9 +74,8 @@ export const equipment = {
             ...data,
         };
 
-        const res = await fetch(`${API_URL}/equipment/edit`, {
+        const res = await apiClient('/equipment/edit', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody),
         });
 
@@ -91,7 +89,7 @@ export const equipment = {
 
 
     async delete(id: number) {
-        const res = await fetch(`${API_URL}/equipment/${id}`, {
+        const res = await apiClient(`/equipment/${id}`, {
             method: 'DELETE',
         });
         if (!res.ok) throw new Error('ไม่สามารถลบอุปกรณ์ได้');
@@ -100,7 +98,7 @@ export const equipment = {
 
     
     getTypes: async (): Promise<{ id: number; equipmentTypeName: string }[]> => {
-        const res = await fetch(`${API_URL}/equipment_type/type`);
+        const res = await apiClient('/equipment_type/type');
         
         if (res.status === 204) {
             return [];
@@ -114,7 +112,7 @@ export const equipment = {
 
     
     getStatuses: async (): Promise<{ id: number; equipmentStatusName: string }[]> => {
-        const res = await fetch(`${API_URL}/equipment_status/status`);
+        const res = await apiClient('/equipment_status/status');
         
         if (res.status === 204) {
             return [];

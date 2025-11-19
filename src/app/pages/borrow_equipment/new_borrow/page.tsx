@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
+import RouteProtection from '@/component/auth/RouteProtection';
 import {
     Package, Save, User, Mail, Phone, Building2, DoorOpen, Briefcase, ArrowLeft, Layers,
     Plus, Edit
@@ -73,6 +74,7 @@ export default function NewBorrowPage() {
     const getSelectedFloor = () => floors.find(f => f.id === selectedFloor) || null;
 
     return (
+        <RouteProtection allowedRoles="authenticated">
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <Navbar />
 
@@ -536,5 +538,6 @@ export default function NewBorrowPage() {
                 } : undefined}
             />
         </div>
+        </RouteProtection>
     );
 }

@@ -4,8 +4,7 @@ import { History, Package, PlusCircle, Laptop } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Navbar from "@/component/Navbar/Navbar";
 import { ROUTES } from '@/constants/routes';
-
-
+import RouteProtection from '@/component/auth/RouteProtection';
 
 export default function HomePage() {
 
@@ -34,6 +33,7 @@ export default function HomePage() {
 
 
     return (
+        <RouteProtection allowedRoles="authenticated">
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <Navbar />
 
@@ -121,5 +121,6 @@ export default function HomePage() {
                 </div>
             </div>
         </div>
+        </RouteProtection>
     );
 }

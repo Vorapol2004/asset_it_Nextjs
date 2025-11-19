@@ -1,10 +1,10 @@
 import {BorrowCreateData, BorrowCreateResponse, BorrowStatus, BorrowView, EquipmentView, Building, Floor, Room, Department} from "@/types/type";
-import {API_URL} from "@/lib/config";
+import { apiClient } from "@/service/apiClient";
 
 export const borrow = {
 
     getAll: async (): Promise<BorrowView[]> => {
-        const res = await fetch(`${API_URL}/borrow/all`);
+        const res = await apiClient('/borrow/all');
 
         if (res.status === 204) {
             return [];
@@ -17,7 +17,7 @@ export const borrow = {
     },
 
     search: async (keyword: string): Promise<BorrowView[]> => {
-        const res = await fetch(`${API_URL}/borrow/search?keyword=${encodeURIComponent(keyword)}`);
+        const res = await apiClient(`/borrow/search?keyword=${encodeURIComponent(keyword)}`);
 
         if (res.status === 204 || res.status === 404) {
             return [];
@@ -30,9 +30,8 @@ export const borrow = {
     },
 
     create: async (data: BorrowCreateData): Promise<BorrowCreateResponse> => {
-        const res = await fetch(`${API_URL}/borrow/create`, {
+        const res = await apiClient('/borrow/create', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
 
@@ -48,7 +47,7 @@ export const borrow = {
     getAvailableEquipment: async (): Promise<EquipmentView[]> => {
         // TODO: ตรวจสอบ endpoint ที่ถูกต้องสำหรับอุปกรณ์ที่พร้อมให้ยืม
         // ตอนนี้ใช้ equipmentBorrow/dropDown ซึ่งดึงอุปกรณ์ที่กำลังถูกยืม
-        const res = await fetch(`${API_URL}/borrow/equipmentBorrow/dropDown`);
+        const res = await apiClient('/borrow/equipmentBorrow/dropDown');
 
         if (res.status === 204) {
             return [];
@@ -61,7 +60,7 @@ export const borrow = {
 
 
     getActive: async (): Promise<BorrowView[]> => {
-        const res = await fetch(`${API_URL}/borrow/active`);
+        const res = await apiClient('/borrow/active');
 
         if (res.status === 204) {
             return [];
@@ -75,7 +74,7 @@ export const borrow = {
 
 
     getOverdue: async (): Promise<BorrowView[]> => {
-        const res = await fetch(`${API_URL}/borrow/overdue`);
+        const res = await apiClient('/borrow/overdue');
 
         if (res.status === 204) {
             return [];
@@ -89,7 +88,7 @@ export const borrow = {
 
 
     getBorrowStatuses: async (): Promise<BorrowStatus[]> => {
-        const res = await fetch(`${API_URL}/borrow/statuses`);
+        const res = await apiClient('/borrow/statuses');
 
         if (res.status === 204) {
             return [];
@@ -102,7 +101,7 @@ export const borrow = {
 
 
     getEquipmentTypes: async (): Promise<{ id: number; equipmentTypeName: string }[]> => {
-        const res = await fetch(`${API_URL}/equipment_type/type`);
+        const res = await apiClient('/equipment_type/type');
 
         if (res.status === 204) {
             return [];
@@ -115,7 +114,7 @@ export const borrow = {
 
 
     getEquipmentByType: async (equipmentTypeId: number): Promise<EquipmentView[]> => {
-        const res = await fetch(`${API_URL}/equipment/select_equipment_type?equipmentId=${equipmentTypeId}`);
+        const res = await apiClient(`/equipment/select_equipment_type?equipmentId=${equipmentTypeId}`);
 
         if (res.status === 204) {
             return [];
@@ -127,7 +126,7 @@ export const borrow = {
     },
 
     searchEquipment: async (searchValue: string): Promise<EquipmentView[]> => {
-        const res = await fetch(`${API_URL}/equipment/identifier?keyword=${encodeURIComponent(searchValue)}`);
+        const res = await apiClient(`/equipment/identifier?keyword=${encodeURIComponent(searchValue)}`);
 
         if (res.status === 204) {
             return []; // ไม่เจอ - return empty array

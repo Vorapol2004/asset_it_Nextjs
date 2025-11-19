@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {lot} from "@/lib/api/lot/lot";
 import { api } from '@/lib/api';
-import { API_URL } from '@/lib/config';
 import { ROUTES } from '@/constants/routes';
 // ==================== Types ====================
 
@@ -50,8 +49,7 @@ export function useAddEquipment() {
                 }
 
                 // ดึง Equipment Types
-                const res = await fetch(`${API_URL}/equipment_type/type`);
-                const equipmentTypesData = await res.json();
+                const equipmentTypesData = await api.equipment.getTypes();
                 if (Array.isArray(equipmentTypesData)) {
                     setEquipmentTypes(equipmentTypesData);
                 } else {

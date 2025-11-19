@@ -1,4 +1,4 @@
-import { API_URL } from '@/lib/config';
+import { apiClient } from '@/service/apiClient';
 import { BorrowView } from '@/types/type';
 
 
@@ -6,7 +6,7 @@ export const oldBorrow = {
 
     deleteBorrow: async (borrowId: number): Promise<void> => {
 
-        const res = await fetch(`${API_URL}/borrow/${borrowId}`, {
+        const res = await apiClient(`/borrow/${borrowId}`, {
             method: 'DELETE',
         });
 

@@ -1,13 +1,12 @@
 import { apiClient } from '@/service/apiClient';
 import { tokenServices } from '@/service/tokenServices';
-import type { LoginInput, RegisterInput, AuthResponse } from '@/types/auth';
+import type { LoginInput, AuthResponse } from '@/types/auth';
 
 /**
  * Auth API - ฟังก์ชันสำหรับเรียก API Authentication
  * 
  * หน้าที่:
  * - Login
- * - Register
  * - Logout
  * - Get Current User
  */
@@ -42,30 +41,6 @@ export const auth = {
         }
 
         return response;
-    },
-
-    /**
-     * Register - สร้าง user ใหม่ (สำหรับ admin)
-     * @param email - email และ password
-     * @returns AuthResponse
-     */
-    async register(email: string, password: string): Promise<AuthResponse> {
-        const data: RegisterInput = { email, password };
-        
-        const res = await apiClient('/auth/register', {
-            method: 'POST',
-            body: JSON.stringify(data),
-            requireAuth: false, // Register ไม่ต้องใช้ token
-        });
-
-        if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ 
-                message: 'Registration failed' 
-            }));
-            throw new Error(errorData.message || 'Registration failed');
-        }
-
-        return res.json();
     },
 
     /**

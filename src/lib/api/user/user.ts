@@ -1,5 +1,5 @@
 import { apiClient } from '@/service/apiClient';
-import type { User, UserRole, RegisterInput } from '@/types/auth';
+import type { User, UserRole } from '@/types/auth';
 
 /**
  * User API - ฟังก์ชันสำหรับเรียก API จัดการ Users (สำหรับ Admin เท่านั้น)
@@ -16,13 +16,13 @@ export interface UserWithoutPassword extends Omit<User, 'password'> {}
 export interface CreateUserInput {
     email: string;
     password: string;
-    role?: UserRole;
+    role?: string; // รองรับ 'ROLE_ADMIN' หรือ 'ROLE_USER' โดยตรง
 }
 
 export interface UpdateUserInput {
     email?: string;
     password?: string;
-    role?: UserRole;
+    role?: string; // รองรับ 'ROLE_ADMIN' หรือ 'ROLE_USER' โดยตรง
 }
 
 export interface UsersResponse {

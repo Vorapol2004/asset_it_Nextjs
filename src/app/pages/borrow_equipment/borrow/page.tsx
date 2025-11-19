@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
+import RouteProtection from '@/component/auth/RouteProtection';
 import {
     Package, Plus, Trash2, Save, Calendar, FileText,
     ArrowLeft, Search, User, Mail, Phone, Briefcase, Building2, DoorOpen, Layers, Lock, UserCheck, ChevronUp
@@ -57,6 +58,7 @@ export default function BorrowPage() {
     };
 
     return (
+        <RouteProtection allowedRoles="authenticated">
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <Navbar />
 
@@ -549,6 +551,7 @@ export default function BorrowPage() {
                 </button>
             )}
         </div>
+        </RouteProtection>
     );
 }
 

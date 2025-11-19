@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
+import RouteProtection from '@/component/auth/RouteProtection';
 import {
     Package,
     Plus,
@@ -20,6 +21,7 @@ export default function BorrowEquipmentLandingPage() {
     const router = useRouter();
 
     return (
+        <RouteProtection allowedRoles="authenticated">
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
             <Navbar />
 
@@ -153,5 +155,6 @@ export default function BorrowEquipmentLandingPage() {
 
             </div>
         </div>
+        </RouteProtection>
     );
 }

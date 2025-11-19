@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { auth } from '@/lib/api/auth/auth';
 import { tokenServices } from '@/service/tokenServices';
+import { userServices } from '@/service/userServices';
 import type { AuthResponse, UserRole } from '@/types/auth';
 
 interface User {
@@ -44,21 +45,61 @@ export function useAuth(): UseAuthReturn {
             return;
         }
 
+        // ลองอ่าน user data จาก localStorage ก่อน (fallback เมื่อ backend ไม่ได้รัน)
+        // ต้องอ่านก่อนเพื่อให้ user state ถูก set ทันที (synchronous)
+        let storedUser = userServices.getUser();
+        
+        if (storedUser) {
+            setUser(storedUser);
+            // ตั้ง loading = false ชั่วคราวเพื่อให้ route protection ทำงานได้
+            // แต่จะ set กลับเป็น true เมื่อเริ่มเรียก API
+            setLoading(false);
+        }
+
         try {
+            // ตั้ง loading = true อีกครั้งเมื่อเริ่มเรียก API
+            if (storedUser) {
+                setLoading(true);
+            }
+            
             const response: AuthResponse = await auth.getCurrentUser();
             
             if (response.user) {
-                setUser({
+                // ใช้ role จาก backend โดยตรง (ROLE_ADMIN หรือ ROLE_USER)
+                const backendRole = (response.user.role === 'ROLE_ADMIN' || response.user.role === 'ROLE_USER') 
+                    ? response.user.role 
+                    : 'ROLE_USER'; // Default เป็น ROLE_USER
+                const userData = {
                     id: response.user.id,
                     email: response.user.email,
-                    role: response.user.role,
-                });
+                    role: backendRole as UserRole,
+                };
+                
+                // เก็บ user data ใน localStorage
+                userServices.setUser(userData);
+                setUser(userData);
             }
         } catch (error) {
             console.error('Failed to fetch user:', error);
-            // ถ้า error ให้ลบ token และ user
-            tokenServices.removeToken();
-            setUser(null);
+            
+            // ถ้าเป็น network error (Failed to fetch) ใช้ข้อมูลจาก localStorage
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            if (errorMessage.includes('Failed to connect')) {
+                console.warn('Backend server may not be running. Using cached user data from localStorage.');
+                // ใช้ข้อมูลจาก localStorage ที่อ่านไว้แล้ว (ถ้ามี)
+                if (!storedUser) {
+                    // ถ้าไม่มีข้อมูลใน localStorage และ backend ไม่ได้รัน ให้ลบ token
+                    tokenServices.removeToken();
+                    userServices.removeUser();
+                    setUser(null);
+                }
+                // ถ้ามี storedUser อยู่แล้ว ไม่ต้องทำอะไร (user state ถูก set ไว้แล้ว)
+            } else {
+                // ถ้าเป็น error อื่นๆ (เช่น 401, 403) ให้ลบ token และ user
+                tokenServices.removeToken();
+                userServices.removeUser();
+                setUser(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -80,15 +121,25 @@ export function useAuth(): UseAuthReturn {
             const response: AuthResponse = await auth.login(email, password);
             
             if (response.user) {
-                setUser({
+                // ใช้ role จาก backend โดยตรง (ROLE_ADMIN หรือ ROLE_USER)
+                const backendRole = (response.user.role === 'ROLE_ADMIN' || response.user.role === 'ROLE_USER') 
+                    ? response.user.role 
+                    : 'ROLE_USER'; // Default เป็น ROLE_USER
+                const userData = {
                     id: response.user.id,
                     email: response.user.email,
-                    role: response.user.role,
-                });
+                    role: backendRole as UserRole,
+                };
+                
+                // เก็บ user data ใน localStorage
+                userServices.setUser(userData);
+                setUser(userData);
             } else {
                 throw new Error('Login failed: No user data received');
             }
         } catch (error) {
+            tokenServices.removeToken();
+            userServices.removeUser();
             setUser(null);
             throw error;
         } finally {
@@ -107,6 +158,8 @@ export function useAuth(): UseAuthReturn {
             console.error('Logout error:', error);
             // ถ้า error ก็ลบ user อยู่ดี
         } finally {
+            tokenServices.removeToken();
+            userServices.removeUser();
             setUser(null);
             setLoading(false);
         }
@@ -123,7 +176,7 @@ export function useAuth(): UseAuthReturn {
         user,
         loading,
         isAuthenticated: !!user,
-        isAdmin: user?.role === 'admin',
+        isAdmin: user?.role === 'ROLE_ADMIN',
         login,
         logout,
         refreshUser,

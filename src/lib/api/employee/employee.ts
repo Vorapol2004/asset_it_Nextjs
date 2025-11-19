@@ -1,11 +1,10 @@
 import {Employee, EmployeeView} from "@/types/type";
-
-import {API_URL} from "@/lib/config";
+import { apiClient } from "@/service/apiClient";
 
 export const employee = {
     
     getAll: async (): Promise<EmployeeView[]> => {
-        const res = await fetch(`${API_URL}/employee/all`);
+        const res = await apiClient('/employee/all');
 
         if (res.status === 204) {
             return [];
@@ -18,7 +17,7 @@ export const employee = {
 
     
     getById: async (id: number): Promise<EmployeeView> => {
-        const res = await fetch(`${API_URL}/employee/${id}`);
+        const res = await apiClient(`/employee/${id}`);
 
         if (!res.ok) {
             throw new Error('Failed to fetch employee');
@@ -29,7 +28,7 @@ export const employee = {
 
    
     selectEmployee: async (employeeId: number): Promise<EmployeeView> => {
-        const res = await fetch(`${API_URL}/employee/select_employee?employeeId=${employeeId}`);
+        const res = await apiClient(`/employee/select_employee?employeeId=${employeeId}`);
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: 'Failed to select employee' }));
@@ -41,7 +40,7 @@ export const employee = {
 
     
     getByRole: async (roleId: number): Promise<EmployeeView[]> => {
-        const res = await fetch(`${API_URL}/employee/role/${roleId}`);
+        const res = await apiClient(`/employee/role/${roleId}`);
 
         if (res.status === 204) {
             return [];
@@ -54,7 +53,7 @@ export const employee = {
 
     
     getByDepartment: async (departmentId: number): Promise<EmployeeView[]> => {
-        const res = await fetch(`${API_URL}/employee/dep/${departmentId}`);
+        const res = await apiClient(`/employee/dep/${departmentId}`);
 
         if (res.status === 204) {
             return [];
@@ -66,9 +65,8 @@ export const employee = {
     },
 
     create: async (data: Partial<Employee> & { roomId?: number }): Promise<Employee> => {
-        const res = await fetch(`${API_URL}/employee/add`, {
+        const res = await apiClient('/employee/add', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
 
@@ -82,9 +80,8 @@ export const employee = {
 
     
     update: async (id: number, data: Partial<Employee>): Promise<Employee> => {
-        const res = await fetch(`${API_URL}/employee/${id}`, {
+        const res = await apiClient(`/employee/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
 
@@ -97,7 +94,7 @@ export const employee = {
 
    
     delete: async (id: number): Promise<void> => {
-        const res = await fetch(`${API_URL}/employee/${id}`, { method: 'DELETE' });
+        const res = await apiClient(`/employee/${id}`, { method: 'DELETE' });
 
         if (!res.ok) {
             throw new Error('Failed to delete employee');
@@ -108,7 +105,7 @@ export const employee = {
 
     
     search: async (keyword: string): Promise<EmployeeView[]> => {
-        const res = await fetch(`${API_URL}/employee/search?keyword=${encodeURIComponent(keyword)}`);
+        const res = await apiClient(`/employee/search?keyword=${encodeURIComponent(keyword)}`);
 
         if (res.status === 204 || res.status === 404) {
             return [];
@@ -121,7 +118,7 @@ export const employee = {
 
     
     getByDepartmentAndRole: async (departmentId: number, roleId: number): Promise<EmployeeView[]> => {
-        const res = await fetch(`${API_URL}/employee/dep/${departmentId}/role/${roleId}`);
+        const res = await apiClient(`/employee/dep/${departmentId}/role/${roleId}`);
 
         if (res.status === 204 || res.status === 404) {
             return [];

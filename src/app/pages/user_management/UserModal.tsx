@@ -3,7 +3,6 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { X, Mail, Lock, Shield, AlertCircle, User } from 'lucide-react';
 import type { UserWithoutPassword, CreateUserInput, UpdateUserInput } from '@/lib/api/user/user';
-import type { UserRole } from '@/types/auth';
 
 interface UserModalProps {
     isOpen: boolean;
@@ -26,7 +25,7 @@ export function UserModal({
         email: '',
         password: '',
         confirmPassword: '',
-        role: 'user' as UserRole,
+        role: 'ROLE_USER' as string, // ใช้ ROLE_USER โดยตรง
     });
 
     const isCreating = !editingUser;
@@ -35,6 +34,7 @@ export function UserModal({
     useEffect(() => {
         if (isOpen) {
             if (editingUser) {
+                // ใช้ role จาก backend โดยตรง (ROLE_ADMIN หรือ ROLE_USER)
                 setFormData({
                     email: editingUser.email,
                     password: '',
@@ -46,7 +46,7 @@ export function UserModal({
                     email: '',
                     password: '',
                     confirmPassword: '',
-                    role: 'user',
+                    role: 'ROLE_USER',
                 });
             }
         }
@@ -208,12 +208,12 @@ export function UserModal({
                             <select
                                 id="role"
                                 value={formData.role}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
                                 required
                             >
-                                <option value="user">User</option>
-                                <option value="admin">Admin</option>
+                                <option value="ROLE_USER">User</option>
+                                <option value="ROLE_ADMIN">Admin</option>
                             </select>
                         </div>
                     </div>

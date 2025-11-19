@@ -1,19 +1,18 @@
 import {Floor} from "@/types/type";
-import {API_URL} from "@/lib/config";
+import { apiClient } from "@/service/apiClient";
 
 export const floor = {
     
     getByBuilding: async (buildingId: number): Promise<Floor[]> => {
-        const res = await fetch(`${API_URL}/floor/filter?buildingId=${buildingId}`);
+        const res = await apiClient(`/floor/filter?buildingId=${buildingId}`);
         if (res.status === 204) return [];
         else if (!res.ok) throw new Error('Failed to fetch floors');
         else return res.json();
     },
 
     create: async (data: { floorName: string; buildingId: number }): Promise<Floor> => {
-        const res = await fetch(`${API_URL}/floor/create`, {
+        const res = await apiClient('/floor/create', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
         if (!res.ok) {
@@ -24,9 +23,8 @@ export const floor = {
     },
 
     update: async (id: number, data: { floorName?: string; buildingId?: number }): Promise<Floor> => {
-        const res = await fetch(`${API_URL}/floor/${id}`, {
+        const res = await apiClient(`/floor/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
         if (!res.ok) {
@@ -37,7 +35,7 @@ export const floor = {
     },
 
     delete: async (id: number): Promise<void> => {
-        const res = await fetch(`${API_URL}/floor/delete/${id}`, {
+        const res = await apiClient(`/floor/delete/${id}`, {
             method: 'DELETE',
         });
         if (!res.ok) {

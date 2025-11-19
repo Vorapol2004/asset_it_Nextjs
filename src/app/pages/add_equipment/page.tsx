@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Navbar from '@/component/Navbar/Navbar';
+import RouteProtection from '@/component/auth/RouteProtection';
 import {
     Package,
     Calendar,
@@ -79,6 +80,7 @@ export default function AddEquipmentPage() {
     };
 
     return (
+        <RouteProtection allowedRoles="authenticated">
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <Navbar />
 
@@ -469,5 +471,6 @@ export default function AddEquipmentPage() {
                 </button>
             )}
         </div>
+        </RouteProtection>
     );
 }

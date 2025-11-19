@@ -1,13 +1,12 @@
 import {Equipment} from "@/types/type";
-import {API_URL} from "@/lib/config";
+import { apiClient } from "@/service/apiClient";
 
 
 export const add_equipment = {
     
     create: async (data: Partial<Equipment>): Promise<Equipment> => {
-        const res = await fetch(`${API_URL}/equipment/create`, {
+        const res = await apiClient('/equipment/create', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
 
@@ -20,9 +19,8 @@ export const add_equipment = {
     },
 
     update: async (id: number, data: Partial<Equipment>): Promise<Equipment> => {
-        const res = await fetch(`${API_URL}/equipment/${id}`, {
+        const res = await apiClient(`/equipment/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
 
@@ -34,7 +32,7 @@ export const add_equipment = {
     },
 
     delete: async (id: number): Promise<void> => {
-        const res = await fetch(`${API_URL}/equipment/${id}`, {
+        const res = await apiClient(`/equipment/${id}`, {
             method: 'DELETE',
         });
 

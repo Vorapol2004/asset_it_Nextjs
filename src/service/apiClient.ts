@@ -43,21 +43,35 @@ export async function apiClient(
     }
 
     // เรียก API
-    const response = await fetch(`${API_URL}${endpoint}`, {
-        ...fetchOptions,
-        body,
-        headers: requestHeaders,
-    });
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            ...fetchOptions,
+            body,
+            headers: requestHeaders,
+        });
 
-    // ถ้า token หมดอายุ (401) ให้ลบ token ออก
-    if (response.status === 401 && requireAuth) {
-        tokenServices.removeToken();
-        // Redirect ไปหน้า login (ถ้าต้องการ)
-        if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+        // ถ้า token หมดอายุ (401) ให้ลบ token ออก
+        if (response.status === 401 && requireAuth) {
+            tokenServices.removeToken();
+            // Redirect ไปหน้า login (ถ้าต้องการ)
+            if (typeof window !== 'undefined') {
+                window.location.href = '/login';
+            }
         }
-    }
 
-    return response;
+        return response;
+    } catch (error) {
+        // จัดการ network errors (Failed to fetch)
+        console.error('API Request failed:', {
+            url: `${API_URL}${endpoint}`,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            apiUrl: API_URL,
+        });
+        
+        // Throw error ที่มีข้อมูลมากขึ้น
+        throw new Error(
+            `Failed to connect to API server. Please check if the backend is running at ${API_URL}`
+        );
+    }
 }
 

@@ -30,7 +30,6 @@ export const api = {
     user: userApi,
     // สำหรับ backward compatibility
     login: auth.login,
-    register: auth.register,
     logout: auth.logout,
     getCurrentUser: auth.getCurrentUser,
 };

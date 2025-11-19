@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Navbar from '@/component/Navbar/Navbar';
+import RouteProtection from '@/component/auth/RouteProtection';
 import {
     RefreshCw, Package, Search, X, ChevronDown, Eye,
     Edit, ChevronUp
@@ -103,6 +104,7 @@ export default function EquipmentPage() {
     };
 
     return (
+        <RouteProtection allowedRoles="authenticated">
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
             <Navbar />
 
@@ -404,6 +406,6 @@ export default function EquipmentPage() {
                 </button>
             )}
         </div>
+        </RouteProtection>
     );
-
 }

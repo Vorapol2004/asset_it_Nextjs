@@ -1,4 +1,4 @@
-import { API_URL } from "@/lib/config";
+import { apiClient } from "@/service/apiClient";
 
 export interface Role {
     id: number;
@@ -8,7 +8,7 @@ export interface Role {
 export const role = {
     
     filter: async (): Promise<Role[]> => {
-        const res = await fetch(`${API_URL}/role/filter`);
+        const res = await apiClient('/role/filter');
 
         if (res.status === 204) {
             return [];

@@ -1,19 +1,18 @@
 import {Building} from "@/types/type";
-import {API_URL} from "@/lib/config";
+import { apiClient } from "@/service/apiClient";
 
 export const building = {
     
     filter: async (departmentId: number): Promise<Building[]> => {
-        const res = await fetch(`${API_URL}/building/filter?departmentId=${departmentId}`);
+        const res = await apiClient(`/building/filter?departmentId=${departmentId}`);
         if (res.status === 204) return [];
         else if (!res.ok) throw new Error('Failed to filter buildings');
         else return res.json();
     },
 
     create: async (data: { buildingName: string; departmentId: number }): Promise<Building> => {
-        const res = await fetch(`${API_URL}/building/create`, {
+        const res = await apiClient('/building/create', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
         if (!res.ok) {
@@ -24,9 +23,8 @@ export const building = {
     },
 
     update: async (id: number, data: { buildingName?: string; departmentId?: number }): Promise<Building> => {
-        const res = await fetch(`${API_URL}/building/${id}`, {
+        const res = await apiClient(`/building/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
         if (!res.ok) {
@@ -37,7 +35,7 @@ export const building = {
     },
 
     delete: async (id: number): Promise<void> => {
-        const res = await fetch(`${API_URL}/building/delete/${id}`, {
+        const res = await apiClient(`/building/delete/${id}`, {
             method: 'DELETE',
         });
         if (!res.ok) {

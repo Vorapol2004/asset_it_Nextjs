@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import { Users, Plus, Edit, Trash2, RefreshCw, AlertCircle, Shield, Home } from 'lucide-react';
@@ -8,10 +8,11 @@ import { useUserManagement } from '@/hooks/useUserManagement';
 import { useAuthContext } from '@/app/context/AuthContext';
 import { UserModal } from './UserModal';
 import { ROUTES } from '@/constants/routes';
+import RouteProtection from '@/component/auth/RouteProtection';
 
 export default function UserManagementPage() {
     const router = useRouter();
-    const { isAdmin, loading: authLoading } = useAuthContext();
+    const { isAdmin } = useAuthContext();
     const {
         users,
         loading,
@@ -40,33 +41,8 @@ export default function UserManagementPage() {
         }
     };
 
-    // Route Protection: Redirect ถ้าไม่ใช่ admin
-    useEffect(() => {
-        if (!authLoading) {
-            if (!isAdmin) {
-                router.push(ROUTES.HOME);
-            }
-        }
-    }, [isAdmin, authLoading, router]);
-
-    // แสดง loading ถ้ายังตรวจสอบ auth อยู่
-    if (authLoading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-                    <p className="text-gray-600">กำลังตรวจสอบสิทธิ์...</p>
-                </div>
-            </div>
-        );
-    }
-
-    // ถ้าไม่ใช่ admin ไม่แสดงหน้า (จะ redirect ไปหน้า home)
-    if (!isAdmin) {
-        return null;
-    }
-
     return (
+        <RouteProtection allowedRoles="ROLE_ADMIN">
         <div className="min-h-screen bg-gray-50">
             <Navbar />
             <div className="container mx-auto px-4 py-8">
@@ -168,7 +144,6 @@ export default function UserManagementPage() {
                                         <th className="px-6 py-4 text-left text-xs font-bold uppercase">ID</th>
                                         <th className="px-6 py-4 text-left text-xs font-bold uppercase">Email</th>
                                         <th className="px-6 py-4 text-center text-xs font-bold uppercase">Role</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase">สร้างเมื่อ</th>
                                         <th className="px-6 py-4 text-center text-xs font-bold uppercase">จัดการ</th>
                                     </tr>
                                 </thead>
@@ -187,25 +162,21 @@ export default function UserManagementPage() {
                                                 <span className="font-semibold text-gray-900">{user.email}</span>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <span
-                                                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
-                                                        user.role === 'admin'
-                                                            ? 'bg-purple-100 text-purple-800'
-                                                            : 'bg-gray-100 text-gray-800'
-                                                    }`}
-                                                >
-                                                    <Shield className="h-3 w-3" />
-                                                    {user.role === 'admin' ? 'Admin' : 'User'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-gray-600 text-sm">
-                                                    {new Date(user.createdAt).toLocaleDateString('th-TH', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                    })}
-                                                </span>
+                                                {(() => {
+                                                    const isAdmin = user.role === 'ROLE_ADMIN';
+                                                    return (
+                                                        <span
+                                                            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
+                                                                isAdmin
+                                                                    ? 'bg-purple-100 text-purple-800'
+                                                                    : 'bg-gray-100 text-gray-800'
+                                                            }`}
+                                                        >
+                                                            <Shield className="h-3 w-3" />
+                                                            {isAdmin ? 'Admin' : 'User'}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex gap-2 justify-center">
@@ -246,6 +217,7 @@ export default function UserManagementPage() {
                 error={errorAction}
             />
         </div>
+        </RouteProtection>
     );
 }
 

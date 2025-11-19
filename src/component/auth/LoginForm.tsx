@@ -1,19 +1,34 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
 import { ROUTES } from '@/constants/routes';
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
+import { useAuthContext } from '@/app/context/AuthContext';
 
 export default function LoginForm() {
     const router = useRouter();
+    const { login, isAdmin, user } = useAuthContext();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [loginSuccess, setLoginSuccess] = useState(false);
+
+    // Redirect หลังจาก login สำเร็จและ state อัพเดทแล้ว
+    useEffect(() => {
+        if (loginSuccess && user) {
+            // Redirect ตาม role
+            if (isAdmin) {
+                router.push(ROUTES.USER_MANAGEMENT);
+            } else {
+                router.push(ROUTES.HOME);
+            }
+            setLoginSuccess(false); // Reset flag
+        }
+    }, [loginSuccess, user, isAdmin, router]);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -21,18 +36,11 @@ export default function LoginForm() {
         setLoading(true);
 
         try {
-            const data = await api.login(formData.email, formData.password);
-            console.log('Login successful:', data);
-            
-            // Redirect ตาม role
-            if (data.user?.role === 'admin') {
-                router.push(ROUTES.USER_MANAGEMENT);
-            } else {
-                router.push(ROUTES.HOME);
-            }
+            // ใช้ login จาก useAuthContext เพื่อให้ state อัพเดททันที
+            await login(formData.email, formData.password);
+            setLoginSuccess(true); // Set flag เพื่อ trigger useEffect
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Login failed');
-        } finally {
             setLoading(false);
         }
     };

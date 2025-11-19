@@ -1,6 +1,5 @@
 import { BorrowView, BorrowStatus } from "@/types/type";
-
-import {API_URL} from "@/lib/config";
+import { apiClient } from "@/service/apiClient";
 
 export const borrow_history = {
 
@@ -28,7 +27,7 @@ export const borrow_history = {
         // ถ้าไม่มี parameter เลย → ใช้ /borrow/all (เร็วกว่า)
         // ถ้ามี parameter → ใช้ /borrow/filter
         if (params.toString() === '') {
-            const res = await fetch(`${API_URL}/borrow/all`);
+            const res = await apiClient('/borrow/all');
             if (res.status === 204) {
                 return [];
             } else if (!res.ok) {
@@ -39,7 +38,7 @@ export const borrow_history = {
             }
         }
 
-        const res = await fetch(`${API_URL}/borrow/filter?${params.toString()}`);
+        const res = await apiClient(`/borrow/filter?${params.toString()}`);
 
         if (res.status === 204 || res.status === 404) {
             return [];
@@ -53,7 +52,7 @@ export const borrow_history = {
 
 
     getStatuses: async (): Promise<BorrowStatus[]> => {
-        const res = await fetch(`${API_URL}/borrow_status/status`);
+        const res = await apiClient('/borrow_status/status');
         
         if (res.status === 204) {
             return [];
@@ -67,7 +66,7 @@ export const borrow_history = {
 
 
     getEquipmentTypes: async (): Promise<{ id: number; equipmentTypeName: string }[]> => {
-        const res = await fetch(`${API_URL}/equipment_type/type`);
+        const res = await apiClient('/equipment_type/type');
         
         if (res.status === 204) {
             return [];
@@ -81,7 +80,7 @@ export const borrow_history = {
 
 
     getEquipmentStatuses: async (): Promise<{ id: number; equipmentStatusName: string }[]> => {
-        const res = await fetch(`${API_URL}/equipment_status/status`);
+        const res = await apiClient('/equipment_status/status');
         
         if (res.status === 204) {
             return [];
@@ -94,7 +93,7 @@ export const borrow_history = {
     },
 
     select: async (borrowId: number): Promise<BorrowView[]> => {
-        const res = await fetch(`${API_URL}/borrow/select?borrowId=${borrowId}`);
+        const res = await apiClient(`/borrow/select?borrowId=${borrowId}`);
 
         if (res.status === 204 || res.status === 404) {
             throw new Error('Borrow not found');
@@ -120,9 +119,8 @@ export const borrow_history = {
             returnDate: returnDate || new Date().toISOString().split('T')[0],
         };
 
-        const res = await fetch(`${API_URL}/borrow/return`, {
+        const res = await apiClient('/borrow/return', {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
         });
 

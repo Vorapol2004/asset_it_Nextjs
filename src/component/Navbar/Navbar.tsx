@@ -76,12 +76,12 @@ const Navbar = memo(function Navbar() {
     };
 
     return (
-        <nav className="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
+        <nav className="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+                <div className="flex justify-between items-center h-14 sm:h-16">
                     {/* Logo */}
-                    <Link href={ROUTES.HOME} className="flex items-center cursor-pointer">
-                        <div className="relative h-8 w-8 mr-2">
+                    <Link href={ROUTES.HOME} className="flex items-center cursor-pointer min-w-0 flex-shrink-0">
+                        <div className="relative h-7 w-7 sm:h-8 sm:w-8 mr-1.5 sm:mr-2 flex-shrink-0">
                             <Image
                                 src={Utcclogo}
                                 alt="Logo"
@@ -90,43 +90,46 @@ const Navbar = memo(function Navbar() {
                                 priority
                             />
                         </div>
-                        <span className="text-xl font-bold text-white">Asset IT support</span>
+                        <span className="text-base sm:text-lg md:text-xl font-bold text-white truncate">
+                            <span className="hidden sm:inline">Asset IT support</span>
+                            <span className="sm:hidden">Asset IT</span>
+                        </span>
                     </Link>
 
                     {/* Desktop Menu */}
-                    <div className="hidden md:flex items-center space-x-4">
-                        <div className="flex items-baseline space-x-2">
+                    <div className="hidden md:flex items-center flex-1 justify-end min-w-0">
+                        <div className="flex items-center space-x-1 lg:space-x-2 flex-wrap justify-end max-w-full">
                             {NAV_ITEMS.map((item) => (
                                 <Link
                                     key={item.path}
                                     href={item.path}
-                                    className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                                    className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap"
                                 >
                                     {getIcon(item.icon)}
-                                    {item.label}
+                                    <span className="hidden lg:inline">{item.label}</span>
                                 </Link>
                             ))}
                             {/* แสดง User Management สำหรับ Admin เท่านั้น */}
                             {isAdmin && (
                                 <Link
                                     href={ROUTES.USER_MANAGEMENT}
-                                    className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                                    className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap"
                                 >
-                                    <Users className="h-4 w-4 mr-1" />
-                                    จัดการ Users
+                                    <Users className="h-4 w-4 lg:mr-1" />
+                                    <span className="hidden xl:inline">จัดการ Users</span>
                                 </Link>
                             )}
                         </div>
 
                         {/* User Menu - แสดงเมื่อ authenticated */}
                         {isAuthenticated ? (
-                            <div className="relative ml-3 user-menu-container">
+                            <div className="relative ml-2 lg:ml-3 user-menu-container flex-shrink-0">
                                 <button
                                     onClick={toggleUserMenu}
-                                    className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                                    className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors cursor-pointer whitespace-nowrap"
                                 >
-                                    <User className="h-4 w-4 mr-1" />
-                                    <span className="hidden lg:inline">
+                                    <User className="h-4 w-4 lg:mr-1" />
+                                    <span className="hidden xl:inline max-w-[120px] lg:max-w-[150px] truncate">
                                         {loading ? 'Loading...' : user?.email || 'Account'}
                                     </span>
                                 </button>
@@ -138,10 +141,10 @@ const Navbar = memo(function Navbar() {
                                             onClick={toggleUserMenu}
                                         />
 
-                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                                        <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200">
                                             {user && (
                                                 <div className="px-4 py-2 border-b border-gray-200">
-                                                    <p className="text-sm font-semibold text-gray-900">{user.email}</p>
+                                                    <p className="text-sm font-semibold text-gray-900 truncate">{user.email}</p>
                                                     <p className="text-xs text-gray-500">ID: {user.id}</p>
                                                 </div>
                                             )}
@@ -150,7 +153,7 @@ const Navbar = memo(function Navbar() {
                                                 onClick={handleLogout}
                                                 className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                                             >
-                                                <LogOut className="h-4 w-4 mr-2" />
+                                                <LogOut className="h-4 w-4 mr-2 flex-shrink-0" />
                                                 Logout
                                             </button>
                                         </div>
@@ -161,32 +164,33 @@ const Navbar = memo(function Navbar() {
                             // แสดงปุ่ม Login ถ้ายังไม่ได้ login
                             <Link
                                 href={ROUTES.LOGIN}
-                                className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ml-3"
+                                className="flex items-center text-blue-200 hover:bg-blue-700 hover:text-white px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors cursor-pointer ml-2 lg:ml-3 whitespace-nowrap flex-shrink-0"
                             >
-                                <User className="h-4 w-4 mr-1" />
-                                <span className="hidden lg:inline">Login</span>
+                                <User className="h-4 w-4 lg:mr-1" />
+                                <span className="hidden xl:inline">Login</span>
                             </Link>
                         )}
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="md:hidden">
+                    <div className="md:hidden flex-shrink-0 ml-2">
                         <button
                             onClick={toggleMenu}
-                            className="text-white hover:bg-blue-700 p-2 rounded-md cursor-pointer"
+                            className="text-white hover:bg-blue-700 p-2 rounded-md cursor-pointer transition-colors"
+                            aria-label="Toggle menu"
                         >
-                            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                            {isMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
                         </button>
                     </div>
                 </div>
 
                 {/* Mobile Menu */}
                 {isMenuOpen && (
-                    <div className="md:hidden">
+                    <div className="md:hidden border-t border-blue-500">
                         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-blue-700">
                             {isAuthenticated && user && (
                                 <div className="px-3 py-2 text-blue-100 text-sm border-b border-blue-600 mb-2">
-                                    <p className="font-semibold">{user.email}</p>
+                                    <p className="font-semibold truncate">{user.email}</p>
                                     <p className="text-xs">ID: {user.id}</p>
                                 </div>
                             )}
@@ -195,29 +199,29 @@ const Navbar = memo(function Navbar() {
                                 <Link
                                     key={item.path}
                                     href={item.path}
-                                    className="flex items-center text-blue-200 hover:text-white block px-3 py-2 rounded-md text-base font-medium cursor-pointer"
+                                    className="flex items-center text-blue-200 hover:text-white hover:bg-blue-600 block px-3 py-2.5 rounded-md text-base font-medium cursor-pointer transition-colors"
                                     onClick={closeMenu}
                                 >
                                     {getIcon(item.icon)}
-                                    <span className="ml-1">{item.label}</span>
+                                    <span className="ml-2">{item.label}</span>
                                 </Link>
                             ))}
                             {/* แสดง User Management สำหรับ Admin เท่านั้น */}
                             {isAdmin && (
                                 <Link
                                     href={ROUTES.USER_MANAGEMENT}
-                                    className="flex items-center text-blue-200 hover:text-white block px-3 py-2 rounded-md text-base font-medium cursor-pointer"
+                                    className="flex items-center text-blue-200 hover:text-white hover:bg-blue-600 block px-3 py-2.5 rounded-md text-base font-medium cursor-pointer transition-colors"
                                     onClick={closeMenu}
                                 >
                                     <Users className="h-4 w-4 mr-2" />
-                                    <span className="ml-1">จัดการ Users</span>
+                                    <span>จัดการ Users</span>
                                 </Link>
                             )}
 
                             {isAuthenticated && (
                                 <button
                                     onClick={handleLogout}
-                                    className="flex items-center text-blue-200 hover:text-white w-full px-3 py-2 rounded-md text-base font-medium cursor-pointer"
+                                    className="flex items-center text-blue-200 hover:text-white hover:bg-blue-600 w-full px-3 py-2.5 rounded-md text-base font-medium cursor-pointer transition-colors"
                                 >
                                     <LogOut className="h-4 w-4 mr-2" />
                                     Logout
