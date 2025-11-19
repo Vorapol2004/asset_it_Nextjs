@@ -78,7 +78,10 @@ export default function BorrowHistoryPage() {
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-green-600 flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">ประวัติการยืมอุปกรณ์</h1>
-                        <p className="text-gray-600">ทั้งหมด {groupedRecords.length} ธุรกรรม</p>
+                        <p className="text-gray-600">
+                            ทั้งหมด {groupedRecords.length} ธุรกรรม - {' '}
+                            {groupedRecords.reduce((total, record) => total + (record.equipments?.length ?? 0), 0)} รายการอุปกรณ์
+                        </p>
                     </div>
                     <button
                         onClick={() => {
@@ -269,32 +272,32 @@ export default function BorrowHistoryPage() {
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                 {groupedRecords.map((group, i) => {
-                                    const status = STATUS_MAP[group.borrowStatusId];
+                                    const status = STATUS_MAP[group.borrowStatusId || 0];
                                     return (
                                         <tr key={group.id} className={`hover:bg-green-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                                             
                                             <td className="px-4 py-3 text-left">
                                                 <div className="text-sm font-semibold text-gray-900">
-                                                    {group.employeeName?.trim() || 
-                                                     `${group.firstName || ''} ${group.lastName || ''}`.trim() || 
-                                                     'ไม่ระบุชื่อ'}
+                                                    {group.employee?.firstName && group.employee?.lastName
+                                                        ? `${group.employee.firstName} ${group.employee.lastName}`.trim()
+                                                        : group.employee?.firstName || group.employee?.lastName || 'ไม่ระบุชื่อ'}
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3 text-sm text-gray-700 text-center">
-                                                {group.roleName || '-'}
+                                                {group.employee?.roleName || '-'}
                                             </td>
                                             <td className="px-4 py-3 text-sm text-gray-700 text-center">
                                                 {new Date(group.borrowDate).toLocaleDateString('th-TH')}
                                             </td>
                                             <td className="px-4 py-3 text-center">
                                                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-                                                    {group.borrowEquipmentCount ?? group.items.length} รายการ
+                                                    {group.borrowEquipmentCount ?? group.equipments?.length ?? 0} รายการ
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3 text-center">
                                                 <div className="flex justify-center">
                                                     <span className={`px-3 py-1 rounded-full text-xs font-semibold border flex items-center gap-1 w-fit ${status?.color || 'bg-gray-100 text-gray-700'}`}>
-                                                        {status?.label || group.borrowStatusName}
+                                                        {status?.label || group.borrowStatusName || 'ไม่ระบุ'}
                                                     </span>
                                                 </div>
                                             </td>

@@ -1,12 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { BorrowView, BorrowStatus, BorrowEquipmentView, Department } from '@/types/type';
+import { BorrowView, BorrowStatus, Department } from '@/types/type';
 
-type GroupedBorrow = Omit<BorrowView, 'items'> & {
-    items: BorrowEquipmentView[];
-    borrowEquipmentCount?: number | null;
-    approverName?: string | null;
-};
+type GroupedBorrow = BorrowView;
 
 const STATUS_MAP: Record<number, { label: string; color: string }> = {};
 
@@ -37,86 +33,9 @@ export function useBorrowHistory() {
         return statusName === 'available' || statusName === 'lost' || statusName === 'damaged';
     });
     
-    //ตรวจสอบสถานะที่ filter ได้
-    useEffect(() => {
-        if (equipmentStatuses.length > 0) {
-            console.log('Equipment Statuses ทั้งหมด:', equipmentStatuses);
-            console.log('Filtered Return Statuses:', returnEquipmentStatuses);
-        }
-    }, [equipmentStatuses]);
 
 
-    const groupedRecords: GroupedBorrow[] = (() => {
-        // ตรวจสอบว่าเป็น grouped หรือ flat
-        const firstRecord = records[0];
-        if (firstRecord && Array.isArray(firstRecord.items)) {
-            // Backend ส่ง grouped format มาแล้ว → ใช้โดยตรง
-            return records.map(record => ({
-                ...record,
-                roleName: record.roleName || 'ไม่ระบุ',
-                items: record.items || []
-            }));
-        } else {
-            // Backend ส่ง flat array → ต้อง group
-            const grouped = records.reduce<GroupedBorrow[]>((acc, record) => {
-                const existingGroup = acc.find(g => g.id === record.id);
-
-                if (existingGroup) {
-                    // เพิ่ม equipment จาก record นี้เข้าไปใน items
-                    if (record.equipmentId) {
-                        const equipmentItem: BorrowEquipmentView = {
-                            // ใช้ id เป็น borrowEquipmentId (ตามที่ backend ส่งมา)
-                            borrowEquipmentId: record.borrowEquipmentId || record.id || 0,
-                            equipmentId: record.equipmentId,
-                            equipmentName: record.equipmentName || '',
-                            brand: record.brand || undefined,
-                            model: record.model || undefined,
-                            serialNumber: record.serialNumber || undefined,
-                            licenseKey: record.licenseKey || undefined,
-                            equipmentTypeName: record.equipmentTypeName || undefined,
-                            dueDate: record.dueDate || undefined,
-                            returnDate: record.returnDate || undefined,
-                        };
-                        existingGroup.items.push(equipmentItem);
-                    }
-                    // อัพเดท borrowEquipmentCount ถ้ามี
-                    if (record.borrowEquipmentCount !== undefined) {
-                        existingGroup.borrowEquipmentCount = record.borrowEquipmentCount;
-                    }
-                } else {
-                    // สร้าง group ใหม่
-                    const items: BorrowEquipmentView[] = [];
-                    
-                    if (record.equipmentId) {
-                        //เพิ่มอุปกรณ์ใหม่เข้าในกลุ่ม
-                        items.push({
-                            // ใช้ id เป็น borrowEquipmentId (ตามที่ backend ส่งมา)
-                            borrowEquipmentId: record.borrowEquipmentId || record.id || 0,
-                            equipmentId: record.equipmentId,
-                            equipmentName: record.equipmentName || '',
-                            brand: record.brand || undefined,
-                            model: record.model || undefined,
-                            serialNumber: record.serialNumber || undefined,
-                            licenseKey: record.licenseKey || undefined,
-                            equipmentTypeName: record.equipmentTypeName || undefined,
-                            dueDate: record.dueDate || undefined,
-                            returnDate: record.returnDate || undefined,
-                        });
-                    }
-
-                    const newGroup: GroupedBorrow = {
-                        ...record,
-                        roleName: record.roleName || 'ไม่ระบุ',
-                        items: items
-                    };
-                    acc.push(newGroup);
-                }
-
-                return acc;
-            }, []);
-            return grouped;
-        }
-    })();
+    const groupedRecords: GroupedBorrow[] = records;
 
 
     //dropdowns
@@ -149,26 +68,16 @@ export function useBorrowHistory() {
         setError(null);
 
         try {
-            let data: BorrowView[] = [];
-
-            // ถ้ามี keyword → เรียก search
-            if (searchTerm.trim()) {
-                data = await api.borrow.search(searchTerm.trim());
-            }
-            // ถ้ามี status, role หรือ department → เรียก filter (รองรับ filter หลายตัวพร้อมกัน)
-            else if (selectedStatus !== 'all' || selectedRole !== 'all' || selectedDepartment !== 'all') {
-                const statusId = selectedStatus !== 'all' ? Number(selectedStatus) : undefined;
-                const roleId = selectedRole !== 'all' 
-                    ? roles.find(r => r.roleName === selectedRole)?.id 
-                    : undefined;
-                const departmentId = selectedDepartment !== 'all' ? Number(selectedDepartment) : undefined;
-                
-                data = await api.borrow_history.filterByStatus(statusId, roleId, departmentId);
-            }
-            else {
-                data = await api.borrow.getAll();
-            }
-
+            // ใช้ filterByStatus สำหรับทุกกรณี (รองรับ keyword, statusId, roleId, departmentId)
+            const statusId = selectedStatus !== 'all' ? Number(selectedStatus) : undefined;
+            const roleId = selectedRole !== 'all' 
+                ? roles.find(r => r.roleName === selectedRole)?.id 
+                : undefined;
+            const departmentId = selectedDepartment !== 'all' ? Number(selectedDepartment) : undefined;
+            const keyword = searchTerm.trim() || undefined;
+            
+            const data = await api.borrow_history.filterByStatus(statusId, roleId, departmentId, keyword);
+            
             setRecords(data);
         } catch (err) {
             console.error('กรองข้อมูลล้มเหลว:', err);
@@ -212,11 +121,13 @@ export function useBorrowHistory() {
     // โหลดข้อมูลครั้งแรก
     useEffect(() => {
         applyFilters();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // เรียก API ทันทีเมื่อ filter อื่นๆ เปลี่ยน (ยกเว้น searchTerm)
     useEffect(() => {
         applyFilters();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedStatus, selectedRole, selectedType, selectedDepartment]);
 
     // ฟังก์ชันสำหรับดึงรายละเอียดการยืมจาก backend
@@ -230,53 +141,11 @@ export function useBorrowHistory() {
             }
 
             const firstRecord = dataArray[0];
-            let groupedData: GroupedBorrow;
-
-            // ตรวจสอบว่า backend ส่ง grouped format มาแล้วหรือไม่ (มี items array)
-            if (Array.isArray(firstRecord.items)) {
-                // Backend ส่ง grouped format มาแล้ว → ใช้โดยตรง
-                groupedData = {
-                    ...firstRecord,
-                    roleName: firstRecord.roleName || 'ไม่ระบุ',
-                    items: firstRecord.items || []
-                };
-            } else {
-                // Backend ส่ง flat array → ต้อง group
-                const items: BorrowEquipmentView[] = [];
-
-                // รวบรวม equipment จากทุก record
-                dataArray.forEach((record) => {
-                    if (record.equipmentId) {
-                        items.push({
-                            // ใช้ id เป็น borrowEquipmentId (ตามที่ backend ส่งมา)
-                            borrowEquipmentId: record.borrowEquipmentId || record.id || 0,
-                            equipmentId: record.equipmentId,
-                            equipmentName: record.equipmentName || '',
-                            brand: record.brand || undefined,
-                            model: record.model || undefined,
-                            serialNumber: record.serialNumber || undefined,
-                            licenseKey: record.licenseKey || undefined,
-                            equipmentTypeName: record.equipmentTypeName || undefined,
-                            dueDate: record.dueDate || undefined,
-                            returnDate: record.returnDate || undefined,
-                        });
-                    }
-                });
-
-                // แปลงเป็น GroupedBorrow
-                groupedData = {
-                    ...firstRecord,
-                    roleName: firstRecord.roleName || 'ไม่ระบุ',
-                    employeeName: firstRecord.employeeName || `${firstRecord.firstName || ''} ${firstRecord.lastName || ''}`.trim(),
-                    items: items,
-                    referenceDoc: firstRecord.referenceDoc || undefined,
-                    approverName: firstRecord.approverName || undefined,
-                };
-            }
             
-            setSelected(groupedData);
+            // Backend ส่ง grouped format มาแล้ว → ใช้โดยตรง
+            setSelected(firstRecord);
         } catch (err) {
-            console.error('❌ ดึงรายละเอียดล้มเหลว:', err);
+            console.error('ดึงรายละเอียดล้มเหลว:', err);
             alert('ไม่สามารถดึงรายละเอียดได้ กรุณาลองอีกครั้ง');
             setSelected(null);
         } finally {

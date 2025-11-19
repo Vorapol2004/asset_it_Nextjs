@@ -17,11 +17,7 @@ import {
     ChevronDown,
 } from 'lucide-react';
 
-type GroupedBorrow = Omit<import('@/types/type').BorrowView, 'items'> & {
-    items: import('@/types/type').BorrowEquipmentView[];
-    borrowEquipmentCount?: number | null;
-    approverName?: string | null;
-};
+type GroupedBorrow = import('@/types/type').BorrowView;
 
 interface BorrowDetailModalProps {
     selected: GroupedBorrow;
@@ -77,9 +73,9 @@ export function BorrowDetailModal({
                                 <div>
                                     <p className="text-sm text-gray-600 font-medium mb-1">ชื่อ-นามสกุล</p>
                                     <p className="font-semibold text-gray-900">
-                                        {selected.employeeName?.trim() || 
-                                         `${selected.firstName || ''} ${selected.lastName || ''}`.trim() || 
-                                         'ไม่ระบุชื่อ'}
+                                        {selected.employee?.firstName && selected.employee?.lastName
+                                            ? `${selected.employee.firstName} ${selected.employee.lastName}`.trim()
+                                            : selected.employee?.firstName || selected.employee?.lastName || 'ไม่ระบุชื่อ'}
                                     </p>
                                 </div>
                                 <div>
@@ -87,15 +83,15 @@ export function BorrowDetailModal({
                                         <Mail className="h-4 w-4" />
                                         อีเมล
                                     </p>
-                                    <p className="font-semibold text-gray-900">{selected.email || '-'}</p>
+                                    <p className="font-semibold text-gray-900">{selected.employee?.email || '-'}</p>
                                 </div>
-                                {selected.phone && (
+                                {selected.employee?.phone && (
                                     <div>
                                         <p className="text-sm text-gray-600 font-medium mb-1 flex items-center gap-1">
                                             <Phone className="h-4 w-4" />
                                             เบอร์โทรศัพท์
                                         </p>
-                                        <p className="font-semibold text-gray-900">{selected.phone}</p>
+                                        <p className="font-semibold text-gray-900">{selected.employee.phone}</p>
                                     </div>
                                 )}
                                 <div>
@@ -104,16 +100,16 @@ export function BorrowDetailModal({
                                         ตำแหน่ง
                                     </p>
                                     <p className="font-semibold text-gray-900">
-                                        {selected.roleName && selected.roleName !== 'ไม่ระบุ' ? selected.roleName : '-'}
+                                        {selected.employee?.roleName || '-'}
                                     </p>
                                 </div>
-                                {selected.departmentName && (
+                                {selected.employee?.departmentName && (
                                     <div>
                                         <p className="text-sm text-gray-600 font-medium mb-1 flex items-center gap-1">
                                             <Building2 className="h-4 w-4" />
                                             แผนก
                                         </p>
-                                        <p className="font-semibold text-gray-900">{selected.departmentName}</p>
+                                        <p className="font-semibold text-gray-900">{selected.employee.departmentName}</p>
                                     </div>
                                 )}
                                 <div>
@@ -146,14 +142,14 @@ export function BorrowDetailModal({
                         {/* รายการอุปกรณ์ทั้งหมด */}
                         <div>
                             <p className="text-sm text-gray-600 mb-3 font-semibold">
-                                รายการอุปกรณ์ ({selected.items.length} รายการ)
+                                รายการอุปกรณ์ ({selected.equipments?.length ?? 0} รายการ)
                             </p>
                             <div className="space-y-3">
-                                {selected.items.map((item, index) => {
+                                {selected.equipments?.map((item, index) => {
                                     // ใช้ borrowEquipmentId เป็น key ถ้ามี ถ้าไม่มีใช้ combination ที่ unique
                                     const uniqueKey = item.borrowEquipmentId 
                                         ? `borrow-equipment-${item.borrowEquipmentId}` 
-                                        : `borrow-${selected.id}-equipment-${item.equipmentId}-${index}`;
+                                        : `borrow-${selected.id}-equipment-${item.id}-${index}`;
                                     
                                     return (
                                     <div key={uniqueKey} className="bg-gray-50 p-4 rounded-lg border border-gray-200">

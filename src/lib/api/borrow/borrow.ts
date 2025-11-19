@@ -1,6 +1,8 @@
 import {BorrowCreateData, BorrowCreateResponse, BorrowStatus, BorrowView, EquipmentView, Building, Floor, Room, Department} from "@/types/type";
 import {API_URL} from "@/lib/config";
+
 export const borrow = {
+
     getAll: async (): Promise<BorrowView[]> => {
         const res = await fetch(`${API_URL}/borrow/all`);
 
@@ -9,7 +11,8 @@ export const borrow = {
         } else if (!res.ok) {
             throw new Error('Failed to fetch borrows');
         } else {
-            return res.json();
+            const data: BorrowView[] = await res.json();
+            return data;
         }
     },
 
@@ -21,7 +24,8 @@ export const borrow = {
         } else if (!res.ok) {
             throw new Error('Failed to search borrows');
         } else {
-            return res.json();
+            const data: BorrowView[] = await res.json();
+            return data;
         }
     },
 
@@ -64,7 +68,8 @@ export const borrow = {
         } else if (!res.ok) {
             throw new Error('Failed to fetch active borrows');
         } else {
-            return res.json();
+            const data: BorrowView[] = await res.json();
+            return data;
         }
     },
 
@@ -77,7 +82,8 @@ export const borrow = {
         } else if (!res.ok) {
             throw new Error('Failed to fetch overdue items');
         } else {
-            return res.json();
+            const data: BorrowView[] = await res.json();
+            return data;
         }
     },
 

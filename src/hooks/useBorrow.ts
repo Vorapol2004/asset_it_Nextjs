@@ -152,19 +152,43 @@ export function useBorrow() {
             } else {
                 // เจออุปกรณ์ - auto-fill
                 const equipment = data[0];
+                
+                // เช็คว่าอุปกรณ์นี้ถูกเพิ่มในรายการอื่นแล้วหรือไม่ (เช็คที่หน้าบ้าน)
                 setBorrowItems(prev => {
-                    const newItems = [...prev];//เหมือนกับการทำสำเนาใหม่
-                    //แก้เฉพาะตัวที่ต้องการ
-                    newItems[itemIndex] = {
-                        searchValue: searchValue,
-                        equipmentId: equipment.id,
-                        equipmentName: equipment.equipmentName || '',
-                        brand: equipment.brand || '',
-                        model: equipment.model || '',
-                        notes: newItems[itemIndex].notes,
-                        searchError: undefined // ลบ error เมื่อเจอ
-                    };
-                    return newItems;
+                    // เช็คว่า equipmentId นี้มีอยู่ในรายการอื่นแล้วหรือไม่ (ยกเว้นรายการปัจจุบัน)
+                    const isDuplicate = prev.some((item, index) => 
+                        index !== itemIndex && 
+                        item.equipmentId > 0 && 
+                        item.equipmentId === equipment.id
+                    );
+                    
+                    if (isDuplicate) {
+                        // อุปกรณ์ซ้ำ - แสดง error
+                        const newItems = [...prev];
+                        newItems[itemIndex] = {
+                            searchValue: searchValue,
+                            equipmentId: 0,
+                            equipmentName: '',
+                            brand: '',
+                            model: '',
+                            notes: newItems[itemIndex].notes,
+                            searchError: 'อุปกรณ์นี้ถูกเพิ่มในรายการแล้ว ไม่สามารถเพิ่มซ้ำได้'
+                        };
+                        return newItems;
+                    } else {
+                        // ไม่ซ้ำ - auto-fill ข้อมูล
+                        const newItems = [...prev];
+                        newItems[itemIndex] = {
+                            searchValue: searchValue,
+                            equipmentId: equipment.id,
+                            equipmentName: equipment.equipmentName || '',
+                            brand: equipment.brand || '',
+                            model: equipment.model || '',
+                            notes: newItems[itemIndex].notes,
+                            searchError: undefined // ลบ error เมื่อเจอ
+                        };
+                        return newItems;
+                    }
                 });
             }
         } catch (error) {
@@ -257,6 +281,17 @@ export function useBorrow() {
             );
             if (hasInvalidItems) {
                 alert('กรุณาค้นหาอุปกรณ์ให้ครบทุกรายการ (ต้องพบอุปกรณ์ที่ตรงกับ License Key หรือ Serial Number)');
+                setLoading(false);
+                return;
+            }
+
+            // เช็คอุปกรณ์ซ้ำอีกครั้งก่อนส่ง (validation ที่หน้าบ้าน - backup check)
+            const equipmentIds = borrowItems
+                .filter(item => item.equipmentId && item.equipmentId > 0)
+                .map(item => item.equipmentId);
+            const uniqueEquipmentIds = new Set(equipmentIds);
+            if (equipmentIds.length !== uniqueEquipmentIds.size) {
+                alert('พบอุปกรณ์ที่ซ้ำกันในรายการ กรุณาลบรายการที่ซ้ำออก');
                 setLoading(false);
                 return;
             }

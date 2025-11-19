@@ -4,8 +4,17 @@ import {API_URL} from "@/lib/config";
 
 export const borrow_history = {
 
-    filterByStatus: async (statusId?: number, roleId?: number, departmentId?: number): Promise<BorrowView[]> => {
+    filterByStatus: async (
+        statusId?: number, 
+        roleId?: number, 
+        departmentId?: number, 
+        keyword?: string
+    ): Promise<BorrowView[]> => {
         const params = new URLSearchParams();
+        
+        if (keyword && keyword.trim()) {
+            params.append('keyword', keyword.trim());
+        }
         if (statusId && statusId > 0) {
             params.append('borrowStatusId', statusId.toString());
         }
@@ -16,7 +25,8 @@ export const borrow_history = {
             params.append('departmentId', departmentId.toString());
         }
 
-        // ถ้าไม่มี parameter เลย ให้เรียก getAll แทน
+        // ถ้าไม่มี parameter เลย → ใช้ /borrow/all (เร็วกว่า)
+        // ถ้ามี parameter → ใช้ /borrow/filter
         if (params.toString() === '') {
             const res = await fetch(`${API_URL}/borrow/all`);
             if (res.status === 204) {
@@ -24,31 +34,20 @@ export const borrow_history = {
             } else if (!res.ok) {
                 throw new Error('Failed to fetch all borrows');
             } else {
-                return res.json();
+                const data: BorrowView[] = await res.json();
+                return data;
             }
         }
 
         const res = await fetch(`${API_URL}/borrow/filter?${params.toString()}`);
 
-        if (res.status === 204) {
+        if (res.status === 204 || res.status === 404) {
             return [];
         } else if (!res.ok) {
             throw new Error('Failed to filter borrows');
         } else {
-            return res.json();
-        }
-    },
-
-
-    search: async (keyword: string): Promise<BorrowView[]> => {
-        const res = await fetch(`${API_URL}/borrow/search?keyword=${encodeURIComponent(keyword)}`);
-
-        if (res.status === 204 || res.status === 404) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to search borrows');
-        } else {
-            return res.json();
+            const data: BorrowView[] = await res.json();
+            return data;
         }
     },
 
@@ -94,7 +93,6 @@ export const borrow_history = {
         }
     },
 
-
     select: async (borrowId: number): Promise<BorrowView[]> => {
         const res = await fetch(`${API_URL}/borrow/select?borrowId=${borrowId}`);
 
@@ -103,7 +101,10 @@ export const borrow_history = {
         } else if (!res.ok) {
             throw new Error('Failed to fetch borrow details');
         } else {
-            return res.json();
+            const data = await res.json();
+            // รองรับทั้ง single object และ array จาก backend
+            const dataArray: BorrowView[] = Array.isArray(data) ? data : [data];
+            return dataArray;
         }
     },
 
@@ -127,7 +128,6 @@ export const borrow_history = {
 
         if (!res.ok) {
             const errorText = await res.text();
-            console.error('❌ Error response:', errorText);
             throw new Error(`Failed to return equipment: ${errorText}`);
         } else {
             return;

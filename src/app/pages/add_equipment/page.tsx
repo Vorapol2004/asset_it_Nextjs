@@ -380,9 +380,17 @@ export default function AddEquipmentPage() {
                                                 value={item.serialNumber}
                                                 onChange={(e) => updateItem(item.id, 'serialNumber', e.target.value)}
                                                 disabled={loading}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                className={`w-full px-4 py-3 border-2 rounded-lg text-gray-900 font-mono outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                                                    item.duplicateError ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
+                                                }`}
                                                 placeholder="กรอก Serial Number ของอุปกรณ์"
                                             />
+                                            {item.duplicateError && (
+                                                <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                                                    <AlertCircle className="h-3 w-3" />
+                                                    {item.duplicateError}
+                                                </p>
+                                            )}
                                         </div>
 
 
@@ -398,9 +406,17 @@ export default function AddEquipmentPage() {
                                                 value={item.licenseKey}
                                                 onChange={(e) => updateItem(item.id, 'licenseKey', e.target.value)}
                                                 disabled={loading}
-                                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-mono outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                className={`w-full px-4 py-3 border-2 rounded-lg text-gray-900 font-mono outline-none focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                                                    item.duplicateError ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
+                                                }`}
                                                 placeholder="กรอก License Key หรือ Product Key"
                                             />
+                                            {item.duplicateError && (
+                                                <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                                                    <AlertCircle className="h-3 w-3" />
+                                                    {item.duplicateError}
+                                                </p>
+                                            )}
                                         </div>
 
                                     </div>

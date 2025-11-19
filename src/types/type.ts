@@ -145,33 +145,34 @@ export interface ReturnResponseData {
 }
 
 export interface BorrowView {
-    roleName: string | null; // "พนักงาน" | "อาจารย์" | "ส่วนกลาง" | null
-    equipmentTypeName: string;
-    equipmentId: number;
-    employeeName: string;
-    borrowStatusId: number;
-    brand: string;
-    model: string;
     id: number;
-    borrowStatusName: "กำลังยืม" | "คืนแล้ว" | "คืนบางส่วน" | "เกินกำหนด";
-    email: string;
     borrowDate: string;
-    equipmentName: string;
-    equipmentType: string | null;
-    lastName: string;
-    firstName: string;
-    licenseKey?: string;
-    serialNumber?: string;
-    returnDate?: string;
-    dueDate?: string;
+    borrowStatusId: number | null;
+    borrowStatusName?: string | null;
     referenceDoc?: string | null;
-    items: BorrowEquipmentView[];
-    // Additional fields from backend
-    borrowEquipmentId?: number; // สำหรับ flat array response
-    borrowEquipmentCount?: number | null;
-    phone?: string;
-    departmentName?: string;
     approverName?: string | null;
+    borrowEquipmentCount?: number | null;
+    employee?: {
+        id: number;
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+        phone?: string;
+        roleName?: string;
+        departmentName?: string;
+    };
+    equipments?: Array<{
+        id: number;
+        borrowEquipmentId: number;
+        equipmentName: string;
+        serialNumber?: string | null;
+        licenseKey?: string | null;
+        brand?: string;
+        model?: string;
+        equipmentTypeName?: string;
+        dueDate?: string | null;
+        returnDate?: string | null;
+    }>;
 }
 
 export interface BorrowEquipmentView {

@@ -15,6 +15,7 @@ export interface EquipmentItem {
     licenseKey: string;
     type: 'hardware' | 'license';
     description: string;
+    duplicateError?: string; // Error message สำหรับ duplicate
 }
 
 // ==================== Custom Hook ====================
@@ -108,19 +109,22 @@ export function useAddEquipment() {
         }
     ]);
 
-    // เพิ่มรายการอุปกรณ์ใหม่
+    // เพิ่มรายการอุปกรณ์ใหม่ (auto-fill ชื่ออุปกรณ์, ยี่ห้อ, รุ่น จากรายการแรก)
     const addItem = () => {
+        // ดึงข้อมูลจากรายการแรก (index 0) เพื่อ auto-fill
+        const firstItem = items[0];
+        
         setItems([
             ...items,
             {
                 id: Date.now().toString(),
-                equipmentName: '',
-                brand: '',
-                model: '',
-                serialNumber: '',
-                licenseKey: '',
-                type: 'hardware',
-                description: ''
+                equipmentName: firstItem?.equipmentName || '',
+                brand: firstItem?.brand || '',
+                model: firstItem?.model || '',
+                serialNumber: '', // ไม่ auto-fill เพราะแต่ละอุปกรณ์มี Serial Number ไม่เหมือนกัน
+                licenseKey: '', // ไม่ auto-fill เพราะแต่ละอุปกรณ์มี License Key ไม่เหมือนกัน
+                type: firstItem?.type || 'hardware', // auto-fill type จากรายการแรก
+                description: firstItem?.description || '' // auto-fill description จากรายการแรก
             }
         ]);
     };
@@ -133,11 +137,47 @@ export function useAddEquipment() {
     };
     
     // อัปเดตข้อมูลรายการอุปกรณ์
-
     const updateItem = (id: string, field: keyof EquipmentItem, value: string) => {
-        setItems(items.map(item =>
-            item.id === id ? { ...item, [field]: value } : item
-        ));
+        setItems(prevItems => {
+            const updatedItems = prevItems.map(item =>
+                item.id === id ? { ...item, [field]: value, duplicateError: undefined } : item
+            );
+            
+            // ตรวจสอบ duplicate หลังจากอัปเดต
+            return updatedItems.map(item => {
+                if (item.id === id) {
+                    // เช็ค duplicate สำหรับรายการที่เพิ่งอัปเดต
+                    let duplicateError: string | undefined = undefined;
+                    
+                    if (field === 'serialNumber' && value.trim()) {
+                        // เช็ค serialNumber ซ้ำ (เฉพาะ hardware)
+                        const duplicateSerial = updatedItems.find(
+                            other => other.id !== id && 
+                            other.type === 'hardware' && 
+                            other.serialNumber.trim() && 
+                            other.serialNumber.trim().toLowerCase() === value.trim().toLowerCase()
+                        );
+                        if (duplicateSerial) {
+                            duplicateError = 'Serial Number นี้ถูกใช้ในรายการอื่นแล้ว';
+                        }
+                    } else if (field === 'licenseKey' && value.trim()) {
+                        // เช็ค licenseKey ซ้ำ (เฉพาะ license)
+                        const duplicateLicense = updatedItems.find(
+                            other => other.id !== id && 
+                            other.type === 'license' && 
+                            other.licenseKey.trim() && 
+                            other.licenseKey.trim().toLowerCase() === value.trim().toLowerCase()
+                        );
+                        if (duplicateLicense) {
+                            duplicateError = 'License Key นี้ถูกใช้ในรายการอื่นแล้ว';
+                        }
+                    }
+                    
+                    return { ...item, duplicateError };
+                }
+                return item;
+            });
+        });
     };
 
     // Validate ข้อมูลก่อนส่ง
@@ -166,6 +206,23 @@ export function useAddEquipment() {
             if (item.type === 'license' && !item.licenseKey.trim()) {
                 return `รายการที่ ${i + 1}: License ต้องมี License Key`;
             }
+        }
+
+        // เช็ค duplicate Serial Number และ License Key
+        const serialNumbers = items
+            .filter(item => item.type === 'hardware' && item.serialNumber.trim())
+            .map(item => item.serialNumber.trim().toLowerCase());
+        const uniqueSerialNumbers = new Set(serialNumbers);
+        if (serialNumbers.length !== uniqueSerialNumbers.size) {
+            return 'พบ Serial Number ที่ซ้ำกัน กรุณาตรวจสอบและแก้ไข';
+        }
+
+        const licenseKeys = items
+            .filter(item => item.type === 'license' && item.licenseKey.trim())
+            .map(item => item.licenseKey.trim().toLowerCase());
+        const uniqueLicenseKeys = new Set(licenseKeys);
+        if (licenseKeys.length !== uniqueLicenseKeys.size) {
+            return 'พบ License Key ที่ซ้ำกัน กรุณาตรวจสอบและแก้ไข';
         }
 
         return null;
