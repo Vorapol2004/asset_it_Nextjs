@@ -6,7 +6,6 @@ import { api } from '@/lib/api';
 interface FilterParams {
     typeId?: number;
     statusId?: number;
-    departmentId?: number;
     keyword?: string;
 }
 
@@ -70,20 +69,17 @@ export function useEquipment() {
         setLoading(true);
         setError(null);
         try {
-            // ถ้ามี keyword → เรียก search
-            if (filters.keyword && filters.keyword.trim()) {
-                const data = await equipment.search(filters.keyword);
-                setEquipments(data);
-            }
-            // ถ้ามี type, status หรือ department → เรียก filter
-            else if (filters.typeId || filters.statusId || filters.departmentId) {
+            // ใช้ filter เดียวสำหรับทุกกรณี (รองรับ keyword, typeId, statusId)
+            // ถ้ามี filters ใดๆ → เรียก filter
+            if (filters.keyword || filters.typeId || filters.statusId) {
                 const data = await equipment.filter({
-                    typeId: filters.typeId,
-                    statusId: filters.statusId,
-                    departmentId: filters.departmentId,
+                    keyword: filters.keyword,
+                    equipmentTypeId: filters.typeId,
+                    equipmentStatusId: filters.statusId,
                 });
                 setEquipments(data);
             }
+            // ถ้าไม่มี filters → เรียก getAll
             else {
                 await fetchEquipments();
             }
@@ -96,11 +92,8 @@ export function useEquipment() {
 
 
     const searchEquipment = async (keyword: string) => {
-        if (!keyword.trim()) {
-            await fetchEquipments();
-            return;
-        }
-        await applyFilters({ keyword });
+        // ใช้ applyFilters แทน (จะเรียก filter อัตโนมัติ)
+        await applyFilters({ keyword: keyword.trim() || undefined });
     };
 
     const fetchEquipmentDetail = async (id: number, showModalOnOpen = false) => {
