@@ -16,7 +16,9 @@ import {
     CheckCircle,
     AlertCircle,
     X,
-    ChevronUp
+    ChevronUp,
+    Upload,
+    FileSpreadsheet
 } from 'lucide-react';
 import { useAddEquipment } from '@/hooks/useAddEquipment';
 
@@ -48,6 +50,7 @@ export default function AddEquipmentPage() {
         submitEquipment,
         cancel,
         setError,
+        handleExcelImport,
     } = useAddEquipment();
 
     // ✅ Submit ฟอร์ม
@@ -77,6 +80,54 @@ export default function AddEquipmentPage() {
             top: 0,
             behavior: 'smooth',
         });
+    };
+
+    // Excel Import Handler
+    const [excelFile, setExcelFile] = useState<File | null>(null);
+    const [isImporting, setIsImporting] = useState(false);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // ตรวจสอบประเภทไฟล์
+            const validTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+                'application/vnd.ms-excel', // .xls
+            ];
+            const validExtensions = ['.xlsx', '.xls'];
+            const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+            if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
+                setError('กรุณาเลือกไฟล์ Excel (.xlsx หรือ .xls) เท่านั้น');
+                e.target.value = ''; // Reset input
+                return;
+            }
+
+            setExcelFile(file);
+            setError(null);
+        }
+    };
+
+    const handleImportExcel = async (replaceExisting: boolean = false) => {
+        if (!excelFile) {
+            setError('กรุณาเลือกไฟล์ Excel ก่อน');
+            return;
+        }
+
+        setIsImporting(true);
+        try {
+            const result = await handleExcelImport(excelFile, replaceExisting);
+            if (result.success) {
+                // Clear file input
+                setExcelFile(null);
+                const fileInput = document.getElementById('excel-file-input') as HTMLInputElement;
+                if (fileInput) fileInput.value = '';
+            }
+        } catch (err: any) {
+            setError(err.message || 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+        } finally {
+            setIsImporting(false);
+        }
     };
 
     return (
@@ -267,16 +318,108 @@ export default function AddEquipmentPage() {
                                 <Package className="h-6 w-6 mr-2 text-purple-600" />
                                 รายการอุปกรณ์
                             </h2>
-                            <button
-                                type="button"
-                                onClick={addItem}
-                                disabled={loading}
-                                className="flex items-center px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-md hover:shadow-lg font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
-                            >
-                                <Plus className="h-5 w-5 mr-2" />
-                                เพิ่มรายการ
-                            </button>
+                            <div className="flex gap-3">
+                                {/* Excel Import Button */}
+                                <label
+                                    htmlFor="excel-file-input"
+                                    className="flex items-center px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md hover:shadow-lg font-medium cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                >
+                                    <FileSpreadsheet className="h-5 w-5 mr-2" />
+                                    นำเข้าจาก Excel
+                                </label>
+                                <input
+                                    id="excel-file-input"
+                                    type="file"
+                                    accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                                    onChange={handleFileChange}
+                                    disabled={loading || isImporting}
+                                    className="hidden"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={addItem}
+                                    disabled={loading}
+                                    className="flex items-center px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-md hover:shadow-lg font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                >
+                                    <Plus className="h-5 w-5 mr-2" />
+                                    เพิ่มรายการ
+                                </button>
+                            </div>
                         </div>
+
+                        {/* Excel File Info & Import Buttons */}
+                        {excelFile && (
+                            <div className="mb-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center flex-1">
+                                        <FileSpreadsheet className="h-5 w-5 text-blue-600 mr-2" />
+                                        <div>
+                                            <p className="text-sm font-semibold text-blue-900">
+                                                ไฟล์ที่เลือก: {excelFile.name}
+                                            </p>
+                                            <p className="text-xs text-blue-700 mt-1">
+                                                {(excelFile.size / 1024).toFixed(2)} KB
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 ml-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleImportExcel(false)}
+                                            disabled={loading || isImporting}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium text-sm disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                                        >
+                                            {isImporting ? (
+                                                <>
+                                                    <span className="animate-spin mr-2">⏳</span>
+                                                    กำลังนำเข้า...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Upload className="h-4 w-4 mr-2" />
+                                                    เพิ่มข้อมูล
+                                                </>
+                                            )}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleImportExcel(true)}
+                                            disabled={loading || isImporting}
+                                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-all font-medium text-sm disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                                        >
+                                            {isImporting ? (
+                                                <>
+                                                    <span className="animate-spin mr-2">⏳</span>
+                                                    กำลังนำเข้า...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Upload className="h-4 w-4 mr-2" />
+                                                    แทนที่ข้อมูล
+                                                </>
+                                            )}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setExcelFile(null);
+                                                const fileInput = document.getElementById('excel-file-input') as HTMLInputElement;
+                                                if (fileInput) fileInput.value = '';
+                                            }}
+                                            disabled={loading || isImporting}
+                                            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all font-medium text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="mt-3 pt-3 border-t border-blue-200">
+                                    <p className="text-xs text-blue-700 mb-2">
+                                        <strong>หมายเหตุ:</strong> ไฟล์ Excel ควรมีคอลัมน์: ชื่ออุปกรณ์, ยี่ห้อ, รุ่น, serialnumber (สำหรับ Hardware), licensekey (สำหรับ License), ประเภท
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="space-y-4 mt-6">
                             {items.map((item, index) => (
