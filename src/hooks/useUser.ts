@@ -36,7 +36,7 @@ export function useUser() {
                     setUser({
                         id: response.user.id,
                         email: response.user.email,
-                        role: response.user.role,
+                        role: response.user.role as UserRole,
                     });
                 }
             } catch (error) {

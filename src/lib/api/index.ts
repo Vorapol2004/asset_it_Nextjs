@@ -3,7 +3,6 @@ import { equipment } from './equipment/equipment';
 import { add_equipment } from './equipment/add_equipment';
 import { borrow } from './borrow/borrow';
 import { borrow_history} from './borrow/borrow_history';
-import { oldBorrow } from './borrow/oldBorrow';
 import { employee } from './employee/employee';
 import { building } from './location/building';
 import { department } from './location/department';
@@ -19,7 +18,6 @@ export const api = {
     add_equipment,
     borrow,
     borrow_history,
-    oldBorrow,
     employee,
     building,
     department,

@@ -1,34 +1,7 @@
-import {BorrowCreateData, BorrowCreateResponse, BorrowStatus, BorrowView, EquipmentView, Building, Floor, Room, Department} from "@/types/type";
+import {BorrowCreateData, BorrowCreateResponse, EquipmentView} from "@/types/type";
 import { apiClient } from "@/service/apiClient";
 
 export const borrow = {
-
-    getAll: async (): Promise<BorrowView[]> => {
-        const res = await apiClient('/borrow/all');
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch borrows');
-        } else {
-            const data: BorrowView[] = await res.json();
-            return data;
-        }
-    },
-
-    search: async (keyword: string): Promise<BorrowView[]> => {
-        const res = await apiClient(`/borrow/search?keyword=${encodeURIComponent(keyword)}`);
-
-        if (res.status === 204 || res.status === 404) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to search borrows');
-        } else {
-            const data: BorrowView[] = await res.json();
-            return data;
-        }
-    },
-
     create: async (data: BorrowCreateData): Promise<BorrowCreateResponse> => {
         const res = await apiClient('/borrow/create', {
             method: 'POST',
@@ -38,88 +11,6 @@ export const borrow = {
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
             throw new Error(errorData.message || 'Failed to create borrow');
-        } else {
-            return res.json();
-        }
-    },
-
-
-    getAvailableEquipment: async (): Promise<EquipmentView[]> => {
-        // TODO: ตรวจสอบ endpoint ที่ถูกต้องสำหรับอุปกรณ์ที่พร้อมให้ยืม
-        // ตอนนี้ใช้ equipmentBorrow/dropDown ซึ่งดึงอุปกรณ์ที่กำลังถูกยืม
-        const res = await apiClient('/borrow/equipmentBorrow/dropDown');
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch available equipment');
-        } else {
-            return res.json();
-        }
-    },
-
-
-    getActive: async (): Promise<BorrowView[]> => {
-        const res = await apiClient('/borrow/active');
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch active borrows');
-        } else {
-            const data: BorrowView[] = await res.json();
-            return data;
-        }
-    },
-
-
-    getOverdue: async (): Promise<BorrowView[]> => {
-        const res = await apiClient('/borrow/overdue');
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch overdue items');
-        } else {
-            const data: BorrowView[] = await res.json();
-            return data;
-        }
-    },
-
-
-    getBorrowStatuses: async (): Promise<BorrowStatus[]> => {
-        const res = await apiClient('/borrow/statuses');
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch borrow statuses');
-        } else {
-            return res.json();
-        }
-    },
-
-
-    getEquipmentTypes: async (): Promise<{ id: number; equipmentTypeName: string }[]> => {
-        const res = await apiClient('/equipment_type/type');
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch equipment types');
-        } else {
-            return res.json();
-        }
-    },
-
-
-    getEquipmentByType: async (equipmentTypeId: number): Promise<EquipmentView[]> => {
-        const res = await apiClient(`/equipment/select_equipment_type?equipmentId=${equipmentTypeId}`);
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch equipment by type');
         } else {
             return res.json();
         }

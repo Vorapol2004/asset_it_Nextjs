@@ -96,7 +96,7 @@ export default function EditEmployeeModal({
                     <button
                         onClick={onClose}
                         className="text-white bg-blue-700 hover:bg-blue-800 p-2 rounded-lg cursor-pointer transition-colors duration-300"
-                        >
+                    >
                         <X className="h-6 w-6" />
                     </button>
                 </div>
@@ -299,4 +299,3 @@ export default function EditEmployeeModal({
         </div>
     );
 }
-

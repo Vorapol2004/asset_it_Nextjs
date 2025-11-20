@@ -127,36 +127,6 @@ export function useOldBorrow() {
         router.push(ROUTES.BORROW);
     };
 
-    
-    const handleDeleteBorrower = async (employee: EmployeeView) => {
-        const confirmed = window.confirm(
-            `คุณต้องการลบข้อมูลพนักงาน ${employee.firstName} ${employee.lastName} ใช่หรือไม่?\n\n` +
-            `ข้อมูลที่จะถูกลบ:\n` +
-            `- อีเมล: ${employee.email}\n` +
-            `การกระทำนี้ไม่สามารถยกเลิกได้`
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
-        try {
-            setLoading(true);
-            
-            await api.employee.delete(employee.id);
-
-            setEmployees(prev => prev.filter(emp => emp.id !== employee.id));
-            setFilteredBorrowers(prev => prev.filter(emp => emp.id !== employee.id));
-
-            alert('ลบข้อมูลพนักงานเรียบร้อยแล้ว');
-        } catch (error: any) {
-            console.error('Error deleting employee:', error);
-            alert(`เกิดข้อผิดพลาดในการลบข้อมูล: ${error.message || 'Unknown error'}`);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const fetchDepartments = async () => {
         try {
             const data = await api.department.getAll();
@@ -215,40 +185,55 @@ export function useOldBorrow() {
     };
 
     const handleEditBorrower = (employee: EmployeeView) => {
-        try {
-            // ใช้ข้อมูลที่มีอยู่แล้วใน employees array เพื่อแสดง modal ทันที
-            setEditingEmployee(employee);
-            
-            // ตั้งค่า form data จากข้อมูลที่มีอยู่
-            setEditFormData({
-                firstName: employee.firstName || '',
-                lastName: employee.lastName || '',
-                email: employee.email || '',
-                phone: employee.phone || '',
-                roleId: employee.roleId || 0,
-                departmentId: employee.departmentId || 0,
-                buildingId: 0,
-                floorId: 0,
-                roomId: 0, // ต้องหา roomId จาก employeeData ถ้ามี
-            });
+        setEditingEmployee(employee);
+        
+        // ตั้งค่า roleId - รองรับ null
+        const roleId = (employee.roleId !== null && employee.roleId !== undefined) ? employee.roleId : 0;
+        // ตั้งค่า departmentId
+        const departmentId = employee.departmentId || 0;
+        
+        setEditFormData({
+            firstName: employee.firstName || '',
+            lastName: employee.lastName || '',
+            email: employee.email || '',
+            phone: employee.phone || '',
+            roleId: roleId,
+            departmentId: departmentId,
+            buildingId: 0,
+            floorId: 0,
+            roomId: 0,
+        });
+        setIsEditModalOpen(true);
 
-            // เปิด modal ทันที
-            setIsEditModalOpen(true);
+        // Fetch buildings, floors, rooms in background
+        if (employee.departmentId && employee.departmentId > 0) {
+            api.building.filter(employee.departmentId)
+                .then(buildingsData => {
+                    setBuildings(buildingsData);
+                    const employeeBuildingId = buildingsData.find(b => b.buildingName === employee.buildingName)?.id || 0;
+                    setEditFormData(prev => ({ ...prev, buildingId: employeeBuildingId }));
 
-            // โหลด buildings ใน background (ถ้ามี departmentId)
-            if (employee.departmentId) {
-                api.building.filter(employee.departmentId)
-                    .then((buildingsData) => {
-                        setBuildings(buildingsData);
-                    })
-                    .catch((error) => {
-                        console.error('Error fetching buildings:', error);
-                        // ไม่ต้องแสดง error เพราะ buildings เป็น optional field
-                    });
-            }
-        } catch (error: any) {
-            console.error('Error opening edit modal:', error);
-            alert(`เกิดข้อผิดพลาดในการเปิดฟอร์มแก้ไข: ${error.message || 'Unknown error'}`);
+                    if (employeeBuildingId > 0 && employee.floorName) {
+                        api.floor.getByBuilding(employeeBuildingId)
+                            .then(floorsData => {
+                                setFloors(floorsData);
+                                const employeeFloorId = floorsData.find(f => f.floorName === employee.floorName)?.id || 0;
+                                setEditFormData(prev => ({ ...prev, floorId: employeeFloorId }));
+
+                                if (employeeFloorId > 0 && employee.roomName) {
+                                    api.room.getByFloor(employeeFloorId)
+                                        .then(roomsData => {
+                                            setRooms(roomsData);
+                                            const employeeRoomId = roomsData.find(r => r.roomName === employee.roomName)?.id || 0;
+                                            setEditFormData(prev => ({ ...prev, roomId: employeeRoomId }));
+                                        })
+                                        .catch(error => console.error('Error fetching rooms in background:', error));
+                                }
+                            })
+                            .catch(error => console.error('Error fetching floors in background:', error));
+                    }
+                })
+                .catch(error => console.error('Error fetching buildings in background:', error));
         }
     };
 
@@ -285,6 +270,14 @@ export function useOldBorrow() {
                 return;
             }
 
+            // ตรวจสอบ employee id
+            const employeeId = editingEmployee?.id || editingEmployee?.employeeId;
+            if (!employeeId || employeeId === 0) {
+                alert('ไม่พบ ID ของพนักงาน กรุณาปิด modal แล้วเปิดใหม่');
+                setLoading(false);
+                return;
+            }
+
             // สร้าง employee data สำหรับ update
             const updateData: Partial<Employee> & { roomId?: number } = {
                 firstName: editFormData.firstName.trim(),
@@ -297,7 +290,7 @@ export function useOldBorrow() {
                 ...(editFormData.roomId && editFormData.roomId > 0 ? { roomId: editFormData.roomId } : {}),
             };
 
-            await api.employee.update(editingEmployee.id, updateData);
+            await api.employee.update(employeeId, updateData);
 
             // Refresh data
             await fetchPreviousBorrowers();
@@ -340,7 +333,6 @@ export function useOldBorrow() {
         loading,
         setSearchTerm,
         handleSelectBorrower,
-        handleDeleteBorrower,
         // Edit functionality
         isEditModalOpen,
         editingEmployee,
@@ -356,4 +348,3 @@ export function useOldBorrow() {
         handleCloseEditModal,
     };
 }
-

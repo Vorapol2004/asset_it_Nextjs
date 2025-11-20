@@ -15,18 +15,6 @@ export const employee = {
         }
     },
 
-    
-    getById: async (id: number): Promise<EmployeeView> => {
-        const res = await apiClient(`/employee/${id}`);
-
-        if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: 'Failed to fetch employee' }));
-            throw new Error(errorData.message || 'Failed to fetch employee');
-        } else {
-            return res.json();
-        }
-    },
-
    
     selectEmployee: async (employeeId: number): Promise<EmployeeView> => {
         const res = await apiClient(`/employee/select_employee?employeeId=${employeeId}`);
@@ -34,32 +22,6 @@ export const employee = {
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({ message: 'Failed to select employee' }));
             throw new Error(errorData.message || 'Failed to select employee');
-        } else {
-            return res.json();
-        }
-    },
-
-    
-    getByRole: async (roleId: number): Promise<EmployeeView[]> => {
-        const res = await apiClient(`/employee/role/${roleId}`);
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch employees by role');
-        } else {
-            return res.json();
-        }
-    },
-
-    
-    getByDepartment: async (departmentId: number): Promise<EmployeeView[]> => {
-        const res = await apiClient(`/employee/dep/${departmentId}`);
-
-        if (res.status === 204) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch employees by department');
         } else {
             return res.json();
         }
@@ -80,27 +42,39 @@ export const employee = {
     },
 
     
-    update: async (id: number, data: Partial<Employee>): Promise<Employee> => {
-        const res = await apiClient(`/employee/${id}`, {
+    update: async (id: number, data: Partial<Employee> & { roomId?: number }): Promise<Employee> => {
+        // ตรวจสอบว่า id ถูกต้องหรือไม่
+        if (!id || id === 0 || isNaN(id)) {
+            throw new Error(`Invalid employee ID: ${id}`);
+        }
+
+        // ใช้ data ที่ส่งมาโดยตรง (useOldBorrow สร้างไว้แล้ว)
+        // ลบ roomId ออกถ้าไม่มีหรือ <= 0 (เพราะ backend ต้องการ optional)
+        const { roomId, ...requestData } = data;
+        const bodyData: any = {
+            employeeId: id, // Backend ต้องการ employeeId (ไม่ใช่ id)
+            ...requestData,
+            description: requestData.description ?? null,
+        };
+        
+        // เพิ่ม roomId เฉพาะเมื่อ > 0
+        if (roomId && roomId > 0) {
+            bodyData.roomId = roomId;
+        }
+
+        // Backend ต้องการ path: PUT /employee/edit (ไม่มี /id ใน path)
+        // ส่ง id ใน request body แทน
+        const res = await apiClient('/employee/edit', {
             method: 'PUT',
-            body: JSON.stringify(data),
+            body: JSON.stringify(bodyData),
         });
 
         if (!res.ok) {
-            throw new Error('Failed to update employee');
+            const errorData = await res.json().catch(() => ({ message: 'Failed to update employee' }));
+            const errorMessage = errorData.message || errorData.error || errorData.errorMessage || `Failed to update employee (Status: ${res.status} ${res.statusText})`;
+            throw new Error(errorMessage);
         } else {
             return res.json();
-        }
-    },
-
-   
-    delete: async (id: number): Promise<void> => {
-        const res = await apiClient(`/employee/${id}`, { method: 'DELETE' });
-
-        if (!res.ok) {
-            throw new Error('Failed to delete employee');
-        } else {
-            return;
         }
     },
 
@@ -112,19 +86,6 @@ export const employee = {
             return [];
         } else if (!res.ok) {
             throw new Error('Failed to search employees');
-        } else {
-            return res.json();
-        }
-    },
-
-    
-    getByDepartmentAndRole: async (departmentId: number, roleId: number): Promise<EmployeeView[]> => {
-        const res = await apiClient(`/employee/dep/${departmentId}/role/${roleId}`);
-
-        if (res.status === 204 || res.status === 404) {
-            return [];
-        } else if (!res.ok) {
-            throw new Error('Failed to fetch employees by department and role');
         } else {
             return res.json();
         }
