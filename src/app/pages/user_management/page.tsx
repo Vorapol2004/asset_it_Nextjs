@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
-import { Users, Plus, Edit, Trash2, RefreshCw, AlertCircle, Shield, Home } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, RefreshCw, AlertCircle, Shield, Home, ChevronUp } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useAuthContext } from '@/app/context/AuthContext';
 import { UserModal } from './UserModal';
@@ -32,6 +32,29 @@ export default function UserManagementPage() {
         setError,
         setErrorAction,
     } = useUserManagement();
+
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    // Scroll to Top 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        });
+    };
 
     const handleSubmit = async (data: any) => {
         if (isCreating) {
@@ -216,6 +239,17 @@ export default function UserManagementPage() {
                 loading={loadingAction}
                 error={errorAction}
             />
+
+            {/* Scroll to Top Button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 z-50 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group cursor-pointer"
+                    aria-label="Scroll to top"
+                >
+                    <ChevronUp className="h-6 w-6 group-hover:animate-bounce" />
+                </button>
+            )}
         </div>
         </RouteProtection>
     );

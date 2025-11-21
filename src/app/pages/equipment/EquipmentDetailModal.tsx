@@ -89,7 +89,7 @@ export function EquipmentDetailModal({
                                         <Package className="h-8 w-8 text-indigo-600 flex-shrink-0" />
                                         <div>
                                             <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                                                {equipment.equipmentName}
+                                                {equipment.equipmentName || 'ไม่มีชื่ออุปกรณ์'}
                                             </h2>
                                             <p className="text-gray-600">รหัสอุปกรณ์: #{equipment.id}</p>
                                         </div>
@@ -126,6 +126,7 @@ export function EquipmentDetailModal({
                                             ข้อมูลทั่วไป
                                         </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <InfoItem label="ชื่ออุปกรณ์" value={equipment.equipmentName} />
                                             <InfoItem label="ประเภท">
                                                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
                                                     equipment.equipmentTypeName === 'Hardware'

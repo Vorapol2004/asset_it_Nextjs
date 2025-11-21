@@ -78,6 +78,12 @@ export function useAuth(): UseAuthReturn {
                 // เก็บ user data ใน localStorage
                 userServices.setUser(userData);
                 setUser(userData);
+            } else {
+                // ถ้าไม่มี user (เช่น ไม่ได้ login หรือ token หมดอายุ)
+                // ลบข้อมูล user และ token ที่อาจจะหมดอายุ
+                tokenServices.removeToken();
+                userServices.removeUser();
+                setUser(null);
             }
         } catch (error) {
             console.error('Failed to fetch user:', error);

@@ -1,11 +1,12 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import RouteProtection from '@/component/auth/RouteProtection';
 import {
     Search, ArrowLeft, User,
-    History, ChevronRight, Mail, Phone, Briefcase, Edit
+    History, ChevronRight, Mail, Phone, Briefcase, Edit, ChevronUp
 } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 import { useOldBorrow } from '@/hooks/useOldBorrow';
@@ -33,6 +34,29 @@ export default function OldBorrowPage() {
         handleUpdateEmployee,
         handleCloseEditModal,
     } = useOldBorrow();
+
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    // Scroll to Top 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        });
+    };
 
     return (
         <RouteProtection allowedRoles="authenticated">
@@ -222,6 +246,17 @@ export default function OldBorrowPage() {
                 onUpdate={handleUpdateEmployee}
                 onClose={handleCloseEditModal}
             />
+
+            {/* Scroll to Top Button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 z-50 p-4 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group cursor-pointer"
+                    aria-label="Scroll to top"
+                >
+                    <ChevronUp className="h-6 w-6 group-hover:animate-bounce" />
+                </button>
+            )}
         </div>
         </RouteProtection>
     );

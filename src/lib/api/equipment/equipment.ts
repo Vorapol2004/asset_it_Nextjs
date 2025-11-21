@@ -55,7 +55,22 @@ export const equipment = {
         }
 
         const data = await res.json();
-        return data[0]; // Backend ส่งมาเป็น Array
+        
+        // ตรวจสอบว่า data เป็น array หรือ object
+        let equipmentData: EquipmentView;
+        if (Array.isArray(data)) {
+            if (data.length === 0) {
+                throw new Error('Equipment not found');
+            }
+            equipmentData = data[0]; // Backend ส่งมาเป็น Array
+        } else if (data && typeof data === 'object') {
+            // ถ้า backend ส่งมาเป็น object โดยตรง
+            equipmentData = data;
+        } else {
+            throw new Error('Invalid equipment data format');
+        }
+        
+        return equipmentData;
     },
 
     // ใช้ path เดียว /equipment/filter สำหรับทั้ง search และ filter

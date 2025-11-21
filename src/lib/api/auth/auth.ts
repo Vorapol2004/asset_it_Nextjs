@@ -73,12 +73,24 @@ export const auth = {
 
     /**
      * Get Current User - ดึงข้อมูล user ปัจจุบัน
-     * @returns AuthResponse พร้อม user data
+     * @returns AuthResponse พร้อม user data หรือ response ที่ไม่มี user ถ้าไม่ authenticated
      */
     async getCurrentUser(): Promise<AuthResponse> {
         const res = await apiClient('/auth/me', {
             method: 'GET',
         });
+
+        // ถ้าเป็น 401 หรือ 403 (Unauthorized/Forbidden) แสดงว่าไม่มี session
+        // ไม่ต้อง throw error เพราะเป็นสถานการณ์ปกติเมื่อยังไม่ได้ login
+        if (res.status === 401 || res.status === 403) {
+            // ลบ token ที่อาจจะหมดอายุหรือไม่ถูกต้อง
+            tokenServices.removeToken();
+            // คืนค่า response ที่ไม่มี user
+            return {
+                success: false,
+                message: 'Not authenticated',
+            };
+        }
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({ 

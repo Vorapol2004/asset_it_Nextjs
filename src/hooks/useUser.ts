@@ -38,6 +38,9 @@ export function useUser() {
                         email: response.user.email,
                         role: response.user.role as UserRole,
                     });
+                } else {
+                    // ถ้าไม่มี user (เช่น ไม่ได้ login หรือ token หมดอายุ)
+                    setUser(null);
                 }
             } catch (error) {
                 console.error('Failed to fetch user:', error);

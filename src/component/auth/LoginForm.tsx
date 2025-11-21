@@ -55,7 +55,7 @@ export default function LoginForm() {
                         <div className="bg-blue-100 w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                             <LogIn className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600" />
                         </div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome</h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">ยินดีต้อนรับ</h2>
                         <p className="text-gray-600 mt-2 text-sm sm:text-base">เข้าสู่ระบบเพื่อใช้งาน</p>
                     </div>
 

@@ -5,7 +5,7 @@ import Navbar from '@/component/Navbar/Navbar';
 import RouteProtection from '@/component/auth/RouteProtection';
 import {
     Building2, Layers, DoorOpen, Plus, Edit, Trash2,
-    RefreshCw, ChevronDown, X, Settings
+    RefreshCw, ChevronDown, X, Settings, ChevronUp
 } from 'lucide-react';
 import { useLocationManagement } from '@/hooks/useLocationManagement';
 import { Department, Building, Floor, Room } from '@/types/type';
@@ -49,6 +49,7 @@ export default function LocationManagementPage() {
     } = useLocationManagement();
 
     const [selectedFloor, setSelectedFloor] = useState<number>(0);
+    const [showScrollTop, setShowScrollTop] = useState(false);
 
     // Load rooms when floor changes
     useEffect(() => {
@@ -58,6 +59,27 @@ export default function LocationManagementPage() {
             // Reset rooms when no floor selected
         }
     }, [selectedFloor]);
+
+    // Scroll to Top 
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        });
+    };
 
     const tabs = [
         { id: 'department' as const, label: 'แผนก', icon: Building2 },
@@ -451,6 +473,17 @@ export default function LocationManagementPage() {
                         }
                     }}
                 />
+            )}
+
+            {/* Scroll to Top Button */}
+            {showScrollTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 z-50 p-4 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 hover:scale-110 flex items-center justify-center group cursor-pointer"
+                    aria-label="Scroll to top"
+                >
+                    <ChevronUp className="h-6 w-6 group-hover:animate-bounce" />
+                </button>
             )}
         </div>
         </RouteProtection>
