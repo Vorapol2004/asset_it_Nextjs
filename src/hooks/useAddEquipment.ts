@@ -266,7 +266,7 @@ export function useAddEquipment() {
         try {
             // เตรียมข้อมูล
             const lotData = prepareSubmitData();
-            const result = await lot.create(lotData);
+            await lot.create(lotData);
             setSuccess(true);
 
             // Redirect หลัง 1.5 วินาที
@@ -276,9 +276,9 @@ export function useAddEquipment() {
 
             return true;
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('❌ Error adding equipment:', err);
-            const errorMessage = err?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
+            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
             setError(errorMessage);
             return false;
         } finally {
@@ -327,7 +327,7 @@ export function useAddEquipment() {
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
                         header: 1,
                         defval: '' // ใช้ค่าว่างแทน undefined
-                    }) as any[][];
+                    }) as unknown[][];
 
                     if (jsonData.length < 2) {
                         errors.push('ไฟล์ Excel ต้องมี header และข้อมูลอย่างน้อย 1 แถว');
@@ -336,7 +336,7 @@ export function useAddEquipment() {
                     }
 
                     // หา header row (แถวแรก)
-                    const headerRow = jsonData[0].map((h: any) => String(h).trim().toLowerCase());
+                    const headerRow = (jsonData[0] || []).map((h: unknown) => String(h || '').trim().toLowerCase());
                     
                     // Map column names (รองรับหลายรูปแบบ)
                     const columnMap: { [key: string]: string } = {
@@ -375,7 +375,7 @@ export function useAddEquipment() {
                     const importedItems: EquipmentItem[] = [];
                     for (let i = 1; i < jsonData.length; i++) {
                         const row = jsonData[i];
-                        if (!row || row.every((cell: any) => !cell || String(cell).trim() === '')) {
+                        if (!row || row.every((cell: unknown) => !cell || String(cell || '').trim() === '')) {
                             continue; // ข้ามแถวว่าง
                         }
 
@@ -458,8 +458,9 @@ export function useAddEquipment() {
 
                     resolve({ items: importedItems, errors });
 
-                } catch (err: any) {
-                    reject(new Error(`เกิดข้อผิดพลาดในการอ่านไฟล์ Excel: ${err.message}`));
+                } catch (err: unknown) {
+                    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+                    reject(new Error(`เกิดข้อผิดพลาดในการอ่านไฟล์ Excel: ${errorMessage}`));
                 }
             };
 
@@ -582,8 +583,8 @@ export function useAddEquipment() {
 
             return { success: true, itemsCount: result.items.length, errors: result.errors };
 
-        } catch (err: any) {
-            const errorMessage = err?.message || 'เกิดข้อผิดพลาดในการอ่านไฟล์ Excel';
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการอ่านไฟล์ Excel';
             setError(errorMessage);
             return { success: false, itemsCount: 0, errors: [errorMessage] };
         } finally {

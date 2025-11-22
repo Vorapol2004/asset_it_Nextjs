@@ -16,8 +16,9 @@ export default function TestPage() {
                 const data = await api.equipment.getAll();
                 setEquipments(data);
                 console.log('✅ ดึงข้อมูลสำเร็จ:', data);
-            } catch (err: any) {
-                setError(err.message);
+            } catch (err: unknown) {
+                const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาด';
+                setError(errorMessage);
                 console.error('❌ เกิดข้อผิดพลาด:', err);
             } finally {
                 setLoading(false);

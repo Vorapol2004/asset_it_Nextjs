@@ -86,8 +86,8 @@ export function EditEquipmentModal({
                 equipmentTypeId: formData.equipmentTypeId,
                 equipmentStatusId: formData.equipmentStatusId,
             });
-        } catch (err) {
-
+        } catch {
+            // Error handling is done by parent component
         } finally {
             setSaving(false); // reset state
         }
@@ -104,8 +104,8 @@ export function EditEquipmentModal({
             setDeleting(true);
             await onDelete(equipment.id);
             
-        } catch (err) {
-
+        } catch {
+            // Error handling is done by parent component
         } finally {
             setDeleting(false);
         }

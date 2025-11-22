@@ -38,14 +38,17 @@ export function useNewBorrow() {
 
     useEffect(() => {
         fetchBuildings();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedDepartment]);
 
     useEffect(() => {
         fetchFloors();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedBuilding]);
 
     useEffect(() => {
         fetchRooms();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFloor]);
 
 
@@ -307,15 +310,10 @@ export function useNewBorrow() {
             sessionStorage.setItem('borrowData', JSON.stringify({ employeeId }));
             
             router.push(ROUTES.BORROW);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error creating employee:', error);
             
-            let errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
-            if (error.message) {
-                errorMessage = error.message;
-            } else if (error instanceof Error) {
-                errorMessage = error.message;
-            }
+            const errorMessage = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
             
             alert(`${errorMessage}\n\nกรุณาตรวจสอบ:\n- ข้อมูลที่กรอกครบถ้วนหรือไม่\n- อีเมลซ้ำกับที่มีอยู่แล้วหรือไม่\n- API backend ทำงานปกติหรือไม่`);
         } finally {
@@ -341,6 +339,7 @@ export function useNewBorrow() {
         borrowerEmail,
         borrowerPhone,
         borrowDate,
+        dueDate,
         referenceDoc,
 
         // Setters

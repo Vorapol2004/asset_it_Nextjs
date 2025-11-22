@@ -47,7 +47,7 @@ export function useAuth(): UseAuthReturn {
 
         // ลองอ่าน user data จาก localStorage ก่อน (fallback เมื่อ backend ไม่ได้รัน)
         // ต้องอ่านก่อนเพื่อให้ user state ถูก set ทันที (synchronous)
-        let storedUser = userServices.getUser();
+        const storedUser = userServices.getUser();
         
         if (storedUser) {
             setUser(storedUser);

@@ -53,8 +53,9 @@ export default function TestJsonPage() {
             } else {
                 throw new Error(`HTTP ${apiResponse.status}`);
             }
-        } catch (error: any) {
-            setResponse(`เกิดข้อผิดพลาด: ${error.message}\n\n(หมายเหตุ: ถ้า Backend ยังไม่พร้อม จะแสดง error นี้)`);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            setResponse(`เกิดข้อผิดพลาด: ${errorMessage}\n\n(หมายเหตุ: ถ้า Backend ยังไม่พร้อม จะแสดง error นี้)`);
             setStatus('error');
         } finally {
             setLoading(false);
@@ -84,8 +85,9 @@ export default function TestJsonPage() {
             } else {
                 throw new Error(`HTTP ${apiResponse.status}`);
             }
-        } catch (error: any) {
-            setResponse(`เกิดข้อผิดพลาด: ${error.message}\n\n(หมายเหตุ: ถ้า Backend ยังไม่พร้อม จะแสดง error นี้)`);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            setResponse(`เกิดข้อผิดพลาด: ${errorMessage}\n\n(หมายเหตุ: ถ้า Backend ยังไม่พร้อม จะแสดง error นี้)`);
             setStatus('error');
         } finally {
             setLoading(false);
@@ -293,7 +295,7 @@ export default function TestJsonPage() {
                         </li>
                         <li className="flex items-start gap-2">
                             <span className="text-blue-600 font-bold">2.</span>
-                            <span>กดปุ่ม "ส่ง POST Request" หรือ "ส่ง PUT Request"</span>
+                            <span>กดปุ่ม &quot;ส่ง POST Request&quot; หรือ &quot;ส่ง PUT Request&quot;</span>
                         </li>
                         <li className="flex items-start gap-2">
                             <span className="text-blue-600 font-bold">3.</span>

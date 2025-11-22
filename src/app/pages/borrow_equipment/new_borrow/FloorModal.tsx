@@ -76,8 +76,9 @@ export function FloorModal({
                 buildingId,
             });
             onClose();
-        } catch (err: any) {
-            setError(err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
+            setError(errorMessage);
         } finally {
             setSaving(false);
         }
@@ -97,8 +98,9 @@ export function FloorModal({
             setError(null);
             await onDelete(floor.id);
             onClose();
-        } catch (err: any) {
-            setError(err.message || 'เกิดข้อผิดพลาดในการลบข้อมูล');
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการลบข้อมูล';
+            setError(errorMessage);
         } finally {
             setDeleting(false);
         }

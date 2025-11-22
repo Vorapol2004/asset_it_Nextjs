@@ -51,7 +51,7 @@ export const employee = {
         // ใช้ data ที่ส่งมาโดยตรง (useOldBorrow สร้างไว้แล้ว)
         // ลบ roomId ออกถ้าไม่มีหรือ <= 0 (เพราะ backend ต้องการ optional)
         const { roomId, ...requestData } = data;
-        const bodyData: any = {
+        const bodyData: Record<string, unknown> = {
             employeeId: id, // Backend ต้องการ employeeId (ไม่ใช่ id)
             ...requestData,
             description: requestData.description ?? null,

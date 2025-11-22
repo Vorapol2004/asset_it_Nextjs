@@ -8,7 +8,6 @@ import {
     RefreshCw, ChevronDown, X, Settings, ChevronUp
 } from 'lucide-react';
 import { useLocationManagement } from '@/hooks/useLocationManagement';
-import { Department, Building, Floor, Room } from '@/types/type';
 import { LocationModal } from './LocationModal';
 
 export default function LocationManagementPage() {
@@ -55,9 +54,8 @@ export default function LocationManagementPage() {
     useEffect(() => {
         if (selectedFloor > 0) {
             loadRooms(selectedFloor);
-        } else {
-            // Reset rooms when no floor selected
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFloor]);
 
     // Scroll to Top 

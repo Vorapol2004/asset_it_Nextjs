@@ -109,6 +109,7 @@ export function useLocationManagement() {
     // Initial load
     useEffect(() => {
         loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Open create modal

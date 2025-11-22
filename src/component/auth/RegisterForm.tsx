@@ -27,7 +27,14 @@ export default function RegisterForm() {
 
         try {
             const { api } = await import('@/lib/api');
-            await api.register(formData.username, formData.password);
+            // Use userApi.createUser for registration
+            // Note: This requires admin privileges, so registration might need to be handled differently
+            // For now, we'll use the user API with default ROLE_USER
+            await api.user.createUser({
+                email: formData.username, // Using username as email
+                password: formData.password,
+                role: 'ROLE_USER',
+            });
             router.push('/login');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');

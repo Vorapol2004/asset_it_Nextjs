@@ -319,9 +319,10 @@ export function useBorrow() {
 
             alert('บันทึกการยืมเรียบร้อยแล้ว!');
             router.push(ROUTES.BORROW_EQUIPMENT);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error submitting borrow:', error);
-            alert(error.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+            const errorMessage = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
+            alert(errorMessage);
         } finally {
             setLoading(false);
         }

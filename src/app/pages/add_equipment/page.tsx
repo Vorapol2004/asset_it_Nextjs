@@ -123,8 +123,9 @@ export default function AddEquipmentPage() {
                 const fileInput = document.getElementById('excel-file-input') as HTMLInputElement;
                 if (fileInput) fileInput.value = '';
             }
-        } catch (err: any) {
-            setError(err.message || 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล';
+            setError(errorMessage);
         } finally {
             setIsImporting(false);
         }

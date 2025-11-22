@@ -5,14 +5,13 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/component/Navbar/Navbar';
 import { Users, Plus, Edit, Trash2, RefreshCw, AlertCircle, Shield, Home, ChevronUp } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
-import { useAuthContext } from '@/app/context/AuthContext';
 import { UserModal } from './UserModal';
 import { ROUTES } from '@/constants/routes';
 import RouteProtection from '@/component/auth/RouteProtection';
+import type { CreateUserInput, UpdateUserInput } from '@/lib/api/user/user';
 
 export default function UserManagementPage() {
     const router = useRouter();
-    const { isAdmin } = useAuthContext();
     const {
         users,
         loading,
@@ -56,11 +55,21 @@ export default function UserManagementPage() {
         });
     };
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: CreateUserInput | UpdateUserInput) => {
         if (isCreating) {
-            await createUser(data);
+            // Type guard: ensure data is CreateUserInput with required fields
+            if (typeof data.email === 'string' && typeof data.password === 'string' && data.email && data.password) {
+                const createData: CreateUserInput = {
+                    email: data.email,
+                    password: data.password,
+                    role: data.role,
+                };
+                await createUser(createData);
+            } else {
+                throw new Error('Email and password are required for creating a user');
+            }
         } else if (editingUser) {
-            await updateUser(editingUser.id, data);
+            await updateUser(editingUser.id, data as UpdateUserInput);
         }
     };
 

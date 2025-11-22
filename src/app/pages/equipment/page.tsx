@@ -71,6 +71,7 @@ export default function EquipmentPage() {
     // ใช้งานดึงข้อมูลอุปกรณ์ทั้งหมดพร้อมกับการเรียงข้อมูลใหม่เก่า 
     useEffect(() => {
         fetchEquipments();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // 🔥useEffect filter เมื่อเปลี่ยน status/type

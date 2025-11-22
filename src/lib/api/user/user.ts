@@ -1,5 +1,5 @@
 import { apiClient } from '@/service/apiClient';
-import type { User, UserRole } from '@/types/auth';
+import type { User } from '@/types/auth';
 
 /**
  * User API - ฟังก์ชันสำหรับเรียก API จัดการ Users (สำหรับ Admin เท่านั้น)

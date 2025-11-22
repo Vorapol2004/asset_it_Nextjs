@@ -48,6 +48,7 @@ export function useOldBorrow() {
             setRooms([]);
             setEditFormData(prev => ({ ...prev, buildingId: 0, floorId: 0, roomId: 0 }));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editFormData.departmentId]);
 
     useEffect(() => {
@@ -58,6 +59,7 @@ export function useOldBorrow() {
             setRooms([]);
             setEditFormData(prev => ({ ...prev, floorId: 0, roomId: 0 }));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editFormData.buildingId]);
 
     useEffect(() => {
@@ -67,6 +69,7 @@ export function useOldBorrow() {
             setRooms([]);
             setEditFormData(prev => ({ ...prev, roomId: 0 }));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editFormData.floorId]);
 
     useEffect(() => {
@@ -300,9 +303,10 @@ export function useOldBorrow() {
             setEditingEmployee(null);
 
             alert('แก้ไขข้อมูลพนักงานเรียบร้อยแล้ว');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error updating employee:', error);
-            alert(`เกิดข้อผิดพลาดในการแก้ไขข้อมูล: ${error.message || 'Unknown error'}`);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            alert(`เกิดข้อผิดพลาดในการแก้ไขข้อมูล: ${errorMessage}`);
         } finally {
             setLoading(false);
         }
