@@ -10,7 +10,7 @@ const Footer = () => {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     {/* Left: Text Content */}
                     <div className="text-center md:text-left">
-                        <p>&copy; 2025 EquipTrack System</p>
+                        <p>&copy; 2025 Asset Tracking System</p>
                         <p className="text-gray-400 mt-1">
                             ระบบบันทึกการยืมอุปกรณ์ | พัฒนาโดย STECH UTCC
                         </p>
