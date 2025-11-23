@@ -12,13 +12,6 @@ export interface User {
     role: UserRole;          // Role ของ user (ROLE_ADMIN หรือ ROLE_USER)
 }
 
-// ข้อมูลที่ใช้สำหรับสมัครสมาชิก (สำหรับ admin สร้าง user)
-export interface RegisterInput {
-    email: string;           // Email สำหรับ login
-    password: string;        // Password ที่ user กรอก
-    role?: UserRole;         // Role (ถ้าไม่ระบุจะเป็น 'ROLE_USER')
-}
-
 // ข้อมูลที่ใช้สำหรับ Login
 export interface LoginInput {
     email: string;           // Email สำหรับ login

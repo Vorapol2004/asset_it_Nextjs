@@ -51,9 +51,8 @@ export default function LandingPage() {
                 <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center">
                     UTCC IT Asset Management System
                 </h1>
-                <p className="text-lg md:text-xl text-gray-600 mb-8 text-center max-w-lg">
-                    จัดการและติดตามการยืม-คืนอุปกรณ์ได้อย่างมีประสิทธิภาพ
-                    ง่าย รวดเร็ว และปลอดภัย
+                <p className="text-lg md:text-xl text-gray-600 mb-8 text-center">
+                    จัดการและติดตามการยืม-คืนอุปกรณ์ภายในมหาวิทยาลัยหอการค้าไทย
                 </p>
 
                 {/* CTA Buttons */}

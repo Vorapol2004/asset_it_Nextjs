@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput, AuthResponse } from '@/types/auth';
+import type { LoginInput, AuthResponse } from '@/types/auth';
 
 /**
  * Auth Service - ฟังก์ชันสำหรับเรียก API ทั้งหมด
@@ -16,20 +16,6 @@ export const authService = {
      */
     async login(data: LoginInput): Promise<AuthResponse> {
         const res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-        return res.json();
-    },
-
-    /**
-     * Register
-     * @param data - username และ password
-     * @returns AuthResponse
-     */
-    async register(data: RegisterInput): Promise<AuthResponse> {
-        const res = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),

@@ -2,7 +2,7 @@
  * Token Services - จัดการ JWT Token
  * 
  * หน้าที่:
- * - เก็บ token ใน localStorage
+ * - เก็บ token ใน sessionStorage
  * - ดึง token ออกมา
  * - ลบ token
  * - ตรวจสอบว่ามี token หรือไม่
@@ -12,30 +12,30 @@ const TOKEN_KEY = 'token';
 
 export const tokenServices = {
     /**
-     * เก็บ token ใน localStorage
+     * เก็บ token ใน sessionStorage
      */
     setToken(token: string): void {
         if (typeof window !== 'undefined') {
-            localStorage.setItem(TOKEN_KEY, token);
+            sessionStorage.setItem(TOKEN_KEY, token);
         }
     },
 
     /**
-     * ดึง token จาก localStorage
+     * ดึง token จาก sessionStorage
      */
     getToken(): string | null {
         if (typeof window !== 'undefined') {
-            return localStorage.getItem(TOKEN_KEY);
+            return sessionStorage.getItem(TOKEN_KEY);
         }
         return null;
     },
 
     /**
-     * ลบ token จาก localStorage
+     * ลบ token จาก sessionStorage
      */
     removeToken(): void {
         if (typeof window !== 'undefined') {
-            localStorage.removeItem(TOKEN_KEY);
+            sessionStorage.removeItem(TOKEN_KEY);
         }
     },
 

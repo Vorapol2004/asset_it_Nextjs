@@ -45,7 +45,7 @@ export function useAuth(): UseAuthReturn {
             return;
         }
 
-        // ลองอ่าน user data จาก localStorage ก่อน (fallback เมื่อ backend ไม่ได้รัน)
+        // ลองอ่าน user data จาก sessionStorage ก่อน (fallback เมื่อ backend ไม่ได้รัน)
         // ต้องอ่านก่อนเพื่อให้ user state ถูก set ทันที (synchronous)
         const storedUser = userServices.getUser();
         
@@ -75,7 +75,7 @@ export function useAuth(): UseAuthReturn {
                     role: backendRole as UserRole,
                 };
                 
-                // เก็บ user data ใน localStorage
+                // เก็บ user data ใน sessionStorage
                 userServices.setUser(userData);
                 setUser(userData);
             } else {
@@ -88,13 +88,13 @@ export function useAuth(): UseAuthReturn {
         } catch (error) {
             console.error('Failed to fetch user:', error);
             
-            // ถ้าเป็น network error (Failed to fetch) ใช้ข้อมูลจาก localStorage
+            // ถ้าเป็น network error (Failed to fetch) ใช้ข้อมูลจาก sessionStorage
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             if (errorMessage.includes('Failed to connect')) {
-                console.warn('Backend server may not be running. Using cached user data from localStorage.');
-                // ใช้ข้อมูลจาก localStorage ที่อ่านไว้แล้ว (ถ้ามี)
+                console.warn('Backend server may not be running. Using cached user data from sessionStorage.');
+                // ใช้ข้อมูลจาก sessionStorage ที่อ่านไว้แล้ว (ถ้ามี)
                 if (!storedUser) {
-                    // ถ้าไม่มีข้อมูลใน localStorage และ backend ไม่ได้รัน ให้ลบ token
+                    // ถ้าไม่มีข้อมูลใน sessionStorage และ backend ไม่ได้รัน ให้ลบ token
                     tokenServices.removeToken();
                     userServices.removeUser();
                     setUser(null);
@@ -137,7 +137,7 @@ export function useAuth(): UseAuthReturn {
                     role: backendRole as UserRole,
                 };
                 
-                // เก็บ user data ใน localStorage
+                // เก็บ user data ใน sessionStorage
                 userServices.setUser(userData);
                 setUser(userData);
             } else {

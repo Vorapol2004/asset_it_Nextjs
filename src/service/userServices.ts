@@ -2,7 +2,7 @@
  * User Services - จัดการ User Data
  * 
  * หน้าที่:
- * - เก็บ user data ใน localStorage
+ * - เก็บ user data ใน sessionStorage
  * - ดึง user data ออกมา
  * - ลบ user data
  */
@@ -17,25 +17,25 @@ interface StoredUser {
 
 export const userServices = {
     /**
-     * เก็บ user data ใน localStorage
+     * เก็บ user data ใน sessionStorage
      */
     setUser(user: StoredUser): void {
         if (typeof window !== 'undefined') {
-            localStorage.setItem(USER_KEY, JSON.stringify(user));
+            sessionStorage.setItem(USER_KEY, JSON.stringify(user));
         }
     },
 
     /**
-     * ดึง user data จาก localStorage
+     * ดึง user data จาก sessionStorage
      */
     getUser(): StoredUser | null {
         if (typeof window !== 'undefined') {
-            const userStr = localStorage.getItem(USER_KEY);
+            const userStr = sessionStorage.getItem(USER_KEY);
             if (userStr) {
                 try {
                     return JSON.parse(userStr) as StoredUser;
                 } catch (error) {
-                    console.error('Failed to parse user data from localStorage:', error);
+                    console.error('Failed to parse user data from sessionStorage:', error);
                     return null;
                 }
             }
@@ -44,11 +44,11 @@ export const userServices = {
     },
 
     /**
-     * ลบ user data จาก localStorage
+     * ลบ user data จาก sessionStorage
      */
     removeUser(): void {
         if (typeof window !== 'undefined') {
-            localStorage.removeItem(USER_KEY);
+            sessionStorage.removeItem(USER_KEY);
         }
     },
 

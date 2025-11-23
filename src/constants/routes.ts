@@ -2,7 +2,6 @@ export const ROUTES = {
     // Public Routes
     HOME_LANDING: '/',
     LOGIN: '/login',
-    REGISTER: '/register',
 
     // Protected Routes
     HOME: '/pages/home',
