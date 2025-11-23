@@ -27,7 +27,7 @@ export default function LandingPage() {
                             />
                         </div>
                         <span className="text-2xl font-bold text-gray-900">
-                            ระบบยืมอุปกรณ์
+                            UTCC IAMS
                         </span>
                     </div>
                 </div>
@@ -49,7 +49,7 @@ export default function LandingPage() {
                 </div>
 
                 <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center">
-                    ระบบบันทึกการยืมอุปกรณ์
+                    UTCC IT Asset Management System
                 </h1>
                 <p className="text-lg md:text-xl text-gray-600 mb-8 text-center max-w-lg">
                     จัดการและติดตามการยืม-คืนอุปกรณ์ได้อย่างมีประสิทธิภาพ
@@ -112,3 +112,4 @@ export default function LandingPage() {
         </div>
     );
 }
+

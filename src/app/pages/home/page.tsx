@@ -42,10 +42,10 @@ export default function HomePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center">
                         <h1 className="text-4xl font-bold text-white mb-4">
-                            ระบบบันทึกการยืมอุปกรณ์
+                            UTCC IT Asset Management System
                         </h1>
                         <p className="text-xl text-blue-100">
-                            จัดการและติดตามการยืม-คืนอุปกรณ์อย่างมีประสิทธิภาพ
+                            UTCC IAMS
                         </p>
                     </div>
                 </div>

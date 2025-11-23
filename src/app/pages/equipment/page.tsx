@@ -147,7 +147,7 @@ export default function EquipmentPage() {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="ค้นหาชื่อ, ยี่ห้อ, รุ่น, Serial Number, License Key..."
+                                    placeholder="ค้นหาชื่อ, ยี่ห้อ, รุ่น, Serial Number, License Key, ชื่อ lot"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     onKeyDown={(e) => {

@@ -32,7 +32,7 @@ export default function AuthLayout({
                                 />
                             </div>
                             <span className="text-lg sm:text-xl font-bold text-gray-900">
-                                ระบบยืมอุปกรณ์
+                                UTCC IAMS
                             </span>
                         </div>
                     </div>

@@ -91,8 +91,8 @@ const Navbar = memo(function Navbar() {
                             />
                         </div>
                         <span className="text-base sm:text-lg md:text-xl font-bold text-white truncate">
-                            <span className="hidden sm:inline">Asset IT support</span>
-                            <span className="sm:hidden">Asset IT</span>
+                            <span className="hidden sm:inline">UTCC IAMS</span>
+                            <span className="sm:hidden">UTCCIAMS</span>
                         </span>
                     </Link>
 
