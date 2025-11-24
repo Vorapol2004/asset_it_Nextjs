@@ -1,10 +1,34 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { api } from '@/lib/api';
 import { BorrowView, BorrowStatus, Department } from '@/types/type';
 
 type GroupedBorrow = BorrowView;
 
-const STATUS_MAP: Record<number, { label: string; color: string }> = {};
+// ฟังก์ชันสำหรับกำหนดสีตามชื่อสถานะ
+const getStatusColor = (statusName: string): string => {
+    const name = statusName.trim().toLowerCase();
+    
+    // เลยกำหนด = สีแดง
+    if (name.includes('เลยกำหนด') || name.includes('เกินกำหนด') || name.includes('overdue')) {
+        return 'bg-red-100 text-red-800 border-red-300';
+    }
+    // ยืมอยู่ = สีเหลือง
+    else if (name.includes('ยืมอยู่') || name.includes('กำลังยืม') || name.includes('borrowed')) {
+        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+    }
+    // คืนแล้ว = สีเขียว
+    else if (name.includes('คืนแล้ว') || name.includes('คืนครบ') || name.includes('returned')) {
+        return 'bg-green-100 text-green-800 border-green-300';
+    }
+    // คืนบางส่วน = สีน้ำเงิน
+    else if (name.includes('คืนบางส่วน') || name.includes('คืนบางรายการ') || name.includes('partial')) {
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+    }
+    // default
+    else {
+        return 'bg-gray-100 text-gray-700 border-gray-300';
+    }
+};
 
 export function useBorrowHistory() {
     const [records, setRecords] = useState<BorrowView[]>([]);
@@ -33,7 +57,17 @@ export function useBorrowHistory() {
         return statusName === 'available' || statusName === 'lost' || statusName === 'damaged';
     });
     
-
+    // สร้าง STATUS_MAP จาก statuses (อัปเดตเมื่อ statuses เปลี่ยน)
+    const STATUS_MAP = useMemo(() => {
+        const map: Record<number, { label: string; color: string }> = {};
+        statuses.forEach(status => {
+            map[status.id] = {
+                label: status.borrowStatusName,
+                color: getStatusColor(status.borrowStatusName),
+            };
+        });
+        return map;
+    }, [statuses]);
 
     const groupedRecords: GroupedBorrow[] = records;
 

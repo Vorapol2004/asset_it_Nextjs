@@ -34,6 +34,8 @@ export default function NewBorrowPage() {
         borrowerLastName,
         borrowerEmail,
         borrowerPhone,
+        emailError,
+        isCheckingEmail,
         setBorrowerRole,
         setSelectedDepartment,
         setSelectedBuilding,
@@ -158,7 +160,15 @@ export default function NewBorrowPage() {
                                         className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg text-gray-900 font-medium outline-none focus:border-blue-500"
                                         placeholder="example@email.com"
                                     />
+                                    {isCheckingEmail && (
+                                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+                                        </div>
+                                    )}
                                 </div>
+                                {emailError && (
+                                    <p className="mt-1 text-sm text-red-600 font-medium">{emailError}</p>
+                                )}
                             </div>
 
                             <div>

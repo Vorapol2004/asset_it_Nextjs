@@ -29,6 +29,8 @@ export function useNewBorrow() {
     const [borrowDate, setBorrowDate] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [referenceDoc, setReferenceDoc] = useState('');
+    const [emailError, setEmailError] = useState<string>('');
+    const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
 
     useEffect(() => {
@@ -50,6 +52,53 @@ export function useNewBorrow() {
         fetchRooms();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFloor]);
+
+    // เช็ค email ซ้ำเมื่อมีการเปลี่ยนแปลง
+    useEffect(() => {
+        // ถ้า email ว่าง ให้ล้าง error และหยุดการเช็ค
+        if (!borrowerEmail.trim()) {
+            setEmailError('');
+            setIsCheckingEmail(false);
+            return;
+        }
+
+        // เช็ครูปแบบ email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(borrowerEmail.trim())) {
+            setEmailError('');
+            setIsCheckingEmail(false);
+            return;
+        }
+
+        // Debounce: รอ 500ms หลังจากผู้ใช้หยุดพิมพ์
+        setIsCheckingEmail(true);
+        const timeoutId = setTimeout(async () => {
+            try {
+                const results = await api.employee.search(borrowerEmail.trim());
+                // เช็คว่ามี employee ที่มี email ตรงกันหรือไม่
+                const duplicate = results.some(emp => 
+                    emp.email && emp.email.toLowerCase() === borrowerEmail.trim().toLowerCase()
+                );
+                
+                if (duplicate) {
+                    setEmailError('อีเมลนี้มีอยู่ในระบบแล้ว');
+                } else {
+                    setEmailError('');
+                }
+            } catch (error) {
+                console.error('Error checking email:', error);
+                // ไม่แสดง error ถ้าเกิดปัญหาในการเช็ค
+                setEmailError('');
+            } finally {
+                setIsCheckingEmail(false);
+            }
+        }, 500);
+
+        return () => {
+            clearTimeout(timeoutId);
+            setIsCheckingEmail(false);
+        };
+    }, [borrowerEmail]);
 
 
     
@@ -341,6 +390,8 @@ export function useNewBorrow() {
         borrowDate,
         dueDate,
         referenceDoc,
+        emailError,
+        isCheckingEmail,
 
         // Setters
         setBorrowerRole,
